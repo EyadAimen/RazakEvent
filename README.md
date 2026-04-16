@@ -16,7 +16,7 @@ RazakEvent is built to help the KTR community stay connected and informed about 
 | -------- | ----------------------------------- |
 | Frontend | Next.js 16, React 19, TypeScript    |
 | Backend  | Express 5, Node.js (ESM)            |
-| Database | MySQL (via TypeORM)                 |
+| Database | PostgreSQL (via TypeORM)                 |
 | Tooling  | ESLint, Nodemon, dotenv             |
 
 ## Prerequisites
