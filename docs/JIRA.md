@@ -2,3 +2,4 @@
 
 ensure to add the key in the ticket
 test ticket name KAN-1
+now test KAN-1 PR
