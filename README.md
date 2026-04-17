@@ -69,3 +69,4 @@ RazakEvent/
 ## License
 
 This project is developed for academic purposes at Universiti Teknologi Malaysia (UTM).
+
