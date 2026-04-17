@@ -17,6 +17,6 @@ jobs:
             exit 0
           else
             echo "Error: Your PR title '$TITLE' is invalid."
-            echo "It must start with a Jira ticket ID (e.g., KTR-123 or PROJ-45)."
+            echo "It must start with a Jira ticket ID (e.g., KAN-123)."
             exit 1
           fi
