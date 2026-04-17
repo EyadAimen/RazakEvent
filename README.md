@@ -48,93 +48,22 @@ CREATE DATABASE razak_event;
 
 ### 3. Set Up the Backend
 
-```bash
-# Navigate to the backend directory
-cd backend
-
-# Install dependencies
-npm install
-
-# Create the environment file
-cp .env.example .env
-```
-
-Open the `.env` file and fill in your database credentials:
-
-```env
-HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_password
-DATABASE=razak_event
-PORT=5000
-```
-
-Start the backend development server:
-
-```bash
-npm run dev
-```
-
-The API server will start on `http://localhost:5000`.
+Please refer to the [Backend Development Guidelines](./backend/BACKEND_DEVELOPMENT.md) for detailed instructions on setting up and running the Express API server, as well as an overview of the feature-based backend architecture.
 
 ### 4. Set Up the Frontend
 
-Open a **new terminal** and run:
-
-```bash
-# Navigate to the frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
-```
-
-The frontend will start on `http://localhost:3000`.
+Please refer to the [Frontend Development Guidelines](./frontend/FRONTEND_DEVELOPMENT.md) for detailed instructions on setting up and running the Next.js frontend, as well as an overview of its feature-sliced architecture.
 
 ## Project Structure
 
 ```
 RazakEvent/
-├── backend/
-│   ├── config/
-│   │   ├── dbConfig.mjs      # TypeORM database connection
-│   │   └── envConfig.mjs     # Environment variable loader
-│   ├── src/
-│   │   └── server.mjs        # Express server entry point
-│   ├── .env                   # Environment variables (not committed)
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── app/               # Next.js App Router pages
-│   │   └── components/        # Reusable React components
-│   ├── public/                # Static assets
-│   ├── next.config.ts
-│   ├── tsconfig.json
-│   └── package.json
+├── backend/                   # Express API server (See backend/BACKEND_DEVELOPMENT.md for details)
+├── frontend/                  # Next.js frontend app (See frontend/FRONTEND_DEVELOPMENT.md for details)
+├── docs/                      # Project documentation (UI screens, features, JIRA)
 ├── .gitignore
 └── README.md
 ```
-
-## Available Scripts
-
-### Backend (`/backend`)
-
-| Command       | Description                              |
-| ------------- | ---------------------------------------- |
-| `npm run dev` | Start the server with Nodemon (hot reload) |
-
-### Frontend (`/frontend`)
-
-| Command         | Description                        |
-| --------------- | ---------------------------------- |
-| `npm run dev`   | Start the Next.js dev server       |
-| `npm run build` | Build for production               |
-| `npm run start` | Start the production server        |
-| `npm run lint`  | Run ESLint                         |
 
 
 ## License
