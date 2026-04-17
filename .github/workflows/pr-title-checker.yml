@@ -1,0 +1,14 @@
+name: "PR Title Checker"
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check PR title for Jira Ticket
+        uses: vijaykiran/jira-pr-title-checker@v1
+        with:
+          jira_project_key: "KAN"
