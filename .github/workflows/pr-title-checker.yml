@@ -11,12 +11,12 @@ jobs:
         run: |
           TITLE="${{ github.event.pull_request.title }}"
           
-          # Use grep to check if the title starts with Capital Letters, a dash, and Numbers
-          if echo "$TITLE" | grep -qE "^[A-Z]+-[0-9]+"; then
+          # Check if the title contains "KAN-" followed by numbers anywhere
+          if echo "$TITLE" | grep -qE "KAN-[0-9]+"; then
             echo "Success: PR title contains a valid Jira token."
             exit 0
           else
             echo "Error: Your PR title '$TITLE' is invalid."
-            echo "It must start with a Jira ticket ID (e.g., KAN-123)."
+            echo "It must contain a Jira ticket ID (e.g., KAN-123) anywhere in the title."
             exit 1
           fi
