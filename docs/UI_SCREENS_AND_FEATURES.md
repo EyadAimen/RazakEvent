@@ -10,6 +10,9 @@
 
 1. [System Overview & Role Map](#1-system-overview--role-map)
 2. [Shared / Public Screens](#2-shared--public-screens)
+   - 2.1 [Login Page](#21-login-page)
+   - 2.2 [Sign Up Page](#22-sign-up-page)
+   - 2.3 [Unauthorized / 404 Page](#23-unauthorized--404-page)
 3. [Student Screens](#3-student-screens)
    - 3.8 [Become a Club Lead](#38-become-a-club-lead)
 4. [Club / Community Lead Screens](#4-club--community-lead-screens)
@@ -57,7 +60,53 @@
 
 ---
 
-### 2.2 Unauthorized / 404 Page
+### 2.2 Sign Up Page
+**Route:** `/signup`  
+**Accessible by:** All users (unauthenticated)
+
+**Screen Content:**
+- University/KTR branding (UTM logo + KTR logo)
+- App name: **RazakEvent**
+- Page title: "Create Your Account"
+- **Personal Information section:**
+  - Full name (text input, required)
+  - Matric number (text input, required)
+  - Email address (text input, required — validated for UTM email format)
+  - Password (password input, required — minimum 8 characters)
+  - Confirm password (password input, required — must match password)
+- **Role Selection section:**
+  - Label: "Select your role"
+  - Role selector (radio buttons or segmented control): `Student` / `Member` / `Lead`
+  - Helper text beneath each option:
+    - **Student:** "Browse events, volunteer, and earn certificates."
+    - **Member:** "Join a club or community as a member."
+    - **Lead:** "Manage events and volunteers for your club or community."
+- **Club / Community Selection section** (conditional — shown only when **Member** or **Lead** is selected):
+  - Label: "Select your Club / Community"
+  - Searchable dropdown / list of all existing clubs and communities
+  - Each option shows: Club/Community name, type badge (`Club` / `Community`)
+  - Required when visible
+  - Helper text: "You will be associated with this club/community upon admin approval."
+- "Sign Up" button
+- "Already have an account? Sign In" link (navigates to `/login`)
+
+**Validation Rules:**
+- All personal information fields are required
+- Email must be a valid UTM email address
+- Password and Confirm password must match
+- If role is Member or Lead, a club/community must be selected
+
+**Behaviour:**
+- On successful submission:
+  - If role is **Student:** Account is created and active immediately. Redirect to Student Dashboard.
+  - If role is **Member:** Account is created. A membership request is sent to the selected club/community's Lead for approval. Redirect to Student Dashboard with a notice: "Your membership request for [Club Name] has been submitted and is pending approval by the club lead."
+  - If role is **Lead:** Account is created. A lead role request is sent to the Admin for approval. Redirect to Student Dashboard with a notice: "Your request to become the lead of [Club Name] has been submitted to the Admin for approval."
+- Display inline validation errors for invalid/missing fields
+- Display error message if email is already registered
+
+---
+
+### 2.3 Unauthorized / 404 Page
 **Routes:** `/unauthorized`, `/404`  
 **Accessible by:** All users
 
@@ -654,6 +703,7 @@ Consistent colour-coded badge used everywhere:
 
 ```
 /login                                      ← Shared
+/signup                                     ← Shared (Sign Up)
 
 /student/
   dashboard                                 ← Home
