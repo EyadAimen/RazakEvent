@@ -436,7 +436,6 @@
   - Venue
   - Status badge
   - "View Details" link
-- Export to CSV (optional/future)
 
 ---
 
@@ -452,7 +451,6 @@
   - Event Report: `Not Submitted` / `Submitted` (view PDF)
   - Money Report: `Not Submitted` / `Submitted` (view PDF)
   - Submission date timestamps
-- Event rating / feedback (if rating feature is enabled — see Suggested Features)
 - Admin notes field (for internal reference)
 
 ---
@@ -468,9 +466,10 @@
   - Name
   - Student ID
   - Email
-  - Current Role badge: `Student` / `Club Lead` / `Community Lead`
+  - Current Role badge: `Student` / `Club Lead` / `Community Lead` / `Club/Community Member`
   - "Edit Role" button
 - Filter by role
+- Search by name
 
 **Sub-screen: Edit User Role (Modal or inline)**
 - User's name and current role (read-only)
