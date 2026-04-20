@@ -11,8 +11,10 @@
 1. [System Overview & Role Map](#1-system-overview--role-map)
 2. [Shared / Public Screens](#2-shared--public-screens)
 3. [Student Screens](#3-student-screens)
+   - 3.8 [Become a Club Lead](#38-become-a-club-lead)
 4. [Club / Community Lead Screens](#4-club--community-lead-screens)
 5. [Admin Screens](#5-admin-screens)
+   - 5.8 [Club Requests — Review Queue](#58-club-requests--review-queue)
 6. [Shared UI Components](#6-shared-ui-components)
 7. [Navigation Structure Summary](#7-navigation-structure-summary)
 
@@ -187,6 +189,39 @@
   - Table/list of all past volunteering activities
   - Columns: Event Name | Date | Role | Status
 - Edit profile button (name/photo only; email/role are system-managed)
+
+---
+
+### 3.8 Become a Club Lead
+**Route:** `/student/become-lead`  
+**Accessible by:** Student
+
+**Screen Content:**
+- Page title: "Become a Club / Community Lead"
+- Brief description: "Select an existing club or community to request the Lead role. If your club doesn't exist yet, you can submit a request to create one."
+- **Club / Community Selection section:**
+  - Searchable dropdown / list of all existing clubs and communities
+  - Each option shows: Club/Community name, type badge (`Club` / `Community`)
+  - "Request Lead Role" button (enabled once a club/community is selected)
+- **Add New Club / Community section** (collapsible, shown below the dropdown):
+  - Section header: "Can't find your club? Request a new one"
+  - Club / Community name input (text field, required)
+  - Type selector: `Club` / `Community` (radio or dropdown, required)
+  - Description textarea (required, max 500 characters) — brief overview of the club's purpose/activities
+  - "Submit Club Request" button
+  - Helper text: "New clubs must be reviewed and approved by the KTR Admin before you can be assigned as Lead."
+
+**Behaviour — Existing Club selected:**
+- On "Request Lead Role" click → confirmation dialog → submit request
+- Success message (modal/alert): "Your request to become the lead of [Club Name] has been sent to the Admin for approval."
+- Request appears in Admin's User Management queue
+- Redirect back to Student Dashboard
+
+**Behaviour — New Club submitted:**
+- On "Submit Club Request" click → validation → confirmation dialog → submit
+- Success message (modal/alert): "Your club request has been submitted. The KTR Admin will review it. Once approved, you will be assigned as Lead."
+- Request appears in Admin's Club Requests review queue (see 5.8)
+- Redirect back to Student Dashboard
 
 ---
 
@@ -436,7 +471,6 @@
   - Venue
   - Status badge
   - "View Details" link
-- Export to CSV (optional/future)
 
 ---
 
@@ -452,7 +486,6 @@
   - Event Report: `Not Submitted` / `Submitted` (view PDF)
   - Money Report: `Not Submitted` / `Submitted` (view PDF)
   - Submission date timestamps
-- Event rating / feedback (if rating feature is enabled — see Suggested Features)
 - Admin notes field (for internal reference)
 
 ---
@@ -468,9 +501,10 @@
   - Name
   - Student ID
   - Email
-  - Current Role badge: `Student` / `Club Lead` / `Community Lead`
+  - Current Role badge: `Student` / `Club Lead` / `Community Lead` / `Club/Community Member`
   - "Edit Role" button
 - Filter by role
+- Search by name
 
 **Sub-screen: Edit User Role (Modal or inline)**
 - User's name and current role (read-only)
@@ -489,6 +523,49 @@
 - Name, email, role: "KTR Administrator"
 - Password change option
 - Activity log (recent decisions made)
+
+---
+
+### 5.8 Club Requests — Review Queue
+**Route:** `/admin/club-requests`  
+**Accessible by:** Admin
+
+**Screen Content:**
+- Page title: "Club / Community Requests"
+- Filter tabs: `Pending` | `Approved` | `Rejected` | `All`
+- Search bar: by club name or requesting student name
+- Request table/cards showing:
+  - Club / Community name
+  - Type badge: `Club` / `Community`
+  - Description (truncated, expandable on click)
+  - Requested by: Student name + Student ID
+  - Submission date
+  - Status badge: `Pending` / `Approved` / `Rejected`
+  - "Review" button
+- Empty state: "No pending club requests."
+
+**Sub-screen: Club Request Detail (Modal or dedicated page)**
+**Route:** `/admin/club-requests/:requestId`
+- Club / Community name (header)
+- Type: `Club` / `Community`
+- Full description
+- Requested by: Student name, Student ID, email
+- Submission date
+- **Decision section:**
+  - Approve button (green) — creates the club and assigns the requesting student as Lead
+  - Reject button (red)
+  - Admin comments / feedback textarea (required on rejection, optional on approval)
+  - "Confirm Decision" button
+- Status banner at top if already reviewed (with timestamp and admin comment)
+
+**Post-decision behaviour:**
+- **If Approved:**
+  - Club/Community is created in the system
+  - Requesting student's role is upgraded to Club Lead / Community Lead
+  - Student is notified via dashboard notification
+- **If Rejected:**
+  - Student is notified with admin's feedback
+  - Student can re-submit with modifications from the same screen (3.8)
 
 ---
 
@@ -585,6 +662,7 @@ Consistent colour-coded badge used everywhere:
   events/:eventId/volunteer                 ← Volunteer application
   volunteering                              ← My applications
   certificates                              ← My certificates
+  become-lead                               ← Become a club lead
   profile                                   ← Profile
 
 /lead/
@@ -603,6 +681,8 @@ Consistent colour-coded badge used everywhere:
   events                                    ← All events overview
   events/:eventId                           ← Event detail (admin view)
   users                                     ← User management
+  club-requests                             ← Club requests review queue
+  club-requests/:requestId                  ← Club request detail & decision
   profile                                   ← Profile
 ```
 
@@ -619,9 +699,10 @@ Consistent colour-coded badge used everywhere:
 | Event Volunteering | Student: Event Detail, Volunteer Application, My Applications; Lead: Event Detail (manage volunteers) |
 | Certificate Generation | Lead: Manage Certificates; Student: My Certificates |
 | User Role Management | Admin: User Management |
+| Club / Community Creation & Lead Requests | Student: Become a Club Lead; Admin: Club Requests Review Queue |
 | Post-Event Reporting | Lead: Submit Reports; Admin: Event Detail (admin view) |
 
 ---
 
-*Document Version: 1.0 — Derived from SPP-SCSJ3104-001 (Rev 01) and Meeting Minutes*  
+
 *Group 06 · SCSJ3104 Application Development · UTM*
