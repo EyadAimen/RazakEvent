@@ -44,7 +44,7 @@
 - Email input field
 - Password input field
 - "Sign In" button
-- Forgot password link (optional/future)
+- Forgot password link
 
 **Behaviour:**
 - On successful login, redirect based on role:
@@ -77,12 +77,12 @@
 - **Upcoming Events section**
   - Event cards showing: Event name, date, venue, status badge (e.g. Approved, Upcoming)
   - "View Details" button on each card
-  - Filter/sort controls: by date, by type (Club / Community)
+  - Filter/sort controls: by date, by type (Club / Community) or name of the club / community
 - **Quick Links section**
   - My Volunteering Applications
   - My Certificates
   - Event Calendar
-- **Announcements / Notice strip** (optional — for admin-pushed notices)
+- **Announcements / Notice strip** (for admin-pushed notices) (optional)
 
 ---
 
@@ -96,9 +96,9 @@
 - Clicking a date shows events for that day in a side panel or popup
 - Each event chip shows: Event name, venue, time
 - **Venue quick-reference** (drawn from: `https://dvcdev.utm.my/hospitality/kolej-tun-razak-ktr/`)
-- Filter by: All Events / My Volunteering Events
+- Filter by: All Events / My Volunteering Events (Upcoming only)
 
-**Sub-panel (on event click):**
+**modal/alert (on event click):**
 - Event name
 - Date & time
 - Venue
@@ -114,7 +114,7 @@
 
 **Screen Content:**
 - Event name (header)
-- Status badge: `Approved` / `Ongoing` / `Completed`
+- Status badge: `Approved` / `Ongoing` / `Completed` - visible for the leads only,
 - Date, time, and venue
 - Organizing club/community name
 - Event description
@@ -138,7 +138,7 @@
 - "Cancel" button
 
 **Post-submission:**
-- Success message: "Your application has been submitted. The club/community lead will review it."
+- Success message: "Your application has been submitted. The club/community lead will review it." - in a modal / alert
 - Redirect back to Event Detail Page
 
 ---
@@ -180,7 +180,7 @@
 **Screen Content:**
 - Profile photo (avatar/initials fallback)
 - Full name
-- Student ID / Matric number
+- Matric number
 - Email
 - Role badge: `Student` / `Club Lead` / `Community Lead`
 - **Volunteering History section:**
@@ -202,10 +202,10 @@
 - Welcome banner with lead's name and club/community label
 - **My Events section:**
   - Cards for each proposed/active event
-  - Status badge on each: `Draft` / `Submitted` / `Approved` / `Rejected` / `Completed` / `Report Due`
-  - "View Details" / "Submit Report" (if applicable) action buttons
-- **Alerts / Reminders strip:**
-  - Events with reports due within 14 days (highlighted in amber/red)
+  - Status badge on each: `Draft` / `Submitted` / `Approved` / `Rejected` / `Completed` / `Report Due` - this is when completing the event
+  - "View Details" 
+- **Alerts / Reminders section:**
+  - Events with reports due within 14 days (highlighted in amber/red) 
   - Events pending admin action
 - **Quick Actions:**
   - "Propose New Event" button
@@ -232,14 +232,14 @@
   - PDF file upload input (drag-and-drop + file browser)
   - File validation: PDF only, max size indicator
 - **Budget section:**
-  - Estimated budget amount (number input)
+  - Estimated budget amount (number input) - for easy access for admin (in will be included in the submitted form)
   - Note: "Funds will be released upon approval. Submit money report within 14 days after the event."
 - Submit button: "Submit Proposal"
 - Save as Draft button
 - Cancel / Back button
 
 **Post-submission:**
-- Success message: "Your event proposal has been submitted to the KTR Admin for review."
+- Success message: "Your event proposal has been submitted to the KTR Admin for review." - in modal / alert
 - Redirect to My Events list
 
 ---
@@ -259,7 +259,6 @@
   - Status badge
   - Actions: `View` / `Submit Report` / `Manage Volunteers`
 - "Propose New Event" button (top right)
-- Empty state message per filter
 
 ---
 
@@ -276,7 +275,7 @@
 - Admin review status and notes (if admin left a comment on rejection)
 - **Volunteering section** (conditional — only if event is Approved):
   - Toggle: "Open Volunteering for this Event" (on/off)
-  - If on: number of slots input, role/task description textarea
+  - If on: number of slots input, role/task description textarea - create roles and for each role get from number of slots
   - "Save Volunteering Settings" button
 - **Volunteer Applications sub-section** (if volunteering is open):
   - Table of applicants: Name | Student ID | Application Date | Status
@@ -307,7 +306,7 @@
 
 **Shared elements:**
 - Deadline countdown banner (amber if <7 days, red if <3 days)
-- Status indicators: `Not Submitted` / `Submitted` / `Received by Admin`
+- Status indicators: `Not Submitted` / `Submitted` / `accepted by Admin`
 
 ---
 
@@ -337,6 +336,16 @@
 
 **Screen Content:**
 - Same as Student Profile (3.7)
+- Additional: Club/Community name and type shown prominently
+
+### 4.8 Lead club / community page
+**Route:** `/lead/club`  
+**Accessible by:** Club Lead, Community Lead
+**Screen Content:**
+- Contains name of the club/event
+- Manage members roles
+- accept user request by members
+- list of members
 - Additional: Club/Community name and type shown prominently
 - List of all events ever proposed (summary stats: total, approved, rejected, completed)
 
@@ -383,7 +392,6 @@
   - Submission Date
   - Status: `Pending` / `Approved` / `Rejected`
   - Action: "Review"
-- Pagination
 
 ---
 
@@ -394,6 +402,7 @@
 **Screen Content:**
 - Event name (header)
 - Submitted by: Lead name, Club/Community name
+- Type: Community or Club
 - Proposed date, time, venue
 - Estimated budget
 - **Submitted PDF viewer** (inline PDF preview + download button)
@@ -487,16 +496,22 @@
 
 These components appear across multiple screens and roles:
 
+
+(might not fit the web app theme)
 ### 6.1 Top Navigation Bar
 - App logo / name: "RazakEvent"
 - Role-appropriate nav links (different per role)
 - Notification bell icon (with unread count badge)
 - User avatar/initials → dropdown: Profile, Logout
 
+
+(might not fit the web app theme)
 ### 6.2 Sidebar (Desktop)
 - Role-based navigation links
 - Collapsible on mobile
 
+
+(to be decided when designing the screens)
 ### 6.3 Event Status Badge
 Consistent colour-coded badge used everywhere:
 | Status | Colour |
@@ -510,6 +525,8 @@ Consistent colour-coded badge used everywhere:
 | Report Due | Orange |
 | Overdue | Dark Red |
 
+
+(based on what you see it but not necessarly to implement)
 ### 6.4 Notification System
 - In-app notification panel (bell icon)
 - Triggered events:
@@ -549,6 +566,11 @@ Consistent colour-coded badge used everywhere:
 - Subtext
 - Call-to-action button (where applicable)
 
+---
+
+### 6.9 Alert / Modal
+- Alert / modal container
+- Create the container with the background dim and everything
 ---
 
 ## 7. Navigation Structure Summary
