@@ -34,13 +34,12 @@
     
     /* STATUS */
     /* Put the colors of the status here */
-    /* Example: --color-status-green:  */
-
-
-
-    
-    --color-custom-light-purple: #F0E3D3BF;
-    --color-custom-black-hover: #000000BF;
+    --color-status-green: #10B981;  /*for Success messages*/
+    --color-status-red: #E11D48;    /*for Error messages*/
+    --color-status-yellow: #FFD600; /*for Pending/Warning messages*/
+    --color-status-blue: #0055FF;   /*for Active status*/
+    --color-custom-light-purple: #F0E3D3BF; /*for light purple background*/
+    --color-custom-black-hover: #000000BF; /*for black color hover effect*/
 
     /* ==============
         TYPOGRAPHY
