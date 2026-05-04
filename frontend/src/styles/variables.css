@@ -9,10 +9,18 @@
     --color-primary-500: #3B6FD4;
     --color-primary-800: #1A2D6E;
     
-    
+    /* SECONDARY */
     --color-secondary-500: #F4C200;
     --color-secondary-800: #E8A020;
     
+    /* KTR BRAND COLORS */
+    --color-ktr-navy: #0A1128;
+    --color-ktr-yellow: #FFD600;
+    --color-ktr-ink: #0F1014;
+    --color-ktr-blue: #0055FF;
+    --color-ktr-ice: #EFF3FF;
+    --color-ktr-crimson: #E11D48;
+
     /* NEUTRAL */
     --color-neutral-50: #FFFFFF;
     --color-neutral-200: #E8E6E3;
@@ -26,20 +34,19 @@
     
     /* STATUS */
     /* Put the colors of the status here */
-    /* Example: --color-status-green:  */
-
-
-
-    
-    --color-custom-light-purple: #F0E3D3BF;
-    --color-custom-black-hover: #000000BF;
+    --color-status-green: #10B981;  /*for Success messages*/
+    --color-status-red: #E11D48;    /*for Error messages*/
+    --color-status-yellow: #FFD600; /*for Pending/Warning messages*/
+    --color-status-blue: #0055FF;   /*for Active status*/
+    --color-custom-light-purple: #F0E3D3BF; /*for light purple background*/
+    --color-custom-black-hover: #000000BF; /*for black color hover effect*/
 
     /* ==============
         TYPOGRAPHY
     ================= */
 
     /* FONT FAMILIES */
-    --font-heading: var(--font-sora), sans-serif;
+    --font-heading: var(--font-alata), sans-serif;
     --font-body: var(--font-space-mono), monospace;
     
     /* FONT WEIGHTS */
