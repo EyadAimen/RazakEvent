@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import styles from "./login.module.css";
 
@@ -8,12 +9,17 @@ import InputField from "@/components/shared/input-field/input-field";
 import Circle from "@/components/shared/circle/circle";
 import Rectangle from "@/components/shared/rectangle/rectangle";
 import Triangle from "@/components/shared/triangle/triangle";
+import { loginUser, saveSession } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
 
 export default function Login() {
+    const router = useRouter();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [apiError, setApiError] = useState("");
 
     const [errors, setErrors] = useState({
         email: "",
@@ -39,16 +45,29 @@ export default function Login() {
         }
 
         setErrors(newErrors);
-
         return !newErrors.email && !newErrors.password;
     };
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: { preventDefault(): void }) => {
         e.preventDefault();
+        setApiError("");
 
         if (!validateForm()) return;
 
-        console.log({ email, password });
+        setLoading(true);
+        try {
+            const data = await loginUser(email, password);
+            saveSession(data);
+            router.push("/");
+        } catch (err) {
+            if (err instanceof ApiError) {
+                setApiError(err.message);
+            } else {
+                setApiError("Unable to connect. Please try again.");
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -63,6 +82,8 @@ export default function Login() {
                         <div className={styles.logoPlaceholder}>UTM</div>
                     </div>
 
+                    {apiError && <p className={styles.apiError}>{apiError}</p>}
+
                     <form className={styles.form} onSubmit={handleSubmit}>
                         <InputField
                             label="Email Address"
@@ -73,6 +94,7 @@ export default function Login() {
                             onChange={(value) => {
                                 setEmail(value);
                                 setErrors((prev) => ({ ...prev, email: "" }));
+                                setApiError("");
                             }}
                         />
 
@@ -86,6 +108,7 @@ export default function Login() {
                                 onChange={(value) => {
                                     setPassword(value);
                                     setErrors((prev) => ({ ...prev, password: "" }));
+                                    setApiError("");
                                 }}
                             />
 
@@ -103,8 +126,12 @@ export default function Login() {
                             Forgot Password?
                         </a>
 
-                        <button type="submit" className={styles.submitButton}>
-                            Sign In
+                        <button
+                            type="submit"
+                            className={styles.submitButton}
+                            disabled={loading}
+                        >
+                            {loading ? "Signing in..." : "Sign In"}
                         </button>
                     </form>
 
@@ -116,7 +143,6 @@ export default function Login() {
 
             <section className={styles.rightPanel}>
                 <Rectangle
-
                     style={{
                         width: "190px",
                         height: "150px",
@@ -128,7 +154,6 @@ export default function Login() {
                 />
 
                 <Triangle
-
                     style={{
                         left: "70px",
                         top: "335px",

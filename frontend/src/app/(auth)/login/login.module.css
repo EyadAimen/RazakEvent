@@ -118,6 +118,23 @@
   transform: translateY(-1px);
 }
 
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.apiError {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
 .signupText {
   margin-top: 28px;
   font-size: 14px;
