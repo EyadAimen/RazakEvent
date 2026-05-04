@@ -40,6 +40,15 @@ export const UserEntity = new EntitySchema({
             type: "boolean",
             default: false,
         },
+        refreshTokenHash: {
+            type: "varchar",
+            length: 64,
+            nullable: true,
+        },
+        refreshTokenExpiry: {
+            type: "timestamp",
+            nullable: true,
+        },
         createdAt: {
             type: "timestamp",
             createDate: true,

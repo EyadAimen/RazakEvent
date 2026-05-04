@@ -2,6 +2,7 @@ import appDataSource from "../../config/dbConfig.mjs";
 import { UserEntity } from "../users/users.entity.mjs";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { UnauthenticatedError, ForbiddenError, ConflictError, ValidationError } from "../shared/errors.mjs";
 import envVars from "../../config/envConfig.mjs";
 
@@ -36,18 +37,46 @@ export const signup = async (name, email, password, matricNumber, role) => {
 export const login = async (email, password) => {
     const user = await userRepo().findOne({ where: { email }})
     if(!user) throw new UnauthenticatedError("Invalid credentials")
-    
+
     const match = await bcrypt.compare(password, user.passwordHash)
     if(!match) throw new UnauthenticatedError("Invalid credentials")
 
     if(!user.isApproved) throw new ForbiddenError('Account pending approval')
-    
-    const token = jwt.sign(
+
+    const accessToken = jwt.sign(
         { userId: user.id, role: user.role },
         envVars.jwtSecret,
-        { expiresIn: "1d"}
-    ) 
+        { expiresIn: "15m" }
+    )
 
-    const { passwordHash: _, ...safeUser } = user
-    return { token, user: safeUser}
+    const refreshToken = crypto.randomBytes(32).toString('hex')
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
+    const refreshTokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+
+    await userRepo().update(user.id, { refreshTokenHash, refreshTokenExpiry })
+
+    const { passwordHash: _, refreshTokenHash: __, refreshTokenExpiry: ___, ...safeUser } = user
+    return { accessToken, refreshToken, user: safeUser }
+}
+
+export const refresh = async (refreshToken) => {
+    if (!refreshToken) throw new UnauthenticatedError("No refresh token provided")
+
+    const hash = crypto.createHash('sha256').update(refreshToken).digest('hex')
+    const user = await userRepo().findOne({ where: { refreshTokenHash: hash } })
+
+    if (!user) throw new UnauthenticatedError("Invalid refresh token")
+    if (user.refreshTokenExpiry < new Date()) throw new UnauthenticatedError("Refresh token expired")
+
+    const accessToken = jwt.sign(
+        { userId: user.id, role: user.role },
+        envVars.jwtSecret,
+        { expiresIn: "15m" }
+    )
+
+    return { accessToken }
+}
+
+export const logout = async (userId) => {
+    await userRepo().update(userId, { refreshTokenHash: null, refreshTokenExpiry: null })
 }
