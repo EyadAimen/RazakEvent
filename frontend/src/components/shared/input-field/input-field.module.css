@@ -1,42 +1,44 @@
 .fieldGroup {
   width: 100%;
-  margin-bottom: 14px;
+  margin-bottom: var(--space-sm);
 }
 
 .label {
   display: block;
-  font-size: 13px;
-  margin-bottom: 8px;
-  color: var(--color-white, #0d0810);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-height);
+  margin-bottom: var(--space-xs);
+  color: var(--color-neutral-800);
 }
 
 .input {
   width: 100%;
   height: 46px;
   box-sizing: border-box;
-  background: var(--color-input-bg, #10203f);
-  color: var(--color-white, #ffffff);
-  border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 0 16px;
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-800);
+  border: var(--border-thin) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-md);
   outline: none;
 }
 
 .input::placeholder {
-  color: var(--color-placeholder, #7f8aa3);
+  color: var(--color-neutral-500);
 }
 
 .input:focus {
-  border-color: var(--color-primary-yellow, #f3c400);
+  border-color: var(--color-secondary-500);
 }
 
 .inputError {
-  border-color: var(--color-error, #ef4444);
+  border-color: var(--color-status-red);
 }
 
 .errorText {
   min-height: 16px;
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--color-error, #ef4444);
+  margin-top: var(--space-xs);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-height);
+  color: var(--color-status-red);
 }

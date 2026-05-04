@@ -1,55 +1,55 @@
 .page {
   min-height: 100vh;
-  background: var(--color-page-bg, #f8f7f5);
+  background: var(--color-neutral-50);
   position: relative;
   overflow: hidden;
 }
 
 .topSection {
   height: 250px;
-  background: var(--color-primary-blue, #243b7f);
+  background: var(--color-primary-800);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .logo {
-  color: var(--color-white, #ffffff);
-  font-size: 32px;
-  font-weight: 700;
+  color: var(--color-neutral-50);
+  font-size: var(--text-h2-size);
+  font-weight: var(--weight-bold);
   margin-bottom: 80px;
 }
 
 .bottomSection {
   position: relative;
   min-height: calc(100vh - 250px);
-  padding: 0 16px 40px;
+  padding: 0 var(--space-md) 40px;
 }
 
 .card {
   width: 100%;
   max-width: 460px;
-  background: var(--color-white, #ffffff);
-  border-radius: 14px;
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
   padding: 28px 30px 18px;
   position: absolute;
   top: -96px;
   left: 50%;
   transform: translateX(-50%);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-card);
   z-index: 2;
 }
 
 .card h2 {
-  font-size: 20px;
-  margin-bottom: 6px;
-  color: var(--color-text-dark, #111827);
+  font-size: var(--text-h3-size);
+  margin-bottom: var(--space-xs);
+  color: var(--color-neutral-800);
 }
 
 .card > p {
-  font-size: 11px;
-  color: var(--color-text-muted, #6b7280);
-  margin-bottom: 22px;
+  font-size: var(--text-caption-size);
+  color: var(--color-neutral-500);
+  margin-bottom: var(--space-lg);
 }
 
 .form {
@@ -60,7 +60,7 @@
 .twoCols {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-sm);
 }
 
 .passwordWrapper {
@@ -75,13 +75,13 @@
 
 .eyeButton {
   position: absolute;
-  right: 10px;
+  right: var(--space-sm);
   top: 48px;
   transform: translateY(-50%);
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--color-placeholder, #9ca3af);
+  color: var(--color-neutral-500);
   padding: 0;
   display: flex;
   align-items: center;
@@ -90,20 +90,20 @@
 }
 
 .eyeButton:hover {
-  color: var(--color-primary-yellow, #f3c400);
+  color: var(--color-secondary-500);
 }
 
 .submitButton {
   height: 40px;
   border: none;
-  border-radius: 999px;
-  background: var(--color-text-dark, #000000);
-  color: var(--color-white, #ffffff);
-  font-size: 11px;
-  font-weight: 700;
+  border-radius: var(--radius-pill);
+  background: var(--color-ktr-ink);
+  color: var(--color-neutral-50);
+  font-size: var(--text-caption-size);
+  font-weight: var(--weight-bold);
   cursor: pointer;
-  margin-top: 20px;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  margin-top: var(--space-lg);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
 
 .submitButton:hover {
@@ -117,13 +117,13 @@
 
 .signinText {
   text-align: center;
-  font-size: 10px;
-  color: var(--color-placeholder, #9ca3af);
-  margin-top: 18px;
+  font-size: var(--text-caption-size);
+  color: var(--color-neutral-500);
+  margin-top: var(--space-md);
 }
 
 .signinText a {
-  color: var(--color-link, #2563eb);
+  color: var(--color-ktr-blue);
   text-decoration: none;
 }
 
@@ -133,13 +133,13 @@
   }
 
   .logo {
-    font-size: 30px;
+    font-size: var(--text-h2-size);
     margin-bottom: 60px;
   }
 
   .bottomSection {
     min-height: calc(100vh - 210px);
-    padding: 0 16px 32px;
+    padding: 0 var(--space-md) var(--space-xl);
   }
 
   .card {
