@@ -15,6 +15,7 @@ node_modules
 
 # next.js
 /.next/
+frontend/.next/
 /out/
 
 # production
@@ -36,7 +37,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# root-level accidental npm installs
+/package.json
+/package-lock.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-frontend/.next/

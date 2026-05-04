@@ -1,0 +1,165 @@
+.page {
+  min-height: 100vh;
+  background: #f8f7f5;
+  position: relative;
+  overflow: hidden;
+}
+
+.topSection {
+  height: 250px;
+  background: #243b7f;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  color: white;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 80px;
+}
+
+.bottomSection {
+  position: relative;
+  min-height: calc(100vh - 250px);
+}
+
+.card {
+  width: 460px;
+  background: white;
+  border-radius: 14px;
+  padding: 28px 30px 14px;
+  position: absolute;
+  top: -96px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+  z-index: 2;
+}
+
+.card h2 {
+  font-size: 20px;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.card > p {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 22px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.twoCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  
+}
+
+.form label {
+  display: block;
+  font-size: 10px;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.form input {
+  width: 100%;
+  height: 32px;
+  border: 1px solid #d9dee8;
+  background: white;
+  border-radius: 7px;
+  padding: 0 10px;
+  outline: none;
+  box-sizing: border-box;
+  margin-bottom: 14px;
+}
+
+.form input:focus {
+  border: 1px solid #f3c400;
+}
+
+input::placeholder {
+  color: #9ca3af;
+  font-size: 12px;  
+}
+
+.form button[type="submit"] {
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: #1b0706;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.signinText {
+  text-align: center;
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 18px;
+}
+
+.signinText a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.passwordWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.passwordWrapper input {
+  width: 100%;
+  height: 38px;
+  padding: 0 40px 0 12px;
+  border: 1px solid #d9dee8;
+  border-radius: 8px;
+  background: white;
+  color: #111827;
+  outline: none;
+  box-sizing: border-box;
+  margin-bottom: 0;
+}
+
+.passwordWrapper input:focus {
+  border: 1px solid #f3c400;  /* gold */
+}
+
+.eyeButton {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eyeButton:hover {
+  color: #f3c400;
+}
+
+.errorText {
+  color: #c9362b;
+  background: #fdecea;
+  font-size: 11px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  text-align: center;
+}
