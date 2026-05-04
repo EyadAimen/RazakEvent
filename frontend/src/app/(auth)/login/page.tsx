@@ -5,9 +5,9 @@ import { Eye, EyeOff } from "lucide-react";
 import styles from "./login.module.css";
 
 import InputField from "@/components/shared/input-field/input-field";
-import FloatingCircle from "@/components/shared/floating_objects/FloatingCircle";
-import FloatingRectangle from "@/components/shared/floating_objects/FloatingRectangle";
-import FloatingTriangle from "@/components/shared/floating_objects/FloatingTriangle";
+import Circle from "@/components/shared/circle/circle";
+import Rectangle from "@/components/shared/rectangle/rectangle";
+import Triangle from "@/components/shared/triangle/triangle";
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -76,7 +76,7 @@ export default function Login() {
                             }}
                         />
 
-                        <div className={styles.passwordField}>
+                        <div className={styles.passwordWrapper}>
                             <InputField
                                 label="Password"
                                 type={showPassword ? "text" : "password"}
@@ -115,7 +115,7 @@ export default function Login() {
             </section>
 
             <section className={styles.rightPanel}>
-                <FloatingRectangle
+                <Rectangle
 
                     style={{
                         width: "190px",
@@ -127,7 +127,7 @@ export default function Login() {
                     }}
                 />
 
-                <FloatingTriangle
+                <Triangle
 
                     style={{
                         left: "70px",
@@ -137,7 +137,7 @@ export default function Login() {
                     }}
                 />
 
-                <FloatingCircle
+                <Circle
                     style={{
                         width: "120px",
                         height: "120px",
