@@ -1,20 +1,20 @@
 .page {
   min-height: 100vh;
-  background: #f8f7f5;
+  background: var(--color-page-bg, #f8f7f5);
   position: relative;
   overflow: hidden;
 }
 
 .topSection {
   height: 250px;
-  background: #243b7f;
+  background: var(--color-primary-blue, #243b7f);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .logo {
-  color: white;
+  color: var(--color-white, #ffffff);
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 80px;
@@ -23,13 +23,15 @@
 .bottomSection {
   position: relative;
   min-height: calc(100vh - 250px);
+  padding: 0 16px 40px;
 }
 
 .card {
-  width: 460px;
-  background: white;
+  width: 100%;
+  max-width: 460px;
+  background: var(--color-white, #ffffff);
   border-radius: 14px;
-  padding: 28px 30px 14px;
+  padding: 28px 30px 18px;
   position: absolute;
   top: -96px;
   left: 50%;
@@ -41,12 +43,12 @@
 .card h2 {
   font-size: 20px;
   margin-bottom: 6px;
-  color: #111827;
+  color: var(--color-text-dark, #111827);
 }
 
 .card > p {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--color-text-muted, #6b7280);
   margin-bottom: 22px;
 }
 
@@ -59,107 +61,98 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  
-}
-
-.form label {
-  display: block;
-  font-size: 10px;
-  color: #111827;
-  margin-bottom: 6px;
-}
-
-.form input {
-  width: 100%;
-  height: 32px;
-  border: 1px solid #d9dee8;
-  background: white;
-  border-radius: 7px;
-  padding: 0 10px;
-  outline: none;
-  box-sizing: border-box;
-  margin-bottom: 14px;
-}
-
-.form input:focus {
-  border: 1px solid #f3c400;
-}
-
-input::placeholder {
-  color: #9ca3af;
-  font-size: 12px;  
-}
-
-.form button[type="submit"] {
-  height: 40px;
-  border: none;
-  border-radius: 999px;
-  background: #1b0706;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.signinText {
-  text-align: center;
-  font-size: 10px;
-  color: #9ca3af;
-  margin-top: 18px;
-}
-
-.signinText a {
-  color: #2563eb;
-  text-decoration: none;
 }
 
 .passwordWrapper {
   position: relative;
-  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .passwordWrapper input {
-  width: 100%;
-  height: 38px;
-  padding: 0 40px 0 12px;
-  border: 1px solid #d9dee8;
-  border-radius: 8px;
-  background: white;
-  color: #111827;
-  outline: none;
-  box-sizing: border-box;
-  margin-bottom: 0;
-}
-
-.passwordWrapper input:focus {
-  border: 1px solid #f3c400;  /* gold */
+  padding-right: 40px;
 }
 
 .eyeButton {
   position: absolute;
   right: 10px;
-  top: 50%;
+  top: 48px;
   transform: translateY(-50%);
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #9ca3af;
+  color: var(--color-placeholder, #9ca3af);
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
 }
 
 .eyeButton:hover {
-  color: #f3c400;
+  color: var(--color-primary-yellow, #f3c400);
 }
 
-.errorText {
-  color: #c9362b;
-  background: #fdecea;
+.submitButton {
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-text-dark, #000000);
+  color: var(--color-white, #ffffff);
   font-size: 11px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  margin-bottom: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.submitButton:hover {
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.signinText {
   text-align: center;
+  font-size: 10px;
+  color: var(--color-placeholder, #9ca3af);
+  margin-top: 18px;
+}
+
+.signinText a {
+  color: var(--color-link, #2563eb);
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .topSection {
+    height: 210px;
+  }
+
+  .logo {
+    font-size: 30px;
+    margin-bottom: 60px;
+  }
+
+  .bottomSection {
+    min-height: calc(100vh - 210px);
+    padding: 0 16px 32px;
+  }
+
+  .card {
+    position: relative;
+    top: -72px;
+    left: auto;
+    transform: none;
+    max-width: 100%;
+    padding: 26px 18px 18px;
+  }
+
+  .twoCols {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }

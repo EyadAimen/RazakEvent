@@ -1,50 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import styles from "./signup.module.css";
 
-import FloatingRectangle from "@/components/shared/floating_objects/FloatingRectangle";
-import FloatingTriangle from "@/components/shared/floating_objects/FloatingTriangle";
+import InputField from "@/components/shared/input-field/input-field";
+import Rectangle from "@/components/shared/rectangle/rectangle";
+import Triangle from "@/components/shared/triangle/triangle";
 
-export default function signup() {
+export default function Signup() {
+  const [fullName, setFullName] = useState("");
+  const [studentId, setStudentId] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [errors, setErrors] = useState({
+    fullName: "",
+    studentId: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const validateForm = () => {
+    const newErrors = {
+      fullName: "",
+      studentId: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    };
+
+    if (!fullName.trim()) {
+      newErrors.fullName = "Full name is required";
+    }
+
+    if (!studentId.trim()) {
+      newErrors.studentId = "Student/Staff ID is required";
+    }
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Confirm password is required";
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+
+    return !Object.values(newErrors).some(Boolean);
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setError("");
+    if (!validateForm()) return;
+
     setLoading(true);
 
-    const form = e.currentTarget;
-
-    const fullName = (form.elements.namedItem("fullName") as HTMLInputElement).value.trim();
-    const studentId = (form.elements.namedItem("studentId") as HTMLInputElement).value.trim();
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
-    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
-    const confirmPassword = (form.elements.namedItem("confirmPassword") as HTMLInputElement).value;
-
-    if (!fullName || !studentId || !email || !password || !confirmPassword) {
-      setError("Please fill in all fields");
-      setLoading(false);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
-
-    // fake success (you said skip backend)
     setTimeout(() => {
       setLoading(false);
-      console.log("Form valid");
+      console.log({
+        fullName,
+        studentId,
+        email,
+        password,
+      });
     }, 800);
   };
 
@@ -55,7 +93,7 @@ export default function signup() {
       </section>
 
       <section className={styles.bottomSection}>
-        <FloatingTriangle
+        <Triangle
           style={{
             left: "115px",
             top: "60px",
@@ -64,7 +102,7 @@ export default function signup() {
           }}
         />
 
-        <FloatingRectangle
+        <Rectangle
           style={{
             width: "140px",
             height: "105px",
@@ -82,66 +120,98 @@ export default function signup() {
 
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.twoCols}>
-              <div>
-                <label>Full Name</label>
-                <input type="text" placeholder="E.g. Ahmed Ali" required/>
-              </div>
+              <InputField
+                label="Full Name"
+                type="text"
+                value={fullName}
+                errorMessage={errors.fullName}
+                placeholder="E.g. Ahmed Ali"
+                onChange={(value) => {
+                  setFullName(value);
+                  setErrors((prev) => ({ ...prev, fullName: "" }));
+                }}
+              />
 
-              <div>
-                <label>Student/Staff ID</label>
-                <input type="text" placeholder="E.g. A21CS1234" required/>
-              </div>
+              <InputField
+                label="Student/Staff ID"
+                type="text"
+                value={studentId}
+                errorMessage={errors.studentId}
+                placeholder="E.g. A21CS1234"
+                onChange={(value) => {
+                  setStudentId(value);
+                  setErrors((prev) => ({ ...prev, studentId: "" }));
+                }}
+              />
             </div>
 
-            <label>Email Address</label>
-            <input type="email" placeholder="ABCD@graduate.utm.my" required/>
+            <InputField
+              label="Email Address"
+              type="email"
+              value={email}
+              errorMessage={errors.email}
+              placeholder="ABCD@graduate.utm.my"
+              onChange={(value) => {
+                setEmail(value);
+                setErrors((prev) => ({ ...prev, email: "" }));
+              }}
+            />
 
             <div className={styles.twoCols}>
-              <div>
-                <label>Password</label>
-                <div className={styles.passwordWrapper}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className={styles.eyeButton}
-                    onClick={() => setShowPassword((prev) => !prev)}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
+              <div className={styles.passwordWrapper}>
+                <InputField
+                  label="Password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  errorMessage={errors.password}
+                  placeholder="Enter password"
+                  onChange={(value) => {
+                    setPassword(value);
+                    setErrors((prev) => ({ ...prev, password: "" }));
+                  }}
+                />
+
+                <button
+                  type="button"
+                  className={styles.eyeButton}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
-              <div>
-                <label>Confirm Password</label>
-                <div className={styles.passwordWrapper}>
-                  <input
-                    type={showConfirm ? "text" : "password"}
-                    placeholder="Confirm password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className={styles.eyeButton}
-                    onClick={() => setShowConfirm((prev) => !prev)}
-                  >
-                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
+              <div className={styles.passwordWrapper}>
+                <InputField
+                  label="Confirm Password"
+                  type={showConfirm ? "text" : "password"}
+                  value={confirmPassword}
+                  errorMessage={errors.confirmPassword}
+                  placeholder="Confirm password"
+                  onChange={(value) => {
+                    setConfirmPassword(value);
+                    setErrors((prev) => ({ ...prev, confirmPassword: "" }));
+                  }}
+                />
+
+                <button
+                  type="button"
+                  className={styles.eyeButton}
+                  onClick={() => setShowConfirm((prev) => !prev)}
+                  aria-label={showConfirm ? "Hide password" : "Show password"}
+                >
+                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
-            <button type="submit" disabled={loading}>
+            <button type="submit" className={styles.submitButton} disabled={loading}>
               {loading ? "Creating..." : "Sign Up"}
             </button>
-            {error && <p className={styles.errorText}>{error}</p>}
           </form>
 
           <p className={styles.signinText}>
-            Already have an account? <Link href="/auth/login">Sign In</Link>
+            Already have an account? <Link href="/login">Sign In</Link>
           </p>
         </div>
       </section>
