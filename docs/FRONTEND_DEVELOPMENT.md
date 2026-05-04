@@ -139,7 +139,122 @@ razakevent-frontend/
 │   │       └── StatsSummaryRow.tsx
 ```
 
-## 3. Development Guidelines
+## 3. Design Tokens — `variables.css`
+
+All colors, typography, and effect values are defined as CSS custom properties in `src/styles/variables.css`. **Never hardcode these values** — always reference the variables so the design stays consistent.
+
+### Colors
+#### examples
+| Variable | Value | Use for |
+|---|---|---|
+
+| `--color-primary-800` | `#1A2D6E` | Dark primary backgrounds, headings |
+| `--color-secondary-500` | `#F4C200` | Highlights, badges, accents |
+| `--color-secondary-800` | `#E8A020` | Hover state for secondary elements |
+| `--color-neutral-50` | `#FFFFFF` | Backgrounds, cards |
+
+| `--color-neutral-500` | `#7c7a7a` | Placeholder text, secondary text |
+| `--color-neutral-800` | `#171717` | Body text, headings |
+| `--color-semantic-red` | `#C0392B` | Error messages, destructive actions |
+
+```css
+/* Example usage */
+.button {
+  background-color: var(--color-primary-500);
+  color: var(--color-neutral-50);
+}
+
+.errorText {
+  color: var(--color-semantic-red);
+}
+```
+
+> **Adding new colors:** If a color is used for a status (e.g. approved/pending/rejected), add it under the `/* STATUS */` comment. If it's a one-off that doesn't fit any group, add it under `/* SEMANTIC */`.
+
+---
+
+### Typography
+
+#### Font Families
+
+| Variable | Font | Use for |
+|---|---|---|
+| `--font-heading` | Sora | All headings (`h1`–`h3`) |
+| `--font-body` | Space Mono | Body text, labels, inputs |
+
+```css
+.title {
+  font-family: var(--font-heading);
+}
+
+.label {
+  font-family: var(--font-body);
+}
+```
+
+#### Font Weights
+
+| Variable | Value |
+|---|---|
+| `--weight-regular` | `400` |
+| `--weight-semibold` | `600` |
+| `--weight-bold` | `700` |
+
+#### Font Sizes & Line Heights
+
+| Variable | Size | Line Height | Use for |
+|---|---|---|---|
+| `--text-h1-size` / `--text-h1-height` | `48px` | `1.2` | Page titles |
+| `--text-h2-size` / `--text-h2-height` | `32px` | `1.3` | Section headings |
+| `--text-h3-size` / `--text-h3-height` | `24px` | `1.3` | Card/subsection headings |
+| `--text-body-size` / `--text-body-height` | `16px` | `1.6` | Paragraphs, general text |
+| `--text-small-size` / `--text-small-height` | `14px` | `1.5` | Captions, helper text |
+| `--text-link-size` / `--text-link-height` | `16px` | `1.5` | Inline links |
+
+> Font sizes for `h1`–`h3` automatically scale down on screens ≤ 768px via a media query already defined in `variables.css` — no extra work needed.
+
+```css
+.pageTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-h1-size);
+  line-height: var(--text-h1-height);
+  font-weight: var(--weight-bold);
+}
+
+.bodyText {
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-height);
+  font-weight: var(--weight-regular);
+}
+```
+
+---
+
+### Effects
+
+| Variable | Value | Use for |
+|---|---|---|
+| `--shadow-card` | `0px 4px 20px rgba(0,0,0,0.15)` | Cards, modals |
+| `--popup-background` | `#00000099` | Modal/drawer overlay backdrop |
+| `--transition-fast` | `0.2s ease` | Hover effects, toggle states |
+| `--transition-medium` | `0.4s ease` | Slide-ins, panel transitions |
+| `--transition-slow` | `0.6s ease` | Page-level animations |
+
+```css
+.card {
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-fast);
+}
+
+.overlay {
+  background: var(--popup-background);
+}
+```
+
+---
+
+## 4. Development Guidelines
 
 1. **Keep Pages Thin:** The files inside `src/app/` should mostly map to specific routes. Actual business logic and major UI components should be abstracted away into the components directories.
 2. **Component Separation:** Always verify if a component is generic (place in `src/components/`), layout-specific (place in `src/components/layout/`), shared between roles (place in `src/components/shared/`), or completely specific to one role (e.g. `src/components/admin/`).

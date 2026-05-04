@@ -1,0 +1,63 @@
+@import './variables.css';
+
+:root {
+    /* ==============
+        SPACING & LAYOUT
+    ================= */
+
+    --space-xxs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-pill: 999px;
+
+    --border-thin: 1px;
+    --border-strong: 3px;
+
+    --layout-container-max: 75rem;
+    --layout-hero-max: 90rem;
+    --layout-content-max: 48rem;
+    --layout-content-wide-max: 62rem;
+
+    --size-stage-icon-wrap: 2.5rem;
+    --size-stage-icon: 1.125rem;
+    --size-stage-index: 1.25rem;
+
+    --text-caption-size: 0.75rem;
+    --text-caption-height: 1.3;
+    --letter-spacing-tight: 0.04em;
+}
+
+html,
+body {
+  max-width: 100vw;
+  /* overflow-x: clip; */
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-800);
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
