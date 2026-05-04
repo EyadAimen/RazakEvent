@@ -5,17 +5,17 @@
 }
 
 .leftPanel {
-  background: var(--color-primary-blue, #243b7f);
-  color: var(--color-white, white);
+  background: var(--color-primary-800);
+  color: var(--color-neutral-50);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: var(--space-xl);
 }
 
 .rightPanel {
-  background: var(--color-cream, #f8f3e8);
-  color: var(--color-primary-blue, #243b7f);
+  background: var(--color-neutral-200);
+  color: var(--color-primary-800);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -30,33 +30,33 @@
 }
 
 .title {
-  font-size: 40px;
-  margin-bottom: 24px;
+  font-size: var(--text-h1-size);
+  margin-bottom: var(--space-lg);
 }
 
 .logoRow {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 40px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-2xl);
 }
 
 .logoPlaceholder {
   width: 52px;
   height: 52px;
-  border-radius: 10px;
-  background: var(--color-secondary-blue, #30498f);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-500);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: var(--text-small-size);
 }
 
 .logoDivider {
   width: 2px;
   height: 40px;
-  background: var(--color-primary-yellow, #f3c400);
+  background: var(--color-secondary-500);
 }
 
 .form {
@@ -76,65 +76,63 @@
 
 .eyeButton {
   position: absolute;
-  right: 12px;
+  right: var(--space-sm);
   top: 37px;
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--color-muted-light, #cbd5e1);
-  padding: 0;
+  color: var(--color-neutral-500);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
-  transition: color 0.2s;
+  transition: var(--transition-fast);
 }
 
 .eyeButton:hover {
-  color: var(--color-primary-yellow, #f3c400);
+  color: var(--color-secondary-500);
 }
 
 .forgotLink {
   text-align: right;
-  margin-bottom: 18px;
-  color: var(--color-white, white);
-  font-size: 13px;
+  margin-bottom: var(--space-md);
+  color: var(--color-neutral-50);
+  font-size: var(--text-small-size);
 }
 
 .submitButton {
   width: 100%;
   height: 48px;
   border: none;
-  border-radius: 40px;
-  background: var(--color-white-soft, #f5f5f5);
-  color: var(--color-text-dark, #111827);
-  font-weight: 700;
+  border-radius: var(--radius-pill);
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-800);
+  font-weight: var(--weight-bold);
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: var(--transition-fast);
 }
 
 .submitButton:hover {
-  background: var(--color-gray-light, #e5e7eb);
+  background: var(--color-neutral-200);
   transform: translateY(-1px);
 }
 
 .signupText {
-  margin-top: 28px;
-  font-size: 14px;
+  margin-top: var(--space-lg);
+  font-size: var(--text-small-size);
 }
 
 .signupText a {
-  color: var(--color-primary-yellow, #f3c400);
+  color: var(--color-secondary-500);
 }
 
 .tagline {
-  margin-bottom: 40px;
-  margin-left: 40px;
+  margin-bottom: var(--space-lg);
+  margin-left: var(--space-lg);
 }
 
 .rightPanel p {
-  margin-top: 20px;
-  color: var(--color-text-muted, #5a5a6e);
+  margin-top: var(--space-md);
+  color: var(--color-neutral-500);
 }
 
 @media (max-width: 768px) {
@@ -144,7 +142,7 @@
 
   .leftPanel {
     min-height: 100vh;
-    padding: 32px 16px;
+    padding: var(--space-xl) var(--space-md);
   }
 
   .rightPanel {
@@ -156,10 +154,10 @@
   }
 
   .title {
-    font-size: 32px;
+    font-size: var(--text-h2-size);
   }
 
   .logoRow {
-    margin-bottom: 32px;
+    margin-bottom: var(--space-xl);
   }
 }
