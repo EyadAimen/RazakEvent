@@ -1,15 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import styles from "./login.module.css";
 
-import FloatingCircle from "@/components/shared/floating_objects/FloatingCircle";
-import FloatingRectangle from "@/components/shared/floating_objects/FloatingRectangle";
-import FloatingTriangle from "@/components/shared/floating_objects/FloatingTriangle";
+import InputField from "@/components/shared/input-field/input-field";
+import Circle from "@/components/shared/circle/circle";
+import Rectangle from "@/components/shared/rectangle/rectangle";
+import Triangle from "@/components/shared/triangle/triangle";
 
 export default function Login() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
     const [showPassword, setShowPassword] = useState(false);
+
+    const [errors, setErrors] = useState({
+        email: "",
+        password: "",
+    });
+
+    const validateForm = () => {
+        const newErrors = {
+            email: "",
+            password: "",
+        };
+
+        if (!email.trim()) {
+            newErrors.email = "Email is required";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            newErrors.email = "Please enter a valid email address";
+        }
+
+        if (!password.trim()) {
+            newErrors.password = "Password is required";
+        } else if (password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters";
+        }
+
+        setErrors(newErrors);
+
+        return !newErrors.email && !newErrors.password;
+    };
+
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        console.log({ email, password });
+    };
 
     return (
         <main className={styles.mainPage}>
@@ -23,15 +63,30 @@ export default function Login() {
                         <div className={styles.logoPlaceholder}>UTM</div>
                     </div>
 
-                    <form className={styles.form}>
-                        <label>Email Address</label>
-                        <input type="email" placeholder="your.email@graduate.utm.my" />
+                    <form className={styles.form} onSubmit={handleSubmit}>
+                        <InputField
+                            label="Email Address"
+                            type="email"
+                            value={email}
+                            errorMessage={errors.email}
+                            placeholder="your.email@graduate.utm.my"
+                            onChange={(value) => {
+                                setEmail(value);
+                                setErrors((prev) => ({ ...prev, email: "" }));
+                            }}
+                        />
 
-                        <label>Password</label>
                         <div className={styles.passwordWrapper}>
-                            <input
+                            <InputField
+                                label="Password"
                                 type={showPassword ? "text" : "password"}
+                                value={password}
+                                errorMessage={errors.password}
                                 placeholder="Enter your password"
+                                onChange={(value) => {
+                                    setPassword(value);
+                                    setErrors((prev) => ({ ...prev, password: "" }));
+                                }}
                             />
 
                             <button
@@ -48,7 +103,9 @@ export default function Login() {
                             Forgot Password?
                         </a>
 
-                        <button type="submit">Sign In</button>
+                        <button type="submit" className={styles.submitButton}>
+                            Sign In
+                        </button>
                     </form>
 
                     <p className={styles.signupText}>
@@ -58,19 +115,7 @@ export default function Login() {
             </section>
 
             <section className={styles.rightPanel}>
-                <FloatingRectangle
-
-                    style={{
-                        width: "160px",
-                        height: "220px",
-                        top: "60px",
-                        right: "70px",
-                        transform: "rotate(-8deg)",
-                        background: "#1f3476"
-                    }}
-                />
-
-                <FloatingRectangle
+                <Rectangle
 
                     style={{
                         width: "190px",
@@ -82,7 +127,7 @@ export default function Login() {
                     }}
                 />
 
-                <FloatingTriangle
+                <Triangle
 
                     style={{
                         left: "70px",
@@ -92,7 +137,7 @@ export default function Login() {
                     }}
                 />
 
-                <FloatingCircle
+                <Circle
                     style={{
                         width: "120px",
                         height: "120px",
@@ -103,7 +148,7 @@ export default function Login() {
                 />
                 <div className={styles.tagline}>
                     <h2>Connect. Create. Celebrate.</h2>
-                    <p>Your gateway to KTR's vibrant community events</p>
+                    <p>Your gateway to KTR&apos;s vibrant community events</p>
                 </div>
             </section>
         </main>
