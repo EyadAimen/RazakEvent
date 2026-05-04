@@ -109,7 +109,7 @@ export default function Login() {
                     </form>
 
                     <p className={styles.signupText}>
-                        Don&apos;t have an account? <a href="/auth/signup">Sign Up</a>
+                        Don&apos;t have an account? <a href="/signup">Sign Up</a>
                     </p>
                 </div>
             </section>
