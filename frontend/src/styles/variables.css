@@ -47,9 +47,8 @@
     ================= */
 
     /* FONT FAMILIES */
-    --font-heading: var(--font-sora), sans-serif;
+    --font-heading: var(--font-alata), sans-serif;
     --font-body: var(--font-space-mono), monospace;
-    --font-alata: var(--font-alata), sans-serif;
     
     /* FONT WEIGHTS */
     --weight-regular: 400;
