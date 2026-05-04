@@ -1,24 +1,22 @@
 // typeorm configuration to connect to the db
 
 import { DataSource } from "typeorm";
-import configVars from "./config.mjs";
-
-
-
+import configVars from "./envConfig.mjs";
+import { UserEntity } from "../src/users/users.entity.mjs";
 
 const appDataSource = new DataSource({
-    type: "mysql",
+    type: "postgres",
     host: configVars.host,
     port: configVars.dbPort,
-    username: configVars.username,
-    password: configVars.password,
+    username: configVars.dbUsername,
+    password: configVars.dbPassword,
     database: configVars.database,
 
     // to automatically create the schema
     // run it once
-    // synchronize: true,
+    synchronize: true,
     // all the tables must be listed here
-    entities: []
+    entities: [UserEntity]
 });
 
 export default appDataSource;

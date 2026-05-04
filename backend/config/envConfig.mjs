@@ -8,6 +8,7 @@ const envVars = {
     dbPassword: process.env.DB_PASSWORD,
     database: process.env.DATABASE,
     port: process.env.PORT,
+    jwtSecret: process.env.JWT_SECRET,
 }
 
 export default envVars;
