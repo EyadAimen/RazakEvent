@@ -89,9 +89,10 @@
 
     --shadow-card: 0px 4px 20px rgba(0, 0, 0, 0.15);
     --popup-background: #00000099;
-    --transition-fast: 0.2s ease;
-    --transition-medium: 0.4s ease;
-    --transition-slow: 0.6s ease;
+    --transition-veryfast: 0.2s ease;
+    --transition-fast: 0.4s ease;
+    --transition-medium: 0.6s ease;
+    --transition-slow: 0.8s ease;
 }
 
 
