@@ -57,8 +57,8 @@ export default function Signup() {
 
     if (!email.trim()) {
       newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email address";
+    } else if (!/^[^\s@]+@[^\s@]*utm\.my$/.test(email.trim())) {
+      newErrors.email = "Email must end with utm.my";
     }
 
     if (!password) {
@@ -193,7 +193,7 @@ export default function Signup() {
                   }}
                 />
 
-                <div className={styles.selectGroup}>
+                {/* <div className={styles.selectGroup}>
                   <label className={styles.selectLabel}>Role</label>
                   <select
                     className={styles.select}
@@ -204,7 +204,7 @@ export default function Signup() {
                     <option value="member">Member</option>
                     <option value="lead">Lead</option>
                   </select>
-                </div>
+                </div> */}
 
                 <div className={styles.twoCols}>
                   <div className={styles.passwordWrapper}>

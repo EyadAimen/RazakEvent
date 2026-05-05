@@ -1,5 +1,9 @@
 .home {
   height: 100vh;
   background-color: var(--color-primary-800);
-  color: var(--color-secondary-500)
+  color: var(--color-secondary-500);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }

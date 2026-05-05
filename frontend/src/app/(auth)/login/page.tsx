@@ -34,8 +34,8 @@ export default function Login() {
 
         if (!email.trim()) {
             newErrors.email = "Email is required";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            newErrors.email = "Please enter a valid email address";
+        } else if (!/^[^\s@]+@[^\s@]*utm\.my$/.test(email.trim())) {
+            newErrors.email = "Email must end with utm.my";
         }
 
         if (!password.trim()) {
