@@ -1,7 +1,7 @@
 .shape {
   position: absolute;
   pointer-events: none;
-  animation: float 4s ease-in-out infinite;
+  animation: float var(--transition-slow) infinite;
 }
 
 .circle {
