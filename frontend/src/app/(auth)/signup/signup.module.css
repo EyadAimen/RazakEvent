@@ -115,6 +115,80 @@
   cursor: not-allowed;
 }
 
+.apiError {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 12px;
+  padding: 9px 12px;
+  margin-bottom: 12px;
+}
+
+.selectGroup {
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.selectLabel {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: var(--color-white, #0d0810);
+}
+
+.select {
+  width: 100%;
+  height: 46px;
+  box-sizing: border-box;
+  background: var(--color-input-bg, #10203f);
+  color: var(--color-white, #ffffff);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0 16px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.select:focus {
+  border-color: var(--color-primary-yellow, #f3c400);
+}
+
+.successBox {
+  padding: 8px 0 12px;
+  text-align: center;
+}
+
+.successBox h2 {
+  font-size: 20px;
+  color: var(--color-text-dark, #111827);
+  margin-bottom: 12px;
+}
+
+.successBox p {
+  font-size: 13px;
+  color: var(--color-text-muted, #6b7280);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.loginLink {
+  display: inline-block;
+  padding: 10px 28px;
+  background: var(--color-text-dark, #111827);
+  color: var(--color-white, #ffffff);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.loginLink:hover {
+  opacity: 0.85;
+}
+
 .signinText {
   text-align: center;
   font-size: 10px;
