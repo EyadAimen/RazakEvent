@@ -1,7 +1,7 @@
 .shape {
   position: absolute;
   pointer-events: none;
-  animation: float 4s ease-in-out infinite;
+  animation: float var(--transition-slow) infinite;
 }
 
 .triangle {
@@ -10,7 +10,7 @@
   border-left: 50px solid transparent;
   border-right: 50px solid transparent;
   border-bottom: 80px solid;
-  filter: drop-shadow(0 18px 20px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(var(--shadow-card));
 }
 
 @keyframes float {
