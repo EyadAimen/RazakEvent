@@ -20,14 +20,13 @@ export const signup = async (name, email, password, matricNumber, role) => {
 
     const existingEmail = await userRepo().findOne({ where: { email }})
     if(existingEmail) throw new ConflictError("Email already registered")
-    
-    const existingMatric = await userRepo().findOne({ where: { matricNumber }})
+
+    const existingMatric = await userRepo().findOne({ where: { staffOrMatricId: matricNumber }})
     if(existingMatric) throw new ConflictError("Matric Number already registered")
 
     const passwordHash = await bcrypt.hash(password, 10)
-    const isApproved = role === "student"
 
-    const user = userRepo().create( {name, email, passwordHash, matricNumber, role, isApproved })
+    const user = userRepo().create({ fullName: name, email, passwordHash, staffOrMatricId: matricNumber, role })
     await userRepo().save(user)
 
     const { passwordHash: _, ...safeUser } = user
@@ -40,8 +39,6 @@ export const login = async (email, password) => {
 
     const match = await bcrypt.compare(password, user.passwordHash)
     if(!match) throw new UnauthenticatedError("Invalid credentials")
-
-    if(!user.isApproved) throw new ForbiddenError('Account pending approval')
 
     const accessToken = jwt.sign(
         { userId: user.id, role: user.role },
