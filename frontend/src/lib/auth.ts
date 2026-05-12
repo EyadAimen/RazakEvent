@@ -1,6 +1,6 @@
 import { apiFetch } from "./api";
 
-export type UserRole = "student" | "member" | "lead";
+export type UserRole = "student" | "member" | "lead" | "admin";
 
 export interface AuthUser {
   id: string;
@@ -32,6 +32,24 @@ export function saveSession(tokens: Pick<LoginResponse, "accessToken" | "refresh
 export function clearSession() {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
+}
+
+// ── User storage ───────────────────────────────────────────────────────────────
+
+export function saveUser(user: AuthUser) {
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
+export function getUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem("user");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
 }
 
 export function getAccessToken(): string | null {
