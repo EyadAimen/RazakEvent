@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Alata } from "next/font/google";
 import "../styles/globals.css";
+import Navbar from "@/components/shared/navbar/navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const alata = Alata({
+  variable: "--font-alata",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -23,8 +20,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${alata.variable}`}>
+      <body>
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }
