@@ -4,12 +4,13 @@ import envVars from '../../config/envConfig.mjs'
 const resend = new Resend(envVars.resendApiKey)
 
 const sendMail = async (to, subject, html) => {
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
         from: `RazakEvent <${envVars.mailFrom}>`,
         to,
         subject,
         html,
     })
+    if (error) throw new Error(error.message)
 }
 
 export const sendVerificationEmail = async (to, token) => {
