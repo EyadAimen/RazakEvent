@@ -1,3 +1,5 @@
+import { getAccessToken } from "./auth";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
 
 export class ApiError extends Error {
@@ -27,4 +29,16 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   }
 
   return data as T;
+}
+
+/** Same as apiFetch but automatically attaches the stored Bearer token */
+export async function apiFetchAuth<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getAccessToken();
+  return apiFetch<T>(path, {
+    ...init,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...init?.headers,
+    },
+  });
 }
