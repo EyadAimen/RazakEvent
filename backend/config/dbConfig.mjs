@@ -3,6 +3,9 @@
 import { DataSource } from "typeorm";
 import configVars from "./envConfig.mjs";
 import { UserEntity } from "../src/users/users.entity.mjs";
+import { ClubEntity } from "../src/clubs/clubs.entity.mjs";
+import { EventEntity } from "../src/events/events.entity.mjs";
+import { ReportEntity } from "../src/reports/reports.entity.mjs";
 
 const appDataSource = new DataSource({
     type: "postgres",
@@ -16,7 +19,7 @@ const appDataSource = new DataSource({
     // run it once
     synchronize: true,
     // all the tables must be listed here
-    entities: [UserEntity]
+    entities: [UserEntity, ClubEntity, EventEntity, ReportEntity]
 });
 
 export default appDataSource;
