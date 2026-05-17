@@ -23,6 +23,8 @@
 
     /* NEUTRAL */
     --color-neutral-50: #FFFFFF;
+    --color-neutral-100: #F5F5F5;
+    --color-neutral-150: #EBEBEB;
     --color-neutral-200: #E8E6E3;
     --color-neutral-500: #7c7a7a;
     --color-neutral-800: #171717;
@@ -89,6 +91,7 @@
 
     --shadow-card: 0px 4px 20px rgba(0, 0, 0, 0.15);
     --popup-background: #00000099;
+    --transition-veryfast: 0.1s ease;
     --transition-fast: 0.2s ease;
     --transition-medium: 0.4s ease;
     --transition-slow: 0.6s ease;
