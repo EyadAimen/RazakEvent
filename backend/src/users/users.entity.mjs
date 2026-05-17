@@ -9,49 +9,45 @@ export const UserEntity = new EntitySchema({
             primary: true,
             generated: "uuid",
         },
-        name: {
+        fullName: {
             type: "varchar",
-            length: 100,
+            nullable: false,
+        },
+        staffOrMatricId: {
+            type: "varchar",
+            nullable: true,
+            unique: true,
         },
         email: {
             type: "varchar",
-            length: 150,
             unique: true,
+            nullable: false,
         },
         passwordHash: {
             type: "varchar",
-            length: 255,
-        },
-        matricNumber: {
-            type: "varchar",
-            length: 9,
-            nullable: true,
+            nullable: false,
         },
         role: {
             type: "enum",
             enum: ["student", "member", "lead", "admin"],
+            nullable: false,
         },
-        clubId: {
+        profilePhotoUrl: {
             type: "varchar",
-            length: 36,
             nullable: true,
-        },
-        isApproved: {
-            type: "boolean",
-            default: false,
         },
         refreshTokenHash: {
             type: "varchar",
-            length: 64,
             nullable: true,
         },
         refreshTokenExpiry: {
-            type: "timestamp",
+            type: "timestamptz",
             nullable: true,
         },
         createdAt: {
-            type: "timestamp",
+            type: "timestamptz",
             createDate: true,
+            nullable: false,
         },
     },
 });

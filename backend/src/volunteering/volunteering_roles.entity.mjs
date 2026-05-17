@@ -1,31 +1,34 @@
 import { EntitySchema } from "typeorm";
 
-export const ClubEntity = new EntitySchema({
-    name: "Club",
-    tableName: "clubs",
+export const VolunteeringRoleEntity = new EntitySchema({
+    name: "VolunteeringRole",
+    tableName: "volunteering_roles",
     columns: {
         id: {
             type: "int",
             primary: true,
             generated: "increment",
         },
-        name: {
-            type: "varchar",
-            unique: true,
+        eventId: {
+            type: "int",
             nullable: false,
         },
-        type: {
-            type: "enum",
-            enum: ["club", "community"],
+        roleName: {
+            type: "varchar",
             nullable: false,
         },
         description: {
             type: "text",
+            nullable: true,
+        },
+        slotsAvailable: {
+            type: "int",
             nullable: false,
         },
-        leadId: {
-            type: "varchar",
-            nullable: true,
+        slotsFilled: {
+            type: "int",
+            default: 0,
+            nullable: false,
         },
         createdAt: {
             type: "timestamptz",

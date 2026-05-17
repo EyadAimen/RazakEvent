@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Alata, Space_Mono } from "next/font/google";
 import "../styles/globals.css";
+import Navbar from "@/components/shared/navbar/navbar";
 
 const alata = Alata({
   variable: "--font-alata",
@@ -12,6 +13,7 @@ const spaceMono = Space_Mono({
   variable: "--font-space-mono",
   weight: ["400", "700"],
   subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {

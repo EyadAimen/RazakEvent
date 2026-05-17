@@ -14,7 +14,7 @@
 }
 
 .rightPanel {
-  background: var(--color-neutral-200);
+  background: var(--color-neutral-50);
   color: var(--color-primary-800);
   position: relative;
   overflow: hidden;

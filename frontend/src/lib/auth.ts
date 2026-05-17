@@ -53,6 +53,23 @@ export function getUser(): AuthUser | null {
   }
 }
 
+// ── User storage ───────────────────────────────────────────────────────────────
+
+export function saveUser(user: AuthUser) {
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
+export function getUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem("user");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
 // ── Token accessors ────────────────────────────────────────────────────────────
 
 export function getAccessToken(): string | null {
@@ -81,9 +98,7 @@ export async function loginUser(
   });
 }
 
-export async function refreshAccessToken(
-  refreshToken: string
-): Promise<{ accessToken: string }> {
+export async function refreshAccessToken(refreshToken: string): Promise<{ accessToken: string }> {
   return apiFetch<{ accessToken: string }>("/auth/refresh", {
     method: "POST",
     body: JSON.stringify({ refreshToken }),

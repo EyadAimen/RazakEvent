@@ -9,7 +9,7 @@ import InputField from "@/components/shared/input-field/input-field";
 import Circle from "@/components/shared/circle/circle";
 import Rectangle from "@/components/shared/rectangle/rectangle";
 import Triangle from "@/components/shared/triangle/triangle";
-import { loginUser, saveSession } from "@/lib/auth";
+import { loginUser, saveSession, saveUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
 
 export default function Login() {
@@ -34,8 +34,8 @@ export default function Login() {
 
         if (!email.trim()) {
             newErrors.email = "Email is required";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            newErrors.email = "Please enter a valid email address";
+        } else if (!/^[^\s@]+@[^\s@]*utm\.my$/.test(email.trim())) {
+            newErrors.email = "Email must end with utm.my";
         }
 
         if (!password.trim()) {
@@ -58,6 +58,7 @@ export default function Login() {
         try {
             const data = await loginUser(email, password);
             saveSession(data);
+            saveUser(data.user);
             router.push("/");
         } catch (err) {
             if (err instanceof ApiError) {

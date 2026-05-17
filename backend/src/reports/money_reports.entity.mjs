@@ -1,53 +1,57 @@
 import { EntitySchema } from "typeorm";
 
-export const EventEntity = new EntitySchema({
-    name: "Event",
-    tableName: "events",
+export const MoneyReportEntity = new EntitySchema({
+    name: "MoneyReport",
+    tableName: "money_reports",
     columns: {
         id: {
             type: "int",
             primary: true,
             generated: "increment",
         },
-        proposalId: {
+        eventId: {
             type: "int",
+            unique: true,
+            nullable: false,
+        },
+        leadId: {
+            type: "varchar",
             nullable: false,
         },
         clubId: {
             type: "int",
             nullable: false,
         },
-        venueId: {
-            type: "int",
-            nullable: false,
+        adminId: {
+            type: "varchar",
+            nullable: true,
         },
-        name: {
+        reportPdfUrl: {
             type: "varchar",
             nullable: false,
         },
-        description: {
-            type: "text",
-            nullable: false,
-        },
-        eventDate: {
-            type: "timestamp",
+        amountSpent: {
+            type: "decimal",
             nullable: false,
         },
         status: {
             type: "enum",
-            enum: ["approved", "ongoing", "completed", "report_due"],
+            enum: ["submitted", "reviewed"],
+            default: "submitted",
             nullable: false,
         },
-        volunteeringStatus: {
-            type: "enum",
-            enum: ["closed", "open", "full"],
-            default: "closed",
-            nullable: false,
+        adminComment: {
+            type: "text",
+            nullable: true,
         },
-        createdAt: {
+        submittedAt: {
             type: "timestamptz",
             createDate: true,
             nullable: false,
+        },
+        reviewedAt: {
+            type: "timestamptz",
+            nullable: true,
         },
     },
 });
