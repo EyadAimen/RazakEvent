@@ -15,26 +15,8 @@ import LeadEventCard, {
   LeadEvent,
 } from "@/components/lead/LeadEventCard/LeadEventCard";
 import { apiFetchAuth } from "@/lib/api";
+import type { DashboardData, ApiEvent } from "@/types/lead";
 import styles from "./page.module.css";
-
-/* ── Types ────────────────────────────────────────────── */
-interface DashboardData {
-  leadName: string;
-  clubLabel: string;
-  alert: string | null;
-  events: ApiEvent[];
-  totalEvents: number;
-}
-
-interface ApiEvent {
-  id: string;
-  name: string;
-  clubName: string;
-  clubType: string;
-  eventDate: string | null;
-  attendees: number;
-  status: string;
-}
 
 /* ── Helpers ──────────────────────────────────────────── */
 function toLeadEvent(e: ApiEvent): LeadEvent {
@@ -142,10 +124,10 @@ export default function LeadDashboard() {
 
       <div className={styles.body}>
         {/* Decorative floating shapes */}
-        <Triangle style={{ left: "0px",  top: "60px",    transform: "rotate(-20deg)", borderBottomColor: "#3b6fd4" }} />
-        <Triangle style={{ right: "30px", top: "40px",   transform: "rotate(10deg)",  borderBottomColor: "#F4C200" }} />
-        <Triangle style={{ left: "20px",  bottom: "120px", transform: "rotate(-10deg)", borderBottomColor: "#c9362b" }} />
-        <Triangle style={{ right: "0px",  bottom: "60px", transform: "rotate(20deg)",  borderBottomColor: "#1A2D6E" }} />
+        <Triangle style={{ left: "0px",  top: "60px",    transform: "rotate(-20deg)", borderBottomColor: "var(--color-primary-500)" }} />
+        <Triangle style={{ right: "30px", top: "40px",   transform: "rotate(10deg)",  borderBottomColor: "var(--color-secondary-500)" }} />
+        <Triangle style={{ left: "20px",  bottom: "120px", transform: "rotate(-10deg)", borderBottomColor: "var(--color-semantic-red)" }} />
+        <Triangle style={{ right: "0px",  bottom: "60px", transform: "rotate(20deg)",  borderBottomColor: "var(--color-primary-800)" }} />
 
         <div className={styles.inner}>
           {/* ── Welcome banner ── */}
