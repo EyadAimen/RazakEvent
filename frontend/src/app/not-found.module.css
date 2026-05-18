@@ -1,4 +1,3 @@
-/* Central page layout anchoring for full-screen view */
 .centeredPageWrapper {
     display: flex;
     align-items: center;
@@ -6,16 +5,12 @@
     min-height: 100vh;
     width: 100vw;
     background-color: var(--color-neutral-100);
-    /* Subtly grey backdrop for contrast */
     overflow: hidden;
-    /* Critical for floating shapes containment */
     position: relative;
-    /* Anchor base for shapes */
-    padding: 40px;
+    padding: var(--space-xl);
     box-sizing: border-box;
 }
 
-/* Huge display background code wrap logic (z-indexed behind card content) */
 .hugeDisplayCodeWrap {
     position: relative;
     max-width: 460px;
@@ -25,21 +20,15 @@
     justify-content: center;
 }
 
-/* Base style mapping for generic shared geometric objects passed down via props */
 .centeredPageWrapper>div[style] {
     position: absolute;
-    /* Anchor shapes to the full page base layout */
     z-index: 1;
-    /* Floating behind everything */
     pointer-events: none;
-    /* User doesn't click them */
 }
 
-/* Error Box Card Styling matching the Blueprint example visual design */
 .errorBox {
     position: relative;
     z-index: 10;
-    /* Card sits atop the shapes and backdrop code */
     background-color: var(--color-neutral-50);
     padding: var(--space-2xl) var(--space-xl);
     border-radius: var(--radius-lg);
@@ -54,7 +43,7 @@
     font-weight: var(--weight-bold);
     color: var(--color-neutral-800);
     display: block;
-    margin-bottom: 32px;
+    margin-bottom: var(--space-xl);
 }
 
 .badge {
@@ -62,12 +51,12 @@
     font-family: var(--font-body);
     font-size: var(--text-small-size);
     font-weight: var(--weight-semibold);
-    background-color: rgba(63, 115, 216, 0.1);
-    color: #3B6FD4;
-    padding: 6px 16px;
-    border-radius: 50px;
+    background-color: var(--color-primary-500-10);
+    color: var(--color-primary-500);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-pill);
     text-transform: uppercase;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
 }
 
 .title {
@@ -76,7 +65,7 @@
     line-height: var(--text-h2-height);
     font-weight: var(--weight-bold);
     color: var(--color-neutral-800);
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
 }
 
 .description {
@@ -84,23 +73,21 @@
     font-size: var(--text-body-size);
     line-height: var(--text-body-height);
     color: var(--color-neutral-500);
-    margin-bottom: 32px;
+    margin-bottom: var(--space-xl);
 }
 
-/* Stylized Submit/Link Button matching blueprint example visual design */
 .actionButton {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 48px;
+    height: var(--button-height-md);
     background-color: var(--color-primary-500);
-    /* Uses primary color from variables.css */
     color: var(--color-neutral-50);
     font-family: var(--font-body);
     font-size: var(--text-link-size);
     font-weight: var(--weight-semibold);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     text-decoration: none;
     transition: opacity var(--transition-fast), transform var(--transition-fast);
     cursor: pointer;
@@ -116,7 +103,6 @@
     transform: translateY(0);
 }
 
-/* Huge display code background logic centered behind card content */
 .hugeDisplayCode {
     text-align: center;
     z-index: 5;
@@ -129,10 +115,8 @@
 
 .hugeDisplayCode span {
     font-family: var(--font-heading);
-    font-size: 160px;
-    /* Large striking display variable */
+    font-size: var(--text-display-size);
     font-weight: var(--weight-bold);
-    color: rgba(63, 115, 216, 0.15);
-    /* Subtly faded large navy variable code */
+    color: var(--color-primary-500-15);
     user-select: none;
 }
