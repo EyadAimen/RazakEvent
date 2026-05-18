@@ -17,14 +17,22 @@ export const LeadRoleRequestEntity = new EntitySchema({
             type: "int",
             nullable: false,
         },
+        currentLeadId: {
+            type: "varchar",
+            nullable: true,
+        },
         adminId: {
             type: "varchar",
             nullable: true,
         },
         status: {
             type: "enum",
-            enum: ["pending", "approved", "rejected"],
+            enum: ["pending_lead", "pending_admin", "approved", "rejected"],
             nullable: false,
+        },
+        leadComment: {
+            type: "text",
+            nullable: true,
         },
         adminComment: {
             type: "text",
@@ -34,6 +42,10 @@ export const LeadRoleRequestEntity = new EntitySchema({
             type: "timestamptz",
             createDate: true,
             nullable: false,
+        },
+        leadReviewedAt: {
+            type: "timestamptz",
+            nullable: true,
         },
         reviewedAt: {
             type: "timestamptz",
@@ -46,7 +58,7 @@ export const LeadRoleRequestEntity = new EntitySchema({
             name: "UQ_lead_role_requests_student_pending",
             columns: ["studentId"],
             unique: true,
-            where: "status = 'pending'",
+            where: "status IN ('pending_lead', 'pending_admin')",
         },
     ],
 });
