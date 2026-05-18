@@ -47,7 +47,7 @@ export default function AdminRequestsPage() {
       setSelectedProposal(null);
     } catch (err: any) {
       console.error(`Component catch layer caught action assignment failure on row ID ${id}:`, err);
-      alert(`Action Failure: ${err.message || "The remote server rejected this status mutation choice."}`);
+      setErrorContext(err.message || "The remote server rejected this status mutation choice.");
     } finally {
       setActionLoading(false);
     }
@@ -71,7 +71,7 @@ export default function AdminRequestsPage() {
     );
   }
 
-  if (errorContext) {
+  if (errorContext && proposals.length === 0) {
     return (
       <div className={`${styles.loadingContainer} ${styles.errorTextContainer}`}>
         <p>System Error Encountered: {errorContext}</p>
@@ -88,12 +88,14 @@ export default function AdminRequestsPage() {
           <p className={styles.textMuted}>Manage and review new club and community proposals.</p>
         </div>
 
+        {errorContext && <p className={styles.apiError}>{errorContext}</p>}
+
         <div className={styles.controlsRow}>
           <div className={styles.pillsGroup}>
             {["all", "pending", "approved", "rejected", "draft"].map((filter) => (
               <button
                 key={filter}
-                onClick={() => setActiveFilter(filter)}
+                onClick={() => { setActiveFilter(filter); setErrorContext(null); }}
                 className={`${styles.filterPill} ${activeFilter === filter ? styles.filterPillActive : ""}`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -136,7 +138,7 @@ export default function AdminRequestsPage() {
                     <span className={`${styles.statusBadge} ${styles[`status_${item.status}`]}`}>
                       {item.status}
                     </span>
-                    <button onClick={() => { setSelectedProposal(item); setIsDrawerOpen(true); }} className={styles.reviewButton}>
+                    <button onClick={() => { setSelectedProposal(item); setIsDrawerOpen(true); setErrorContext(null); }} className={styles.reviewButton}>
                       Review
                     </button>
                   </div>
@@ -147,7 +149,7 @@ export default function AdminRequestsPage() {
         </div>
       </div>
 
-      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); }} />}
+      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); }} />}
 
       <div className={`${styles.sidebarDrawerContainer} ${isDrawerOpen ? styles.drawerOpenActive : ""}`}>
         {selectedProposal && (
@@ -157,7 +159,7 @@ export default function AdminRequestsPage() {
                 <span className={styles.drawerSubheadingSpan}>{selectedProposal.category} PROPOSAL</span>
                 <h2 className={styles.drawerMainHeadingTitle}>{selectedProposal.eventName}</h2>
               </div>
-              <button onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); }} className={styles.closeDrawerButtonX}>✕</button>
+              <button onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); }} className={styles.closeDrawerButtonX}>✕</button>
             </div>
 
             <div className={styles.drawerScrollableContentArea}>
