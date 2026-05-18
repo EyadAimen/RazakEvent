@@ -123,7 +123,7 @@ export default function Login() {
                             </button>
                         </div>
 
-                        <a href="#" className={styles.forgotLink}>
+                        <a href="/forgot-password" className={styles.forgotLink}>
                             Forgot Password?
                         </a>
 
