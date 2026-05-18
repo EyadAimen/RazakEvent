@@ -8,7 +8,7 @@ export const authenticate = (req, res, next) => {
     const authHeader = req.headers.authorization
 
     if(!authHeader || !authHeader.startsWith("Bearer ")) {
-        return next(new UnauthenticatedError("No token provided"))
+        return next(new UnauthenticatedError("Unauthenticated, no token provided"))
     }
 
     const token = authHeader.split(' ')[1]
