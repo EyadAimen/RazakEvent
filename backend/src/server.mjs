@@ -4,6 +4,7 @@ import { applyMiddleware } from "./shared/middlewares.mjs"
 import appDataSource from "../config/dbConfig.mjs"
 import authRoutes         from "./auth/auth.routes.mjs"
 import usersRoutes        from "./users/users.routes.mjs"
+import clubsRoutes        from "./clubs/clubs.routes.mjs"
 import eventsRoutes       from "./events/events.routes.mjs"
 import proposalsRoutes    from "./proposals/proposals.routes.mjs"
 import volunteeringRoutes from "./volunteering/volunteering.routes.mjs"
@@ -19,6 +20,7 @@ applyMiddleware(app)
 // ── Route registration ────────────────────────────────────────────────────────
 app.use("/api/auth",         authRoutes)
 app.use("/api/users",        usersRoutes)
+app.use("/api/clubs",        clubsRoutes)
 app.use("/api/events",       eventsRoutes)
 app.use("/api/proposals",    proposalsRoutes)
 app.use("/api/volunteering", volunteeringRoutes)
