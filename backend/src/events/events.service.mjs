@@ -73,6 +73,7 @@ export const getLeadDashboard = async (leadId) => {
         clubLabel: leadClub
             ? `${leadClub.name} ${leadClub.type === "community" ? "Community" : "Club"} Lead`
             : "Club Lead",
+        clubType:    leadClub?.type ?? "club",
         alert,
         events:      enriched.slice(0, 3),
         totalEvents: enriched.length,
@@ -233,7 +234,22 @@ export const decideProposal = async (eventId, decision, adminComment) => {
     return enrichProposal(updated);
 };
 
-// ── Admin — All events overview 
+// ── Lead — Upload proposal PDF ────────────────────────────────────────────────
+
+export const uploadProposalPdf = async (eventId, leadId, fileUrl) => {
+    const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    if (!proposal) throw new NotFoundError("Proposal not found");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this proposal");
+    if (["approved", "rejected"].includes(proposal.status)) {
+        throw new ForbiddenError("Cannot modify a locked proposal");
+    }
+
+    await proposalRepo().update(Number(eventId), { proposalPdfUrl: fileUrl });
+    const updated = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    return enrichProposal(updated);
+};
+
+// ── Admin — All events overview
 
 export const getAllEvents = async (statusFilter) => {
     const proposals = await proposalRepo().find({ order: { createdAt: "DESC" } });

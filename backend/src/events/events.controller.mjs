@@ -50,6 +50,17 @@ export const submitProposalHandler = async (req, res, next) => {
     } catch (err) { next(err); }
 };
 
+export const uploadProposalPdfHandler = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No PDF file uploaded" });
+        }
+        const fileUrl = `/uploads/proposals/${req.file.filename}`;
+        const event = await eventsService.uploadProposalPdf(req.params.eventId, req.user.userId, fileUrl);
+        res.status(200).json({ event });
+    } catch (err) { next(err); }
+};
+
 export const decideProposalHandler = async (req, res, next) => {
     try {
         const { decision, adminComment } = req.body;

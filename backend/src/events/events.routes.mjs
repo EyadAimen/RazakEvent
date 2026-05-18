@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { authenticate, requireRole } from "../auth/auth.middleware.mjs";
+import { uploadProposalPdf } from "../shared/upload.middleware.mjs";
 import * as eventsController from "./events.controller.mjs";
 
 const router = Router();
@@ -51,6 +52,15 @@ router.delete(
     authenticate,
     requireRole("lead"),
     eventsController.deleteEventHandler
+);
+
+// POST /api/events/:eventId/proposal-pdf  — upload PDF for a draft/pending proposal
+router.post(
+    "/:eventId/proposal-pdf",
+    authenticate,
+    requireRole("lead"),
+    uploadProposalPdf,
+    eventsController.uploadProposalPdfHandler
 );
 
 // POST /api/events/:eventId/submit  — draft → submitted
