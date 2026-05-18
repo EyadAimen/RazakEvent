@@ -10,22 +10,27 @@ export const ClubRequestEntity = new EntitySchema({
             generated: "increment",
         },
         studentId: {
-            type: "varchar",
+            name: "student_id",
+            type: "uuid",
             nullable: false,
         },
         adminId: {
-            type: "varchar",
+            name: "admin_id",
+            type: "uuid",
             nullable: true,
         },
         resultClubId: {
+            name: "result_club_id",
             type: "int",
             nullable: true,
         },
         clubName: {
+            name: "club_name",
             type: "varchar",
             nullable: false,
         },
         clubType: {
+            name: "club_type",
             type: "enum",
             enum: ["club", "community"],
             nullable: false,
@@ -40,20 +45,22 @@ export const ClubRequestEntity = new EntitySchema({
             nullable: false,
         },
         adminComment: {
+            name: "admin_comment",
             type: "text",
             nullable: true,
         },
         submittedAt: {
+            name: "submitted_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,
         },
         reviewedAt: {
+            name: "reviewed_at",
             type: "timestamptz",
             nullable: true,
         },
     },
-    // Partial unique: one pending club request per student at a time (DB_DESIGN §3.12)
     indices: [
         {
             name: "UQ_club_requests_student_pending",

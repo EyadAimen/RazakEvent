@@ -25,6 +25,11 @@ app.use("/api/volunteering", volunteeringRoutes)
 app.use("/api/certificates", certificatesRoutes)
 app.use("/api/reports", reportsRoutes)
 
+// ── Route registration ────────────────────────────────────────────────────────
+app.use("/api/auth",   authRoutes)
+app.use("/api/events", eventsRoutes)
+
+// ── Global error handler ──────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500
     const message = err.message || "Internal Server Error"
@@ -32,6 +37,7 @@ app.use((err, req, res, next) => {
     res.status(statusCode).json({ error: message })
 })
 
+// ── Start server ──────────────────────────────────────────────────────────────
 appDataSource.initialize()
     .then(() => {
         console.log("Database connected")

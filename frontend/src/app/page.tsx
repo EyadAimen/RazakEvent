@@ -12,7 +12,15 @@ import {
   refreshAccessToken,
   logoutUser,
   clearSession,
+  getUser,
 } from "@/lib/auth";
+
+const ROLE_REDIRECTS: Record<string, string> = {
+  lead:    "/lead/dashboard",
+  admin:   "/admin/dashboard",
+  student: "/dashboard",
+  member:  "/dashboard",
+};
 
 export default function Home() {
   const router = useRouter();
@@ -29,7 +37,11 @@ export default function Home() {
       try {
         const { accessToken } = await refreshAccessToken(refreshToken);
         setAccessToken(accessToken);
-        setChecking(false);
+
+        // Redirect to the role-specific dashboard
+        const user = getUser();
+        const destination = user ? (ROLE_REDIRECTS[user.role] ?? "/dashboard") : "/dashboard";
+        router.replace(destination);
       } catch {
         clearSession();
         router.replace("/login");

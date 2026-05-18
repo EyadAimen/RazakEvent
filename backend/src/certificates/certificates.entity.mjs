@@ -10,10 +10,12 @@ export const CertificateEntity = new EntitySchema({
             generated: "increment",
         },
         userId: {
-            type: "varchar",
+            name: "user_id",
+            type: "uuid",
             nullable: false,
         },
         eventId: {
+            name: "event_id",
             type: "int",
             nullable: false,
         },
@@ -23,16 +25,17 @@ export const CertificateEntity = new EntitySchema({
             nullable: false,
         },
         issuedAt: {
+            name: "issued_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,
         },
     },
-    // No duplicate certificates per user per event per type (DB_DESIGN §3.9)
-    uniques: [
+    indices: [
         {
             name: "UQ_certificates_user_event_type",
             columns: ["userId", "eventId", "type"],
+            unique: true,
         },
     ],
 });

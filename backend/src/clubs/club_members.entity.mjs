@@ -5,16 +5,19 @@ export const ClubMemberEntity = new EntitySchema({
     tableName: "club_members",
     columns: {
         userId: {
-            type: "varchar",
-            primary: true,
+            name: "user_id",
+            type: "uuid",
             nullable: false,
+            primary: true,
         },
         clubId: {
+            name: "club_id",
             type: "int",
-            primary: true,
             nullable: false,
+            primary: true,
         },
         joinedAt: {
+            name: "joined_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,

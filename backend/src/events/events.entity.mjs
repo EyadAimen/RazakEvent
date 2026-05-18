@@ -10,14 +10,17 @@ export const EventEntity = new EntitySchema({
             generated: "increment",
         },
         proposalId: {
+            name: "proposal_id",
             type: "int",
             nullable: false,
         },
         clubId: {
+            name: "club_id",
             type: "int",
             nullable: false,
         },
         venueId: {
+            name: "venue_id",
             type: "int",
             nullable: false,
         },
@@ -30,6 +33,7 @@ export const EventEntity = new EntitySchema({
             nullable: false,
         },
         eventDate: {
+            name: "event_date",
             type: "timestamp",
             nullable: false,
         },
@@ -39,12 +43,14 @@ export const EventEntity = new EntitySchema({
             nullable: false,
         },
         volunteeringStatus: {
+            name: "volunteering_status",
             type: "enum",
             enum: ["closed", "open", "full"],
             default: "closed",
             nullable: false,
         },
         createdAt: {
+            name: "created_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,
