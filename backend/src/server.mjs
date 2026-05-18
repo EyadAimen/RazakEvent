@@ -1,31 +1,30 @@
 import express from "express"
-import cors from "cors"
 import envVars from "../config/envConfig.mjs"
+import { applyMiddleware } from "./shared/middlewares.mjs"
 import appDataSource from "../config/dbConfig.mjs"
-import authRoutes from "./auth/auth.routes.mjs"
-import usersRoutes from "./users/users.routes.mjs"
-import eventsRoutes from "./events/events.routes.mjs"
-import proposalsRoutes from "./proposals/proposals.routes.mjs"
+import authRoutes         from "./auth/auth.routes.mjs"
+import usersRoutes        from "./users/users.routes.mjs"
+import eventsRoutes       from "./events/events.routes.mjs"
+import proposalsRoutes    from "./proposals/proposals.routes.mjs"
 import volunteeringRoutes from "./volunteering/volunteering.routes.mjs"
 import certificatesRoutes from "./certificates/certificates.routes.mjs"
-import reportsRoutes from "./reports/reports.routes.mjs"
+import reportsRoutes      from "./reports/reports.routes.mjs"
+import venuesRoutes       from "./venues/venues.routes.mjs"
 
 const app = express();
 const PORT = envVars.port || 5000;
 
-app.use(express.json())
-app.use(cors())
-app.use("/api/auth", authRoutes)
-app.use("/api/users", usersRoutes)
-app.use("/api/events", eventsRoutes)
-app.use("/api/proposals", proposalsRoutes)
-app.use("/api/volunteering", volunteeringRoutes)
-app.use("/api/certificates", certificatesRoutes)
-app.use("/api/reports", reportsRoutes)
+applyMiddleware(app)
 
 // ── Route registration ────────────────────────────────────────────────────────
-app.use("/api/auth",   authRoutes)
-app.use("/api/events", eventsRoutes)
+app.use("/api/auth",         authRoutes)
+app.use("/api/users",        usersRoutes)
+app.use("/api/events",       eventsRoutes)
+app.use("/api/proposals",    proposalsRoutes)
+app.use("/api/volunteering", volunteeringRoutes)
+app.use("/api/certificates", certificatesRoutes)
+app.use("/api/reports",      reportsRoutes)
+app.use("/api/venues",       venuesRoutes)
 
 // ── Global error handler ──────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
