@@ -51,6 +51,27 @@ export const UserEntity = new EntitySchema({
             type: "timestamptz",
             nullable: true,
         },
+        isEmailVerified: {
+            type: "boolean",
+            default: false,
+            nullable: false,
+        },
+        emailVerifyToken: {
+            type: "varchar",
+            nullable: true,
+        },
+        emailVerifyExpiry: {
+            type: "timestamptz",
+            nullable: true,
+        },
+        passwordResetToken: {
+            type: "varchar",
+            nullable: true,
+        },
+        passwordResetExpiry: {
+            type: "timestamptz",
+            nullable: true,
+        },
         createdAt: {
             name: "created_at",
             type: "timestamptz",

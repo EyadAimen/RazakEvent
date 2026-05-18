@@ -23,7 +23,7 @@ export const ClubMemberEntity = new EntitySchema({
             nullable: false,
         },
     },
-    // A member can only belong to one club at a time
+    // UNIQUE userId — a member can only belong to one club at a time
     indices: [
         {
             name: "UQ_club_members_user",
