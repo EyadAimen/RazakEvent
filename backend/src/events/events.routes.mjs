@@ -4,7 +4,7 @@ import * as eventsController from "./events.controller.mjs";
 
 const router = Router();
 
-// ── Lead routes ──────────────────────────────────────────────────────────────
+// ─Lead routes
 // GET /api/events/lead/dashboard  — dashboard summary (events + alert)
 router.get(
     "/lead/dashboard",
@@ -53,7 +53,7 @@ router.post(
     eventsController.submitProposalHandler
 );
 
-// ── Admin routes ─────────────────────────────────────────────────────────────
+// Admin routes 
 // GET /api/events  — all events (admin overview)
 router.get(
     "/",

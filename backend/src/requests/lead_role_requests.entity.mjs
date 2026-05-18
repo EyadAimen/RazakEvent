@@ -10,15 +10,18 @@ export const LeadRoleRequestEntity = new EntitySchema({
             generated: "increment",
         },
         studentId: {
-            type: "varchar",
+            name: "student_id",
+            type: "uuid",
             nullable: false,
         },
         clubId: {
+            name: "club_id",
             type: "int",
             nullable: false,
         },
         adminId: {
-            type: "varchar",
+            name: "admin_id",
+            type: "uuid",
             nullable: true,
         },
         status: {
@@ -27,20 +30,22 @@ export const LeadRoleRequestEntity = new EntitySchema({
             nullable: false,
         },
         adminComment: {
+            name: "admin_comment",
             type: "text",
             nullable: true,
         },
         submittedAt: {
+            name: "submitted_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,
         },
         reviewedAt: {
+            name: "reviewed_at",
             type: "timestamptz",
             nullable: true,
         },
     },
-    // One pending lead role request per student at a time (DB_DESIGN §3.13)
     indices: [
         {
             name: "UQ_lead_role_requests_student_pending",

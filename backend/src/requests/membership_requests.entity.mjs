@@ -10,15 +10,18 @@ export const MembershipRequestEntity = new EntitySchema({
             generated: "increment",
         },
         studentId: {
-            type: "varchar",
+            name: "student_id",
+            type: "uuid",
             nullable: false,
         },
         clubId: {
+            name: "club_id",
             type: "int",
             nullable: false,
         },
         reviewedBy: {
-            type: "varchar",
+            name: "reviewed_by",
+            type: "uuid",
             nullable: true,
         },
         status: {
@@ -27,16 +30,17 @@ export const MembershipRequestEntity = new EntitySchema({
             nullable: false,
         },
         submittedAt: {
+            name: "submitted_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,
         },
         reviewedAt: {
+            name: "reviewed_at",
             type: "timestamptz",
             nullable: true,
         },
     },
-    // One pending membership request per student per club at a time (DB_DESIGN §3.14)
     indices: [
         {
             name: "UQ_membership_requests_student_club_pending",
