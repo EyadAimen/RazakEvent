@@ -2,14 +2,9 @@
 
 import { useState, useEffect } from "react";
 import styles from "./manageRoles.module.css";
-
-interface UserRecord {
-  id: string;
-  fullName: string;
-  email: string;
-  staffOrMatricId: string;
-  role: string;
-}
+import { UserRecord } from "./utils/interfaces/manage-roles.interface";
+import { fetchUserRoles, updateUserRole } from "./utils/services/manage-roles.service.ts";
+import { ApiError } from "@/lib/api";
 
 export default function ManageRolesPage() {
   const [users, setUsers] = useState<UserRecord[]>([]);
@@ -18,38 +13,26 @@ export default function ManageRolesPage() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<{ [key: string]: string }>({});
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string>("");
 
   useEffect(() => {
-    async function fetchUserRoles() {
+    async function loadData() {
       try {
         setLoading(true);
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("accessToken") ||
-          localStorage.getItem("jwt");
-
-        const response = await fetch("http://localhost:5000/api/users", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { "Authorization": `Bearer ${token}` } : {})
-          }
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          const recordsArray = result.data || (Array.isArray(result) ? result : []);
-          setUsers(recordsArray);
-        } else {
-          console.error("Failed to fetch user roles:", response.statusText);
-        }
+        setApiError("");
+        const data = await fetchUserRoles();
+        setUsers(data);
       } catch (err) {
-        console.error("Failed loading user records from database endpoint:", err);
+        if (err instanceof ApiError) {
+          setApiError(err.message);
+        } else {
+          setApiError("Unable to connect and retrieve system data roles.");
+        }
       } finally {
         setLoading(false);
       }
     }
-    fetchUserRoles();
+    loadData();
   }, []);
 
   const startEditing = (user: UserRecord) => {
@@ -73,30 +56,21 @@ export default function ManageRolesPage() {
 
     try {
       setUpdatingId(userId);
-      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+      setApiError("");
+      await updateUserRole(userId, roleValue);
 
-      const response = await fetch(`http://localhost:5000/api/users/${userId}/role`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { "Authorization": `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ role: roleValue })
-      });
-
-      if (response.ok) {
-        setUsers((prevUsers) =>
-          prevUsers.map((user) =>
-            user.id === userId ? { ...user, role: roleValue } : user
-          )
-        );
-        setEditingUserId(null);
-      } else {
-        const errData = await response.json();
-        alert(`Error updating role: ${errData.message || "Unknown error"}`);
-      }
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, role: roleValue } : user
+        )
+      );
+      setEditingUserId(null);
     } catch (err) {
-      console.error("Role update failed:", err);
+      if (err instanceof ApiError) {
+        setApiError(err.message);
+      } else {
+        setApiError("Failed to successfully transmit altered configuration choices.");
+      }
     } finally {
       setUpdatingId(null);
     }
@@ -118,6 +92,14 @@ export default function ManageRolesPage() {
     );
   }
 
+  if (apiError && users.length === 0) {
+    return (
+      <div className={`${styles.loadingWrapper} ${styles.errorTextContainer}`}>
+        <p>System Error Encountered: {apiError}</p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.headerArea}>
@@ -126,6 +108,8 @@ export default function ManageRolesPage() {
           Promote students to Club Leads or assign Admin privileges.
         </p>
       </div>
+
+      {apiError && <p className={styles.apiError}>{apiError}</p>}
 
       <div className={styles.contentCard}>
         <div className={styles.searchRow}>
