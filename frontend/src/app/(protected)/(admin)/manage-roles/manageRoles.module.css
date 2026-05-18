@@ -1,7 +1,5 @@
-@import '../requests/requests.module.css';
-
 .pageContainer {
-    max-width: var(--layout-container-max, 1200px);
+    max-width: var(--layout-container-max);
     margin: 0 auto;
     padding: var(--space-xl) var(--space-lg);
     background-color: transparent;
@@ -167,18 +165,18 @@
 }
 
 .role_student {
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--color-role-student-bg);
+    color: var(--color-role-student-text);
 }
 
 .role_clublead {
-    background-color: #eff6ff;
-    color: #2563eb;
+    background-color: var(--color-role-clublead-bg);
+    color: var(--color-role-clublead-text);
 }
 
 .role_admin {
-    background-color: #f3e8ff;
-    color: #a855f7;
+    background-color: var(--color-role-admin-bg);
+    color: var(--color-role-admin-text);
 }
 
 .actionButtonGroup {
@@ -221,7 +219,7 @@
 }
 
 .actionSaveBtn:hover:not(:disabled) {
-    background-color: #eff6ff;
+    background-color: var(--color-ktr-ice);
 }
 
 .actionCancelBtn {
