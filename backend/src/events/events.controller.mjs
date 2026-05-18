@@ -36,6 +36,13 @@ export const updateEventHandler = async (req, res, next) => {
     } catch (err) { next(err); }
 };
 
+export const deleteEventHandler = async (req, res, next) => {
+    try {
+        await eventsService.deleteEvent(req.params.eventId, req.user.userId);
+        res.status(204).send();
+    } catch (err) { next(err); }
+};
+
 export const submitProposalHandler = async (req, res, next) => {
     try {
         const event = await eventsService.submitEventProposal(req.params.eventId, req.user.userId);

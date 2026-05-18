@@ -45,6 +45,14 @@ router.patch(
     eventsController.updateEventHandler
 );
 
+// DELETE /api/events/:eventId  — delete a draft proposal
+router.delete(
+    "/:eventId",
+    authenticate,
+    requireRole("lead"),
+    eventsController.deleteEventHandler
+);
+
 // POST /api/events/:eventId/submit  — draft → submitted
 router.post(
     "/:eventId/submit",

@@ -181,7 +181,18 @@ export const submitEventProposal = async (eventId, leadId) => {
     return enrichProposal(updated);
 };
 
-// ── Admin — Approve or reject a proposal 
+// ── Lead — Delete draft proposal ─────────────────────────────────────────────
+
+export const deleteEvent = async (eventId, leadId) => {
+    const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    if (!proposal) throw new NotFoundError("Event not found");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+    if (proposal.status !== "draft") throw new ForbiddenError("Only draft proposals can be deleted");
+
+    await proposalRepo().delete(Number(eventId));
+};
+
+// ── Admin — Approve or reject a proposal ─────────────────────────────────────
 
 export const decideProposal = async (eventId, decision, adminComment) => {
     const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
@@ -190,6 +201,13 @@ export const decideProposal = async (eventId, decision, adminComment) => {
     if (!["approved", "rejected"].includes(decision)) throw new ValidationError("Decision must be 'approved' or 'rejected'");
     if (decision === "rejected" && !adminComment) throw new ValidationError("Admin comment is required when rejecting");
 
+    // Validate before writing — prevents approved status with no event record
+    if (decision === "approved") {
+        if (!proposal.venueId)      throw new ValidationError("Proposal must have a venue before it can be approved");
+        if (!proposal.proposedDate) throw new ValidationError("Proposal must have a date before it can be approved");
+        if (!proposal.description)  throw new ValidationError("Proposal must have a description before it can be approved");
+    }
+
     await proposalRepo().update(Number(eventId), {
         status:       decision,
         adminComment: adminComment ?? null,
@@ -197,10 +215,6 @@ export const decideProposal = async (eventId, decision, adminComment) => {
     });
 
     if (decision === "approved") {
-        if (!proposal.venueId)      throw new ValidationError("Proposal must have a venue before it can be approved");
-        if (!proposal.proposedDate) throw new ValidationError("Proposal must have a date before it can be approved");
-        if (!proposal.description)  throw new ValidationError("Proposal must have a description before it can be approved");
-
         const existing = await eventRepo().findOne({ where: { proposalId: proposal.id } });
         if (!existing) {
             await eventRepo().save(eventRepo().create({
