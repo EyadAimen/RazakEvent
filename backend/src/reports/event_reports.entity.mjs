@@ -10,23 +10,28 @@ export const EventReportEntity = new EntitySchema({
             generated: "increment",
         },
         eventId: {
+            name: "event_id",
             type: "int",
             unique: true,
             nullable: false,
         },
         leadId: {
-            type: "varchar",
+            name: "lead_id",
+            type: "uuid",
             nullable: false,
         },
         clubId: {
+            name: "club_id",
             type: "int",
             nullable: false,
         },
         adminId: {
-            type: "varchar",
+            name: "admin_id",
+            type: "uuid",
             nullable: true,
         },
         reportPdfUrl: {
+            name: "report_pdf_url",
             type: "varchar",
             nullable: false,
         },
@@ -37,15 +42,18 @@ export const EventReportEntity = new EntitySchema({
             nullable: false,
         },
         adminComment: {
+            name: "admin_comment",
             type: "text",
             nullable: true,
         },
         submittedAt: {
+            name: "submitted_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,
         },
         reviewedAt: {
+            name: "reviewed_at",
             type: "timestamptz",
             nullable: true,
         },

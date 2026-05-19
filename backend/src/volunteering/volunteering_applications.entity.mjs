@@ -10,10 +10,12 @@ export const VolunteeringApplicationEntity = new EntitySchema({
             generated: "increment",
         },
         studentId: {
-            type: "varchar",
+            name: "student_id",
+            type: "uuid",
             nullable: false,
         },
         roleId: {
+            name: "role_id",
             type: "int",
             nullable: false,
         },
@@ -24,20 +26,22 @@ export const VolunteeringApplicationEntity = new EntitySchema({
             nullable: false,
         },
         appliedAt: {
+            name: "applied_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,
         },
         reviewedAt: {
+            name: "reviewed_at",
             type: "timestamptz",
             nullable: true,
         },
     },
-    // A student can only apply once per role (DB_DESIGN §3.7)
-    uniques: [
+    indices: [
         {
             name: "UQ_vol_applications_student_role",
             columns: ["studentId", "roleId"],
+            unique: true,
         },
     ],
 });

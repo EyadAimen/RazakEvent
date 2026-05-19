@@ -24,10 +24,12 @@ export const ClubEntity = new EntitySchema({
             nullable: false,
         },
         leadId: {
-            type: "varchar",
+            name: "lead_id",
+            type: "uuid",
             nullable: true,
         },
         createdAt: {
+            name: "created_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,

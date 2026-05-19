@@ -44,3 +44,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local test artifacts
+/postman/
+backend/seed.mjs
+backend/seed_*.mjs
+backend/migrate_*.mjs
+backend/seed*.mjs
+backend/migrate_drop_club_members_uq.mjs
+
+# Claude Code local settings
+.claude/

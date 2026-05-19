@@ -25,6 +25,7 @@
   animation: slideUp var(--transition-veryfast) ease;
 }
 
+/* ── Close button ── */
 .closeButton {
   position: absolute;
   top: 20px;
@@ -43,6 +44,86 @@
   color: var(--color-neutral-800);
 }
 
+/* ── Loading variant ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  color: var(--color-primary-500);
+  animation: spin 1s linear infinite;
+}
+
+.loadingMessage {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ── Error variant ── */
+.errorIcon {
+  color: var(--color-semantic-red);
+}
+
+/* ── Success variant ── */
+.successIcon {
+  color: var(--color-status-green);
+}
+
+.successTitle {
+  font-size: var(--text-h3-size);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+  text-align: center;
+}
+
+.successMessage {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  margin: 0;
+  text-align: center;
+  line-height: var(--text-body-height);
+}
+
+.errorTitle {
+  font-size: var(--text-h3-size);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+  text-align: center;
+}
+
+.errorMessage {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  margin: 0;
+  text-align: center;
+  line-height: var(--text-body-height);
+}
+
+.okButton {
+  margin-top: 8px;
+  min-width: 120px;
+  min-height: 46px;
+  padding: 12px 24px;
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-800);
+  border: 2px solid var(--color-neutral-150);
+  border-radius: 12px;
+  font-size: var(--text-body-size);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.okButton:hover {
+  opacity: 0.85;
+}
+
+/* ── Animations ── */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -50,7 +131,7 @@
 
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 540px) {

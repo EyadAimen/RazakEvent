@@ -10,10 +10,12 @@ export const VolunteeringRoleEntity = new EntitySchema({
             generated: "increment",
         },
         eventId: {
+            name: "event_id",
             type: "int",
             nullable: false,
         },
         roleName: {
+            name: "role_name",
             type: "varchar",
             nullable: false,
         },
@@ -22,15 +24,18 @@ export const VolunteeringRoleEntity = new EntitySchema({
             nullable: true,
         },
         slotsAvailable: {
+            name: "slots_available",
             type: "int",
             nullable: false,
         },
         slotsFilled: {
+            name: "slots_filled",
             type: "int",
-            default: 0,
             nullable: false,
+            default: 0,
         },
         createdAt: {
+            name: "created_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,

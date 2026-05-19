@@ -62,7 +62,11 @@ export default function Login() {
             router.push("/");
         } catch (err) {
             if (err instanceof ApiError) {
-                setApiError(err.message);
+                if (err.status === 403) {
+                    router.push(`/verify-pending?email=${encodeURIComponent(email)}`);
+                } else {
+                    setApiError(err.message);
+                }
             } else {
                 setApiError("Unable to connect. Please try again.");
             }
@@ -123,7 +127,7 @@ export default function Login() {
                             </button>
                         </div>
 
-                        <a href="#" className={styles.forgotLink}>
+                        <a href="/forgot-password" className={styles.forgotLink}>
                             Forgot Password?
                         </a>
 
