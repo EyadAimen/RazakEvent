@@ -1,88 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import styles from "./manageRoles.module.css";
-import { UserRecord } from "./utils/interfaces/manage-roles.interface";
-import { fetchUserRoles, updateUserRole } from "./utils/services/manage-roles.service.ts";
-import { ApiError } from "@/lib/api";
+import styles from "./manage-roles.module.css";
+import { useManageRoles } from "./utils/services/manage-roles.service.";
 
 export default function ManageRolesPage() {
-  const [users, setUsers] = useState<UserRecord[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<{ [key: string]: string }>({});
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [apiError, setApiError] = useState<string>("");
+  const {
+    loading,
+    apiError,
+    editingUserId,
+    updatingId,
+    searchQuery,
+    filteredUsers,
+    selectedRoles, 
+    setSearchQuery,
+    startEditing,
+    handleRoleChange,
+    saveRole,
+    cancelEditing,
+  } = useManageRoles();
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        setApiError("");
-        const data = await fetchUserRoles();
-        setUsers(data);
-      } catch (err) {
-        if (err instanceof ApiError) {
-          setApiError(err.message);
-        } else {
-          setApiError("Unable to connect and retrieve system data roles.");
-        }
-      } finally {
-        setLoading(false);
-      }
+  const getRoleBadge = (role: string) => {
+    let badgeClass = styles.role_student;
+    let displayText = role;
+
+    if (role === "admin") {
+      badgeClass = styles.role_admin;
+    } else if (role === "lead" || role === "clublead") {
+      badgeClass = styles.role_clublead;
+      displayText = "club lead";
+    } else if (role === "member") {
+      displayText = "member";
     }
-    loadData();
-  }, []);
-
-  const startEditing = (user: UserRecord) => {
-    setEditingUserId(user.id);
-    setSelectedRoles((prev) => ({
-      ...prev,
-      [user.id]: user.role
-    }));
+    return { badgeClass, displayText };
   };
-
-  const handleRoleDropdownChange = (userId: string, newRole: string) => {
-    setSelectedRoles((prev) => ({
-      ...prev,
-      [userId]: newRole
-    }));
-  };
-
-  const handleSaveRole = async (userId: string) => {
-    const roleValue = selectedRoles[userId];
-    if (!roleValue) return;
-
-    try {
-      setUpdatingId(userId);
-      setApiError("");
-      await updateUserRole(userId, roleValue);
-
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === userId ? { ...user, role: roleValue } : user
-        )
-      );
-      setEditingUserId(null);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setApiError(err.message);
-      } else {
-        setApiError("Failed to successfully transmit altered configuration choices.");
-      }
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
-  const filteredUsers = users.filter((u) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      (u.fullName || "").toLowerCase().includes(query) ||
-      (u.staffOrMatricId || "").toLowerCase().includes(query)
-    );
-  });
 
   if (loading) {
     return (
@@ -92,7 +42,7 @@ export default function ManageRolesPage() {
     );
   }
 
-  if (apiError && users.length === 0) {
+  if (apiError && filteredUsers.length === 0) {
     return (
       <div className={`${styles.loadingWrapper} ${styles.errorTextContainer}`}>
         <p>System Error Encountered: {apiError}</p>
@@ -144,19 +94,12 @@ export default function ManageRolesPage() {
                 </tr>
               ) : (
                 filteredUsers.map((user) => {
-                  const currentDisplayRole = selectedRoles[user.id] !== undefined ? selectedRoles[user.id] : user.role;
+                  const currentDisplayRole =
+                    editingUserId === user.id && selectedRoles[user.id] !== undefined
+                      ? selectedRoles[user.id]
+                      : user.role;
 
-                  let badgeClass = styles.role_student;
-                  let displayBadgeText = user.role;
-
-                  if (user.role === "admin") {
-                    badgeClass = styles.role_admin;
-                  } else if (user.role === "lead" || user.role === "clublead") {
-                    badgeClass = styles.role_clublead;
-                    displayBadgeText = "club lead";
-                  } else if (user.role === "member") {
-                    displayBadgeText = "member";
-                  }
+                  const { badgeClass, displayText } = getRoleBadge(user.role);
 
                   return (
                     <tr key={user.id}>
@@ -174,7 +117,7 @@ export default function ManageRolesPage() {
                           <select
                             disabled={updatingId === user.id}
                             value={currentDisplayRole}
-                            onChange={(e) => handleRoleDropdownChange(user.id, e.target.value)}
+                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
                             className={styles.roleSelectDropdown}
                           >
                             <option value="student">student</option>
@@ -184,7 +127,7 @@ export default function ManageRolesPage() {
                           </select>
                         ) : (
                           <span className={`${styles.roleBadge} ${badgeClass}`}>
-                            {displayBadgeText}
+                            {displayText}
                           </span>
                         )}
                       </td>
@@ -193,14 +136,14 @@ export default function ManageRolesPage() {
                           <div className={styles.actionButtonGroup}>
                             <button
                               disabled={updatingId === user.id}
-                              onClick={() => handleSaveRole(user.id)}
+                              onClick={() => saveRole(user.id)}
                               className={styles.actionSaveBtn}
                             >
                               Done
                             </button>
                             <button
                               disabled={updatingId === user.id}
-                              onClick={() => setEditingUserId(null)}
+                              onClick={cancelEditing}
                               className={styles.actionCancelBtn}
                             >
                               Cancel
