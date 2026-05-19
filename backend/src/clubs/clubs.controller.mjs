@@ -1,4 +1,7 @@
-import { listClubs, listClubRequests, getClubRequest, decideClubRequest } from "./clubs.service.mjs";
+import {
+    listClubs, listClubRequests, getClubRequest, decideClubRequest,
+    getMyClub, getMyClubMembers, getMembershipRequests, decideMembershipRequest, removeMember,
+} from "./clubs.service.mjs";
 
 export const listClubsHandler = async (req, res, next) => {
     try {
@@ -41,4 +44,37 @@ export const decideClubRequestHandler = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
+};
+
+// ── Lead handlers ─────────────────────────────────────────────────────────────
+
+export const getMyClubHandler = async (req, res, next) => {
+    try { res.json(await getMyClub(req.user.userId)); }
+    catch (err) { next(err); }
+};
+
+export const getMyClubMembersHandler = async (req, res, next) => {
+    try { res.json({ members: await getMyClubMembers(req.user.userId) }); }
+    catch (err) { next(err); }
+};
+
+export const getMembershipRequestsHandler = async (req, res, next) => {
+    try { res.json({ requests: await getMembershipRequests(req.user.userId) }); }
+    catch (err) { next(err); }
+};
+
+export const decideMembershipRequestHandler = async (req, res, next) => {
+    try {
+        const result = await decideMembershipRequest(
+            req.user.userId,
+            req.params.requestId,
+            req.body.decision,
+        );
+        res.json(result);
+    } catch (err) { next(err); }
+};
+
+export const removeMemberHandler = async (req, res, next) => {
+    try { res.json(await removeMember(req.user.userId, req.params.userId)); }
+    catch (err) { next(err); }
 };
