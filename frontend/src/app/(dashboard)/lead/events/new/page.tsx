@@ -279,7 +279,7 @@ export default function ProposeEventPage() {
 
               <a
                 href="/templates/event-proposal-template.pdf"
-                download
+                download="Event Proposal Template.pdf"
                 className={styles.downloadBtn}
               >
                 <Download size={15} />
