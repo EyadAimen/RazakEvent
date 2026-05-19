@@ -4,37 +4,8 @@ import { useEffect, useState } from "react";
 import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2 } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
+import type { ClubOverview, ClubMember, MembershipRequest, ClubTab } from "@/types/lead";
 import styles from "./page.module.css";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-interface ClubOverview {
-  id: number;
-  name: string;
-  type: "club" | "community";
-  description: string;
-  memberCount: number;
-  eventStats: { total: number; approved: number; rejected: number };
-  pendingRequests: number;
-}
-
-interface ClubMember {
-  userId: string;
-  fullName: string;
-  staffOrMatricId: string | null;
-  role: "lead" | "committee";
-  joinedAt: string;
-}
-
-interface MembershipRequest {
-  id: number;
-  studentName: string;
-  studentMatricId: string | null;
-  submittedAt: string;
-  status: "pending";
-}
-
-type Tab = "members" | "requests";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -44,7 +15,7 @@ export default function MyClubPage() {
   const [requests, setRequests] = useState<MembershipRequest[]>([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
-  const [tab, setTab]           = useState<Tab>("members");
+  const [tab, setTab]           = useState<ClubTab>("members");
   const [search, setSearch]     = useState("");
   const [acting, setActing]     = useState<string | number | null>(null);
 
