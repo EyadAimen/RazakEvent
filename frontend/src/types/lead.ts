@@ -1,3 +1,5 @@
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+
 export interface DashboardData {
   leadName: string;
   clubLabel: string;
@@ -6,6 +8,8 @@ export interface DashboardData {
   events: ApiEvent[];
   totalEvents: number;
 }
+
+// ── Events list ───────────────────────────────────────────────────────────────
 
 export interface ApiEvent {
   id: string;
@@ -17,20 +21,17 @@ export interface ApiEvent {
   status: string;
 }
 
-export interface Venue {
-  id: number;
-  name: string;
-  location: string | null;
-}
+export type EventsTab =
+  | "all"
+  | "draft"
+  | "submitted"
+  | "approved"
+  | "ongoing"
+  | "completed"
+  | "report_due"
+  | "rejected";
 
-export interface CreateEventPayload {
-  name: string;
-  eventDate?: string;
-  venueId?: number;
-  description?: string;
-  estimatedBudget?: number;
-  status: "draft" | "submitted";
-}
+// ── Event detail ──────────────────────────────────────────────────────────────
 
 export interface VolunteerApplicant {
   applicationId: number;
@@ -55,3 +56,50 @@ export interface EventDetail {
   volunteeringStatus: "open" | "closed" | "full" | null;
   volunteers: VolunteerApplicant[];
 }
+
+// ── Propose event ─────────────────────────────────────────────────────────────
+
+export interface Venue {
+  id: number;
+  name: string;
+  location: string | null;
+}
+
+export interface CreateEventPayload {
+  name: string;
+  eventDate?: string;
+  venueId?: number;
+  description?: string;
+  estimatedBudget?: number;
+  status: "draft" | "submitted";
+}
+
+// ── My Club ───────────────────────────────────────────────────────────────────
+
+export interface ClubOverview {
+  id: number;
+  name: string;
+  type: "club" | "community";
+  description: string;
+  memberCount: number;
+  eventStats: { total: number; approved: number; rejected: number };
+  pendingRequests: number;
+}
+
+export interface ClubMember {
+  userId: string;
+  fullName: string;
+  staffOrMatricId: string | null;
+  role: "lead" | "committee";
+  joinedAt: string;
+}
+
+export interface MembershipRequest {
+  id: number;
+  studentName: string;
+  studentMatricId: string | null;
+  submittedAt: string;
+  status: "pending";
+}
+
+export type ClubTab = "members" | "requests";

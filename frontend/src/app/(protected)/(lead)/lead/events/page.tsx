@@ -7,14 +7,12 @@ import Link from "next/link";
 import Triangle from "@/components/shared/triangle/triangle";
 import LeadEventCard, { LeadEvent } from "@/components/lead/LeadEventCard/LeadEventCard";
 import { apiFetchAuth } from "@/lib/api";
-import type { ApiEvent } from "@/types/lead";
+import type { ApiEvent, EventsTab } from "@/types/lead";
 import styles from "./events.module.css";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-type Tab = "all" | "draft" | "submitted" | "approved" | "ongoing" | "completed" | "report_due" | "rejected";
-
-const TABS: { label: string; value: Tab }[] = [
+const TABS: { label: string; value: EventsTab }[] = [
   { label: "All",        value: "all"        },
   { label: "Draft",      value: "draft"      },
   { label: "Submitted",  value: "submitted"  },
@@ -60,7 +58,7 @@ export default function LeadEventsPage() {
   const [events, setEvents]   = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
-  const [tab, setTab]         = useState<Tab>("all");
+  const [tab, setTab]         = useState<EventsTab>("all");
   const [search, setSearch]   = useState("");
 
   useEffect(() => {

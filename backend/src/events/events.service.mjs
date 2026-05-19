@@ -41,18 +41,14 @@ async function enrichProposal(proposal) {
         ? await clubRepo().findOne({ where: { id: proposal.clubId } })
         : null;
 
-    // If the proposal has a live event, use the event id so links are correct
-    const event = proposal.status === "approved"
-        ? await eventRepo().findOne({ where: { proposalId: proposal.id } })
-        : null;
-
+    // Always use proposal.id — event.id lives in a separate table and can collide numerically
     return {
-        id:          String(event?.id ?? proposal.id),
-        name:        proposal.eventName,
-        clubName:    club?.name ?? "Unknown Club",
-        clubType:    club?.type ?? "club",
-        eventDate:   proposal.proposedDate ?? null,
-        attendees:   0,
+        id:        String(proposal.id),
+        name:      proposal.eventName,
+        clubName:  club?.name ?? "Unknown Club",
+        clubType:  club?.type ?? "club",
+        eventDate: proposal.proposedDate ?? null,
+        attendees: 0,
         status,
     };
 }
@@ -260,19 +256,15 @@ export const uploadProposalPdf = async (eventId, leadId, fileUrl) => {
 
 export const getEventDetail = async (eventId, leadId) => {
     const id = Number(eventId);
-    let proposal = null;
-    let liveEvent = null;
 
-    const event = await eventRepo().findOne({ where: { id } });
-    if (event) {
-        proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
-        if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
-        liveEvent = event;
-    } else {
-        proposal = await proposalRepo().findOne({ where: { id } });
-        if (!proposal) throw new NotFoundError("Event not found");
-        if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
-    }
+    // IDs in the system are always proposal IDs — resolve the live event from the proposal
+    const proposal = await proposalRepo().findOne({ where: { id } });
+    if (!proposal) throw new NotFoundError("Event not found");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+
+    const liveEvent = proposal.status === "approved"
+        ? await eventRepo().findOne({ where: { proposalId: proposal.id } })
+        : null;
 
     const status = await resolveStatus(proposal);
     const club   = proposal.clubId
@@ -312,7 +304,7 @@ export const getEventDetail = async (eventId, leadId) => {
     }
 
     return {
-        id:                  String(liveEvent?.id ?? proposal.id),
+        id:                  String(proposal.id),
         name:                proposal.eventName,
         clubName:            club?.name ?? "Unknown Club",
         clubType:            club?.type ?? "club",

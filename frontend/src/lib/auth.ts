@@ -95,6 +95,13 @@ export async function logoutUser(accessToken: string): Promise<void> {
   });
 }
 
+export async function resendVerificationEmail(email: string): Promise<void> {
+  await apiFetch<void>("/auth/resend-verification", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
 export async function signupUser(data: {
   name: string;
   email: string;

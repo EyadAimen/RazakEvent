@@ -1,7 +1,6 @@
 import {
     listClubs, listClubRequests, getClubRequest, decideClubRequest,
-    getMyClub, getMyClubMembers, getMembershipRequests,
-    decideMembershipRequest, removeMember,
+    getMyClub, getMyClubMembers, getMembershipRequests, decideMembershipRequest, removeMember,
 } from "./clubs.service.mjs";
 
 export const listClubsHandler = async (req, res, next) => {
@@ -47,54 +46,35 @@ export const decideClubRequestHandler = async (req, res, next) => {
     }
 };
 
-// ── Lead — My Club ────────────────────────────────────────────────────────────
+// ── Lead handlers ─────────────────────────────────────────────────────────────
 
 export const getMyClubHandler = async (req, res, next) => {
-    try {
-        const club = await getMyClub(req.user.userId);
-        res.json({ club });
-    } catch (err) {
-        next(err);
-    }
+    try { res.json(await getMyClub(req.user.userId)); }
+    catch (err) { next(err); }
 };
 
 export const getMyClubMembersHandler = async (req, res, next) => {
-    try {
-        const members = await getMyClubMembers(req.user.userId);
-        res.json({ members });
-    } catch (err) {
-        next(err);
-    }
+    try { res.json({ members: await getMyClubMembers(req.user.userId) }); }
+    catch (err) { next(err); }
 };
 
 export const getMembershipRequestsHandler = async (req, res, next) => {
-    try {
-        const requests = await getMembershipRequests(req.user.userId);
-        res.json({ requests });
-    } catch (err) {
-        next(err);
-    }
+    try { res.json({ requests: await getMembershipRequests(req.user.userId) }); }
+    catch (err) { next(err); }
 };
 
 export const decideMembershipRequestHandler = async (req, res, next) => {
     try {
-        const { decision } = req.body;
         const result = await decideMembershipRequest(
             req.user.userId,
             req.params.requestId,
-            decision
+            req.body.decision,
         );
         res.json(result);
-    } catch (err) {
-        next(err);
-    }
+    } catch (err) { next(err); }
 };
 
 export const removeMemberHandler = async (req, res, next) => {
-    try {
-        const result = await removeMember(req.user.userId, req.params.userId);
-        res.json(result);
-    } catch (err) {
-        next(err);
-    }
+    try { res.json(await removeMember(req.user.userId, req.params.userId)); }
+    catch (err) { next(err); }
 };
