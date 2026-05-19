@@ -11,6 +11,7 @@ import volunteeringRoutes from "./volunteering/volunteering.routes.mjs"
 import certificatesRoutes from "./certificates/certificates.routes.mjs"
 import reportsRoutes from "./reports/reports.routes.mjs"
 import leadRoleRequestsRoutes from "./requests/lead_role_requests.routes.mjs"
+import venuesRoutes from "./venues/venues.routes.mjs"
 
 const app = express();
 const PORT = envVars.port || 5000;
