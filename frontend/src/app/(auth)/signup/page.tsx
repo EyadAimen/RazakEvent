@@ -92,7 +92,7 @@ export default function Signup() {
         matricNumber: studentId.trim().toUpperCase(),
         role,
       });
-      setAutoApproved(user.isApproved);
+      setAutoApproved(user.isEmailVerified);
       setSubmitted(true);
     } catch (err) {
       if (err instanceof ApiError) {

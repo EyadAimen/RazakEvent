@@ -1,0 +1,113 @@
+.card {
+  background: var(--color-neutral-50);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-semantic-red-15);
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.headerIcon {
+  color: var(--color-semantic-red);
+}
+
+.title {
+  font-size: var(--text-body-size);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  color: var(--color-semantic-red);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-neutral-150);
+  margin: 12px 0;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.actionInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.actionLabel {
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-700);
+  margin: 0 0 2px;
+}
+
+.actionDesc {
+  font-size: var(--text-caption-size);
+  color: var(--color-neutral-400);
+  margin: 0;
+}
+
+.outlineRedBtn {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  border-color: var(--color-semantic-red) !important;
+  color: var(--color-semantic-red) !important;
+  flex-shrink: 0;
+}
+
+.deleteBtn {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.confirmGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.confirmText {
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-semantic-red);
+}
+
+.confirmBtn {
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .actionRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .outlineRedBtn,
+  .deleteBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .confirmGroup {
+    width: 100%;
+  }
+}
