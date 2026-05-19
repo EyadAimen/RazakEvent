@@ -2,18 +2,9 @@
 
 import { useState, useEffect } from "react";
 import styles from "./requests.module.css";
-
-interface Proposal {
-  id: number;
-  eventName: string;
-  description: string;
-  requesterName: string;
-  category: "CLUB" | "COMMUNITY";
-  status: "pending" | "approved" | "rejected" | "draft" | string;
-  estimatedBudget: string;
-  proposedDate: string;
-  docAttached?: string;
-}
+import { Proposal } from "./utils/interfaces/proposal.interface";
+import { fetchDatabaseProposals, patchProposalDecision } from "./utils/services/proposal.service";
+import { ApiError } from "@/lib/api";
 
 export default function AdminRequestsPage() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
@@ -24,100 +15,44 @@ export default function AdminRequestsPage() {
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
+  const [errorContext, setErrorContext] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchDatabaseProposals() {
+    async function loadData() {
       try {
         setLoading(true);
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("accessToken") ||
-          localStorage.getItem("jwt");
-
-        const response = await fetch("http://localhost:5000/api/proposals", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { "Authorization": `Bearer ${token}` } : {})
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const recordsArray = Array.isArray(data) ? data : data.data || [];
-
-          const mappedData = recordsArray.map((item: any) => {
-            // Dynamic category tagging derived cleanly from database ID records
-            const generatedCategory = item.clubId % 2 === 0 ? "CLUB" : "COMMUNITY";
-
-            // Map leadIds securely into recognizable student placeholder names for styling checks
-            const testRequesters: Record<string, string> = {
-              lead_01: "Alice Johnson",
-              lead_02: "Bob Smith",
-              lead_05: "Nadia Hassan",
-              lead_06: "Kevin Wong",
-              lead_07: "Siti Aminah",
-              lead_08: "Marcus Vance"
-            };
-
-            return {
-              id: item.id,
-              eventName: item.eventName || "Untitled Proposal",
-              description: item.description || "No description provided.",
-              requesterName: testRequesters[item.leadId] || item.requesterName || "Adam Lee",
-              category: generatedCategory,
-              status: (item.status || "pending").toLowerCase(),
-              estimatedBudget: item.estimatedBudget || "0.00",
-              proposedDate: item.proposedDate
-                ? new Date(item.proposedDate).toLocaleDateString()
-                : "TBD",
-              docAttached: item.proposalPdfUrl || "proposal.pdf"
-            };
-          });
-
-          setProposals(mappedData);
-        }
-      } catch (err) {
-        console.error("Connection error loading initial arrays:", err);
+        setErrorContext(null);
+        const data = await fetchDatabaseProposals();
+        setProposals(data);
+      } catch (err: any) {
+        console.error("Component catch layer caught initial initialization failures:", err);
+        setErrorContext(err.message || "Could not synchronize database connection data stacks.");
       } finally {
         setLoading(false);
       }
     }
-    fetchDatabaseProposals();
+    loadData();
   }, []);
 
   const handleDecisionUpdate = async (id: number, decisionStatus: "approved" | "rejected") => {
     try {
       setActionLoading(true);
-      const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
-
-      const response = await fetch(`http://localhost:5000/api/proposals/${id}/decision`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { "Authorization": `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          status: decisionStatus,
-          adminComment: `Proposal evaluation completed: ${decisionStatus}`
-        })
-      });
-
-      if (response.ok) {
-        setProposals((prev) =>
-          prev.map((prop) => (prop.id === id ? { ...prop, status: decisionStatus } : prop))
-        );
-        setIsDrawerOpen(false);
-        setSelectedProposal(null);
-      }
-    } catch (err) {
-      console.error("Decision update error:", err);
+      setErrorContext(null);
+      await patchProposalDecision(id, decisionStatus);
+      
+      setProposals((prev) =>
+        prev.map((prop) => (prop.id === id ? { ...prop, status: decisionStatus } : prop))
+      );
+      setIsDrawerOpen(false);
+      setSelectedProposal(null);
+    } catch (err: any) {
+      console.error(`Component catch layer caught action assignment failure on row ID ${id}:`, err);
+      setErrorContext(err.message || "The remote server rejected this status mutation choice.");
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Fixed filtering block: Checks both fields concurrently
   const filteredProposals = proposals.filter((p: Proposal) => {
     const matchesFilter = activeFilter === "all" || p.status === activeFilter;
 
@@ -136,6 +71,14 @@ export default function AdminRequestsPage() {
     );
   }
 
+  if (errorContext && proposals.length === 0) {
+    return (
+      <div className={`${styles.loadingContainer} ${styles.errorTextContainer}`}>
+        <p>System Error Encountered: {errorContext}</p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.containerWrapperRelative}>
       <div className={`${styles.mainPageWrapper} ${isDrawerOpen ? styles.faintBackgroundActive : ""}`}>
@@ -145,12 +88,14 @@ export default function AdminRequestsPage() {
           <p className={styles.textMuted}>Manage and review new club and community proposals.</p>
         </div>
 
+        {errorContext && <p className={styles.apiError}>{errorContext}</p>}
+
         <div className={styles.controlsRow}>
           <div className={styles.pillsGroup}>
             {["all", "pending", "approved", "rejected", "draft"].map((filter) => (
               <button
                 key={filter}
-                onClick={() => setActiveFilter(filter)}
+                onClick={() => { setActiveFilter(filter); setErrorContext(null); }}
                 className={`${styles.filterPill} ${activeFilter === filter ? styles.filterPillActive : ""}`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -193,7 +138,7 @@ export default function AdminRequestsPage() {
                     <span className={`${styles.statusBadge} ${styles[`status_${item.status}`]}`}>
                       {item.status}
                     </span>
-                    <button onClick={() => { setSelectedProposal(item); setIsDrawerOpen(true); }} className={styles.reviewButton}>
+                    <button onClick={() => { setSelectedProposal(item); setIsDrawerOpen(true); setErrorContext(null); }} className={styles.reviewButton}>
                       Review
                     </button>
                   </div>
@@ -204,7 +149,7 @@ export default function AdminRequestsPage() {
         </div>
       </div>
 
-      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); }} />}
+      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); }} />}
 
       <div className={`${styles.sidebarDrawerContainer} ${isDrawerOpen ? styles.drawerOpenActive : ""}`}>
         {selectedProposal && (
@@ -214,7 +159,7 @@ export default function AdminRequestsPage() {
                 <span className={styles.drawerSubheadingSpan}>{selectedProposal.category} PROPOSAL</span>
                 <h2 className={styles.drawerMainHeadingTitle}>{selectedProposal.eventName}</h2>
               </div>
-              <button onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); }} className={styles.closeDrawerButtonX}>✕</button>
+              <button onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); }} className={styles.closeDrawerButtonX}>✕</button>
             </div>
 
             <div className={styles.drawerScrollableContentArea}>
@@ -236,7 +181,7 @@ export default function AdminRequestsPage() {
                 </div>
               </div>
 
-              <div className={styles.gridMetaParametersRow} style={{ marginTop: "1.5rem" }}>
+              <div className={`${styles.gridMetaParametersRow} ${styles.metaRowSpacer}`}>
                 <div>
                   <h4 className={styles.metaLabelHeaderTitle}>BUDGET ESTIMATE</h4>
                   <p className={styles.metaValueHighlightText}>${selectedProposal.estimatedBudget}</p>
