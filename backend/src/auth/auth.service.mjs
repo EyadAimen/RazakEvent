@@ -183,5 +183,7 @@ export const resetPassword = async (rawToken, newPassword) => {
         passwordHash,
         passwordResetToken: null,
         passwordResetExpiry: null,
+        refreshTokenHash: null,
+        refreshTokenExpiry: null,
     })
 }
