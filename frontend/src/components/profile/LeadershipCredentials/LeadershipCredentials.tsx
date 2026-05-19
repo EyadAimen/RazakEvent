@@ -1,9 +1,9 @@
 import { ShieldCheck } from "lucide-react";
-import type { LeadClub } from "../utils/interfaces/profile.interface";
+import type { ClubOverview } from "@/types/lead";
 import styles from "./LeadershipCredentials.module.css";
 
 type Props = {
-  club: LeadClub;
+  club: ClubOverview;
 };
 
 function getTenure(createdAt: string): string {

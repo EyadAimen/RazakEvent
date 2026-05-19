@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/lib/auth";
+import Navbar from "@/components/shared/navbar/navbar";
+import styles from "./admin.module.css";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -19,5 +21,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!allowed) return null;
 
-  return <>{children}</>;
+  return (
+    <div className={styles.shell}>
+      <Navbar />
+      <div className={styles.content}>{children}</div>
+    </div>
+  );
 }

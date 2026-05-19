@@ -5,6 +5,7 @@ import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2 } from "lucide-
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
 import type { ClubOverview, ClubMember, MembershipRequest, ClubTab } from "@/types/lead";
+import Alert from "@/components/shared/alertComponent/alert";
 import styles from "./page.module.css";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -18,6 +19,7 @@ export default function MyClubPage() {
   const [tab, setTab]           = useState<ClubTab>("members");
   const [search, setSearch]     = useState("");
   const [acting, setActing]     = useState<string | number | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -56,7 +58,7 @@ export default function MyClubPage() {
           .catch(() => {});
       }
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Action failed");
+      setActionError(err instanceof Error ? err.message : "Action failed.");
     } finally {
       setActing(null);
     }
@@ -64,14 +66,13 @@ export default function MyClubPage() {
 
   const handleRemoveMember = async (userId: string) => {
     if (acting !== null) return;
-    if (!confirm("Remove this member from the club?")) return;
     setActing(userId);
     try {
       await apiFetchAuth(`/clubs/mine/members/${userId}`, { method: "DELETE" });
       setMembers(prev => prev.filter(m => m.userId !== userId));
       setClub(prev => prev ? { ...prev, memberCount: prev.memberCount - 1 } : prev);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to remove member");
+      setActionError(err instanceof Error ? err.message : "Failed to remove member.");
     } finally {
       setActing(null);
     }
@@ -113,7 +114,7 @@ export default function MyClubPage() {
   }
 
   const typeLabel = club.type === "community" ? "Community" : "Club";
-  const pendingDraft = club.eventStats.total - club.eventStats.approved - club.eventStats.rejected;
+  const pendingDraft = club.stats.total - club.stats.approved - club.stats.rejected;
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -142,7 +143,7 @@ export default function MyClubPage() {
               </div>
               <div className={styles.statDivider} />
               <div className={styles.stat}>
-                <span className={styles.statValue}>{club.eventStats.total}</span>
+                <span className={styles.statValue}>{club.stats.total}</span>
                 <span className={styles.statLabel}><CalendarCheck size={12} />EVENTS</span>
               </div>
             </div>
@@ -151,9 +152,9 @@ export default function MyClubPage() {
           {/* ── Event summary strip ───────────────────────────────────────── */}
           <div className={styles.eventStatsRow}>
             {[
-              { value: club.eventStats.total,    label: "Total Proposed", cls: ""               },
-              { value: club.eventStats.approved, label: "Approved",       cls: styles.approved  },
-              { value: club.eventStats.rejected, label: "Rejected",       cls: styles.rejected  },
+              { value: club.stats.total,    label: "Total Proposed", cls: ""               },
+              { value: club.stats.approved, label: "Approved",       cls: styles.approved  },
+              { value: club.stats.rejected, label: "Rejected",       cls: styles.rejected  },
               { value: pendingDraft,             label: "Pending / Draft", cls: styles.pending  },
             ].map(s => (
               <div key={s.label} className={styles.eventStat}>
@@ -297,6 +298,9 @@ export default function MyClubPage() {
 
         </div>
       </div>
+
+      <Alert variant="loading" isOpen={acting !== null} onClose={() => {}} message="Processing…" />
+      <Alert variant="error" isOpen={actionError !== null} message={actionError ?? ""} onClose={() => setActionError(null)} />
     </div>
   );
 }

@@ -1,15 +1,5 @@
-export interface LeadClub {
-  id: number;
-  name: string;
-  type: "club" | "community";
-  createdAt: string;
-  stats: {
-    total: number;
-  };
-}
-
 export interface VolunteeringRecord {
-  id: string;
+  id: number;
   eventName: string;
   date: string;
   role: string;

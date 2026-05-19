@@ -29,6 +29,7 @@ export default function StudentProfile() {
   const [saving, setSaving] = useState(false);
   const [apiLoading, setApiLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     setUser(getUser());
@@ -42,18 +43,16 @@ export default function StudentProfile() {
   async function handleSaveName(name: string) {
     if (!user) return;
     setSaving(true);
-    setApiLoading(true);
     try {
-      await updateProfileName({ fullName: name });
-      const updated = { ...user, fullName: name };
-      saveUser(updated);
-      setUser(updated);
+      const result = await updateProfileName({ fullName: name });
+      saveUser(result.user);
+      setUser(result.user);
+      setActionSuccess(result.message);
       setModalOpen(false);
     } catch (err) {
       setApiError(err instanceof Error ? err.message : "Failed to update name.");
     } finally {
       setSaving(false);
-      setApiLoading(false);
     }
   }
 
