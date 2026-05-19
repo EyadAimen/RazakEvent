@@ -47,6 +47,8 @@ next-env.d.ts
 
 # local test artifacts
 /postman/
-backend/seed.mjs
+backend/seed*.mjs
+backend/migrate_drop_club_members_uq.mjs
 
-.claude
+# Claude Code local settings
+.claude/

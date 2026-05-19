@@ -3,8 +3,9 @@ import { ClubEntity } from "./clubs.entity.mjs";
 import { ClubMemberEntity } from "./club_members.entity.mjs";
 import { ClubRequestEntity } from "./club_requests.entity.mjs";
 import { UserEntity } from "../users/users.entity.mjs";
-import { MembershipRequestEntity } from "../requests/membership_requests.entity.mjs";
 import { EventProposalEntity } from "../proposals/proposals.entity.mjs";
+import { EventEntity } from "../events/events.entity.mjs";
+import { MembershipRequestEntity } from "../requests/membership_requests.entity.mjs";
 import { In } from "typeorm";
 import { NotFoundError, ForbiddenError, ConflictError, ValidationError } from "../shared/errors.mjs";
 
@@ -12,8 +13,9 @@ const clubRepo           = () => appDataSource.getRepository(ClubEntity);
 const clubMemberRepo     = () => appDataSource.getRepository(ClubMemberEntity);
 const clubRequestRepo    = () => appDataSource.getRepository(ClubRequestEntity);
 const userRepo           = () => appDataSource.getRepository(UserEntity);
-const membershipReqRepo  = () => appDataSource.getRepository(MembershipRequestEntity);
 const proposalRepo       = () => appDataSource.getRepository(EventProposalEntity);
+const eventRepo          = () => appDataSource.getRepository(EventEntity);
+const membershipReqRepo  = () => appDataSource.getRepository(MembershipRequestEntity);
 
 const VALID_STATUSES = ["pending", "approved", "rejected"];
 

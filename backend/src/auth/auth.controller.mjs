@@ -2,11 +2,11 @@ import { signup, login, refresh, logout, verifyEmail, forgotPassword, resetPassw
 import { authenticate } from "./auth.middleware.mjs"
 
 export const signupHandler = async (req, res, next) => {
-    const { name, email, password, matricNumber, role } = req.body;
+    const { name, email, password, matricNumber, role, clubId } = req.body;
 
     try {
-        const result = await signup(name, email, password, matricNumber, role);
-        res.status(201).json({ user: result });
+        const result = await signup(name, email, password, matricNumber, role, clubId);
+        res.status(201).json(result);
     } catch(err) {
         next(err)
     }
