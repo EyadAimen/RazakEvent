@@ -34,6 +34,50 @@ router.get("/", authenticate, requireRole("admin"), async (req, res) => {
     }
 });
 
+router.patch("/profile", authenticate, async (req, res) => {
+    const { fullName } = req.body;
+
+    if (!fullName || !fullName.trim()) {
+        return res.status(400).json({
+            success: false,
+            message: "Full name is required."
+        });
+    }
+
+    try {
+        const user = await userRepository.findOneBy({ id: req.user.userId });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+        await userRepository.update(req.user.userId, { fullName: fullName.trim() });
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile updated successfully.",
+            data: {
+                id: user.id,
+                fullName: fullName.trim(),
+                email: user.email,
+                staffOrMatricId: user.staffOrMatricId,
+                role: user.role,
+                isEmailVerified: user.isEmailVerified,
+                createdAt: user.createdAt,
+            }
+        });
+    } catch (error) {
+        console.error("Error in PATCH /api/users/profile via TypeORM:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error updating profile."
+        });
+    }
+});
+
 router.patch("/:id/role", authenticate, requireRole("admin"), async (req, res) => {
     const { id } = req.params;
     const { role } = req.body;
