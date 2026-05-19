@@ -114,7 +114,7 @@ export default function MyClubPage() {
   }
 
   const typeLabel = club.type === "community" ? "Community" : "Club";
-  const pendingDraft = club.stats.total - club.stats.approved - club.stats.rejected;
+  const pendingDraft = club.eventStats.total - club.eventStats.approved - club.eventStats.rejected;
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ export default function MyClubPage() {
               </div>
               <div className={styles.statDivider} />
               <div className={styles.stat}>
-                <span className={styles.statValue}>{club.stats.total}</span>
+                <span className={styles.statValue}>{club.eventStats.total}</span>
                 <span className={styles.statLabel}><CalendarCheck size={12} />EVENTS</span>
               </div>
             </div>
@@ -152,9 +152,9 @@ export default function MyClubPage() {
           {/* ── Event summary strip ───────────────────────────────────────── */}
           <div className={styles.eventStatsRow}>
             {[
-              { value: club.stats.total,    label: "Total Proposed", cls: ""               },
-              { value: club.stats.approved, label: "Approved",       cls: styles.approved  },
-              { value: club.stats.rejected, label: "Rejected",       cls: styles.rejected  },
+              { value: club.eventStats.total,    label: "Total Proposed", cls: ""               },
+              { value: club.eventStats.approved, label: "Approved",       cls: styles.approved  },
+              { value: club.eventStats.rejected, label: "Rejected",       cls: styles.rejected  },
               { value: pendingDraft,             label: "Pending / Draft", cls: styles.pending  },
             ].map(s => (
               <div key={s.label} className={styles.eventStat}>

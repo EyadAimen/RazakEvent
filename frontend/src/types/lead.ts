@@ -81,9 +81,9 @@ export interface ClubOverview {
   name: string;
   type: "club" | "community";
   description: string;
-  createdAt: string;
+  createdAt?: string;
   memberCount: number;
-  stats: { total: number; approved: number; rejected: number };
+  eventStats: { total: number; approved: number; rejected: number };
   pendingRequests: number;
 }
 
