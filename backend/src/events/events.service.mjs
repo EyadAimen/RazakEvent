@@ -1,14 +1,21 @@
+import { In } from "typeorm";
 import appDataSource from "../../config/dbConfig.mjs";
 import { EventEntity } from "./events.entity.mjs";
 import { EventProposalEntity } from "../proposals/proposals.entity.mjs";
 import { ClubEntity } from "../clubs/clubs.entity.mjs";
 import { UserEntity } from "../users/users.entity.mjs";
+import { VenueEntity } from "../venues/venues.entity.mjs";
+import { VolunteeringRoleEntity } from "../volunteering/volunteering_roles.entity.mjs";
+import { VolunteeringApplicationEntity } from "../volunteering/volunteering_applications.entity.mjs";
 import { NotFoundError, ForbiddenError, ValidationError } from "../shared/errors.mjs";
 
 const eventRepo    = () => appDataSource.getRepository(EventEntity);
 const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
 const clubRepo     = () => appDataSource.getRepository(ClubEntity);
 const userRepo     = () => appDataSource.getRepository(UserEntity);
+const venueRepo    = () => appDataSource.getRepository(VenueEntity);
+const roleRepo     = () => appDataSource.getRepository(VolunteeringRoleEntity);
+const appRepo      = () => appDataSource.getRepository(VolunteeringApplicationEntity);
 
 // Helpers
 
@@ -34,18 +41,14 @@ async function enrichProposal(proposal) {
         ? await clubRepo().findOne({ where: { id: proposal.clubId } })
         : null;
 
-    // If the proposal has a live event, use the event id so links are correct
-    const event = proposal.status === "approved"
-        ? await eventRepo().findOne({ where: { proposalId: proposal.id } })
-        : null;
-
+    // Always use proposal.id — event.id lives in a separate table and can collide numerically
     return {
-        id:          String(event?.id ?? proposal.id),
-        name:        proposal.eventName,
-        clubName:    club?.name ?? "Unknown Club",
-        clubType:    club?.type ?? "club",
-        eventDate:   proposal.proposedDate ?? null,
-        attendees:   0,
+        id:        String(proposal.id),
+        name:      proposal.eventName,
+        clubName:  club?.name ?? "Unknown Club",
+        clubType:  club?.type ?? "club",
+        eventDate: proposal.proposedDate ?? null,
+        attendees: 0,
         status,
     };
 }
@@ -247,6 +250,126 @@ export const uploadProposalPdf = async (eventId, leadId, fileUrl) => {
     await proposalRepo().update(Number(eventId), { proposalPdfUrl: fileUrl });
     const updated = await proposalRepo().findOne({ where: { id: Number(eventId) } });
     return enrichProposal(updated);
+};
+
+// ── Lead — Full event detail (with venue, budget, volunteering) ───────────────
+
+export const getEventDetail = async (eventId, leadId) => {
+    const id = Number(eventId);
+
+    // IDs in the system are always proposal IDs — resolve the live event from the proposal
+    const proposal = await proposalRepo().findOne({ where: { id } });
+    if (!proposal) throw new NotFoundError("Event not found");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+
+    const liveEvent = proposal.status === "approved"
+        ? await eventRepo().findOne({ where: { proposalId: proposal.id } })
+        : null;
+
+    const status = await resolveStatus(proposal);
+    const club   = proposal.clubId
+        ? await clubRepo().findOne({ where: { id: proposal.clubId } })
+        : null;
+    const venue  = proposal.venueId
+        ? await venueRepo().findOne({ where: { id: proposal.venueId } })
+        : null;
+
+    let volunteeringStatus = null;
+    let volunteers = [];
+
+    if (liveEvent) {
+        volunteeringStatus = liveEvent.volunteeringStatus;
+        const roles = await roleRepo().find({ where: { eventId: liveEvent.id } });
+
+        if (roles.length > 0) {
+            const roleIds = roles.map(r => r.id);
+            const applications = await appRepo().find({ where: { roleId: In(roleIds) } });
+
+            if (applications.length > 0) {
+                const studentIds = [...new Set(applications.map(a => a.studentId))];
+                const students   = await userRepo().findBy({ id: In(studentIds) });
+                const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+                const roleMap    = Object.fromEntries(roles.map(r => [r.id, r]));
+
+                volunteers = applications.map(app => ({
+                    applicationId:   app.id,
+                    studentName:     studentMap[app.studentId]?.fullName ?? "Unknown",
+                    studentMatricId: studentMap[app.studentId]?.staffOrMatricId ?? null,
+                    appliedAt:       app.appliedAt,
+                    status:          app.status,
+                    roleName:        roleMap[app.roleId]?.roleName ?? "Volunteer",
+                }));
+            }
+        }
+    }
+
+    return {
+        id:                  String(proposal.id),
+        name:                proposal.eventName,
+        clubName:            club?.name ?? "Unknown Club",
+        clubType:            club?.type ?? "club",
+        eventDate:           proposal.proposedDate ?? null,
+        status,
+        venueName:           venue?.name ?? null,
+        budget:              proposal.estimatedBudget ? Number(proposal.estimatedBudget) : null,
+        proposalPdfUrl:      proposal.proposalPdfUrl ?? null,
+        adminComment:        proposal.adminComment ?? null,
+        volunteeringStatus,
+        volunteers,
+    };
+};
+
+// ── Lead — Toggle volunteering open / closed ─────────────────────────────────
+
+export const toggleVolunteering = async (eventId, leadId, newStatus) => {
+    const id = Number(eventId);
+    const event = await eventRepo().findOne({ where: { id } });
+    if (!event) throw new NotFoundError("Event not found");
+
+    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
+    if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+
+    if (!["open", "closed"].includes(newStatus)) throw new ValidationError("Status must be 'open' or 'closed'");
+    if (event.volunteeringStatus === "full") throw new ValidationError("Cannot change status when all slots are full");
+
+    await eventRepo().update(id, { volunteeringStatus: newStatus });
+    return { volunteeringStatus: newStatus };
+};
+
+// ── Lead — Decide on a volunteer application ──────────────────────────────────
+
+export const decideVolunteerApplication = async (eventId, applicationId, leadId, decision) => {
+    const id  = Number(eventId);
+    const aid = Number(applicationId);
+
+    const event = await eventRepo().findOne({ where: { id } });
+    if (!event) throw new NotFoundError("Event not found");
+
+    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
+    if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+
+    const application = await appRepo().findOne({ where: { id: aid } });
+    if (!application) throw new NotFoundError("Application not found");
+
+    const role = await roleRepo().findOne({ where: { id: application.roleId } });
+    if (!role || role.eventId !== event.id) throw new ForbiddenError("Application does not belong to this event");
+
+    if (!["accepted", "rejected"].includes(decision)) throw new ValidationError("Decision must be 'accepted' or 'rejected'");
+    if (application.status !== "pending") throw new ValidationError("Only pending applications can be reviewed");
+
+    await appRepo().update(aid, { status: decision, reviewedAt: new Date() });
+
+    if (decision === "accepted") {
+        await roleRepo().update(application.roleId, { slotsFilled: () => "slots_filled + 1" });
+        const updatedRole = await roleRepo().findOne({ where: { id: application.roleId } });
+        if (updatedRole && updatedRole.slotsFilled >= updatedRole.slotsAvailable) {
+            const allRoles = await roleRepo().find({ where: { eventId: event.id } });
+            const allFull  = allRoles.every(r => r.slotsFilled >= r.slotsAvailable);
+            if (allFull) await eventRepo().update(id, { volunteeringStatus: "full" });
+        }
+    }
+
+    return { applicationId: aid, status: decision };
 };
 
 // ── Admin — All events overview

@@ -189,6 +189,21 @@
   color: var(--color-neutral-500);
 }
 
+.readonlyField {
+  width: 100%;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-md);
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+  border: var(--border-thin) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  box-sizing: border-box;
+}
+
 .select {
   width: 100%;
   height: 46px;
