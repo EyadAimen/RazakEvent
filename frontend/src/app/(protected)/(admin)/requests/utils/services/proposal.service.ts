@@ -1,3 +1,5 @@
+"use  client";
+
 import { useState, useEffect } from "react";
 import { apiFetch, ApiError } from "@/lib/api";
 import { Proposal } from "../interfaces/proposal.interface";
