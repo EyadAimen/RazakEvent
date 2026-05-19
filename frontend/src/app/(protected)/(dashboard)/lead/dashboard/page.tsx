@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   PlusCircle,
   Users,
@@ -140,10 +141,10 @@ export default function LeadDashboard() {
                 Welcome back, {data.leadName.split(" ")[0]}
               </h1>
             </div>
-            <button className={styles.profileBtn}>
+            <Link href="/lead/profile" className={styles.profileBtn}>
               <User size={15} />
               View Profile
-            </button>
+            </Link>
           </div>
 
           {/* ── Deadline alert ── */}
