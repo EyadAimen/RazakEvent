@@ -13,10 +13,17 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [alertError, setAlertError] = useState<string | null>(null);
-  const [resendStatus, setResendStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
+  const [resendStatus, setResendStatus] = useState<"idle" | "sent" | "error">("idle");
 
   const validate = () => {
-    if (!email.trim()) { setEmailError("Email is required"); return false; }
+    if (!email.trim()) {
+      setEmailError("Email is required");
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]*utm\.my$/.test(email.trim())) {
+      setEmailError("Email must end with utm.my");
+      return false;
+    }
     setEmailError("");
     return true;
   };
@@ -26,7 +33,7 @@ export default function ForgotPasswordPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+      await apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email: email.trim() }) });
       setSubmitted(true);
     } catch (err) {
       setAlertError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
@@ -36,12 +43,14 @@ export default function ForgotPasswordPage() {
   };
 
   const handleResend = async () => {
-    setResendStatus("loading");
+    setLoading(true);
     try {
-      await apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+      await apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email: email.trim() }) });
       setResendStatus("sent");
     } catch {
       setResendStatus("error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,8 +68,8 @@ export default function ForgotPasswordPage() {
             {resendStatus === "sent" ? (
               <p className={styles.resendSuccess}>Reset link resent!</p>
             ) : (
-              <button className={styles.resendButton} onClick={handleResend} disabled={resendStatus === "loading"}>
-                {resendStatus === "loading" ? "Sending..." : "Resend reset link"}
+              <button className={styles.resendButton} onClick={handleResend} disabled={loading}>
+                Resend reset link
               </button>
             )}
             {resendStatus === "error" && (
@@ -74,9 +83,14 @@ export default function ForgotPasswordPage() {
           <>
             <p className={styles.subtitle}>Enter your email and we&apos;ll send you a reset link.</p>
             <form className={styles.form} onSubmit={handleSubmit}>
-              <InputField label="Email Address" type="email" value={email} errorMessage={emailError}
+              <InputField
+                label="Email Address"
+                type="email"
+                value={email}
+                errorMessage={emailError}
                 placeholder="your.email@graduate.utm.my"
-                onChange={(v) => { setEmail(v); setEmailError(""); }} />
+                onChange={(v) => { setEmail(v); setEmailError(""); }}
+              />
               <button type="submit" className={styles.submitButton} disabled={loading}>
                 {loading ? "Sending..." : "Send Reset Link"}
               </button>
