@@ -1,67 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import styles from "./requests.module.css";
-import { Proposal } from "./utils/interfaces/proposal.interface";
-import { fetchDatabaseProposals, patchProposalDecision } from "./utils/services/proposal.service";
-import { ApiError } from "@/lib/api";
+import { useProposals } from "./utils/services/proposal.service";
 
 export default function AdminRequestsPage() {
-  const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
-
-  const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [actionLoading, setActionLoading] = useState<boolean>(false);
-  const [errorContext, setErrorContext] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        setErrorContext(null);
-        const data = await fetchDatabaseProposals();
-        setProposals(data);
-      } catch (err: any) {
-        console.error("Component catch layer caught initial initialization failures:", err);
-        setErrorContext(err.message || "Could not synchronize database connection data stacks.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
-
-  const handleDecisionUpdate = async (id: number, decisionStatus: "approved" | "rejected") => {
-    try {
-      setActionLoading(true);
-      setErrorContext(null);
-      await patchProposalDecision(id, decisionStatus);
-      
-      setProposals((prev) =>
-        prev.map((prop) => (prop.id === id ? { ...prop, status: decisionStatus } : prop))
-      );
-      setIsDrawerOpen(false);
-      setSelectedProposal(null);
-    } catch (err: any) {
-      console.error(`Component catch layer caught action assignment failure on row ID ${id}:`, err);
-      setErrorContext(err.message || "The remote server rejected this status mutation choice.");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const filteredProposals = proposals.filter((p: Proposal) => {
-    const matchesFilter = activeFilter === "all" || p.status === activeFilter;
-
-    const matchesSearch =
-      p.eventName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.requesterName.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesFilter && matchesSearch;
-  });
+  const {
+    loading,
+    errorContext,
+    filteredProposals,
+    searchQuery,
+    activeFilter,
+    isDrawerOpen,
+    selectedProposal,
+    actionLoading,
+    setSearchQuery,
+    setActiveFilter,
+    handleDecisionUpdate,
+    openDrawer,
+    closeDrawer,
+  } = useProposals();
 
   if (loading) {
     return (
@@ -71,7 +28,7 @@ export default function AdminRequestsPage() {
     );
   }
 
-  if (errorContext && proposals.length === 0) {
+  if (errorContext && filteredProposals.length === 0) {
     return (
       <div className={`${styles.loadingContainer} ${styles.errorTextContainer}`}>
         <p>System Error Encountered: {errorContext}</p>
@@ -82,7 +39,6 @@ export default function AdminRequestsPage() {
   return (
     <div className={styles.containerWrapperRelative}>
       <div className={`${styles.mainPageWrapper} ${isDrawerOpen ? styles.faintBackgroundActive : ""}`}>
-
         <div className={styles.headerArea}>
           <h1 className={styles.text4xl}>Club Requests</h1>
           <p className={styles.textMuted}>Manage and review new club and community proposals.</p>
@@ -95,7 +51,7 @@ export default function AdminRequestsPage() {
             {["all", "pending", "approved", "rejected", "draft"].map((filter) => (
               <button
                 key={filter}
-                onClick={() => { setActiveFilter(filter); setErrorContext(null); }}
+                onClick={() => setActiveFilter(filter)}
                 className={`${styles.filterPill} ${activeFilter === filter ? styles.filterPillActive : ""}`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -119,7 +75,7 @@ export default function AdminRequestsPage() {
           {filteredProposals.length === 0 ? (
             <div className={styles.emptyState}>No requests match selection filters.</div>
           ) : (
-            filteredProposals.map((item: Proposal) => (
+            filteredProposals.map((item) => (
               <div key={item.id} className={styles.proposalCard}>
                 <div className={`${styles.categoryBlock} ${item.category === "COMMUNITY" ? styles.bgCommunity : styles.bgClub}`}>
                   <span className={styles.categoryText}>{item.category}</span>
@@ -138,7 +94,7 @@ export default function AdminRequestsPage() {
                     <span className={`${styles.statusBadge} ${styles[`status_${item.status}`]}`}>
                       {item.status}
                     </span>
-                    <button onClick={() => { setSelectedProposal(item); setIsDrawerOpen(true); setErrorContext(null); }} className={styles.reviewButton}>
+                    <button onClick={() => openDrawer(item)} className={styles.reviewButton}>
                       Review
                     </button>
                   </div>
@@ -149,7 +105,7 @@ export default function AdminRequestsPage() {
         </div>
       </div>
 
-      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); }} />}
+      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={closeDrawer} />}
 
       <div className={`${styles.sidebarDrawerContainer} ${isDrawerOpen ? styles.drawerOpenActive : ""}`}>
         {selectedProposal && (
@@ -159,7 +115,7 @@ export default function AdminRequestsPage() {
                 <span className={styles.drawerSubheadingSpan}>{selectedProposal.category} PROPOSAL</span>
                 <h2 className={styles.drawerMainHeadingTitle}>{selectedProposal.eventName}</h2>
               </div>
-              <button onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); }} className={styles.closeDrawerButtonX}>✕</button>
+              <button onClick={closeDrawer} className={styles.closeDrawerButtonX}>✕</button>
             </div>
 
             <div className={styles.drawerScrollableContentArea}>
@@ -196,10 +152,18 @@ export default function AdminRequestsPage() {
             </div>
 
             <div className={styles.drawerStickyActionBarRow}>
-              <button disabled={actionLoading} onClick={() => handleDecisionUpdate(selectedProposal.id, "approved")} className={styles.approveActionLargeButton}>
+              <button
+                disabled={actionLoading}
+                onClick={() => handleDecisionUpdate(selectedProposal.id, "approved")}
+                className={styles.approveActionLargeButton}
+              >
                 {actionLoading ? "Processing..." : "✓ Approve"}
               </button>
-              <button disabled={actionLoading} onClick={() => handleDecisionUpdate(selectedProposal.id, "rejected")} className={styles.rejectActionLargeButton}>
+              <button
+                disabled={actionLoading}
+                onClick={() => handleDecisionUpdate(selectedProposal.id, "rejected")}
+                className={styles.rejectActionLargeButton}
+              >
                 {actionLoading ? "Processing..." : "✕ Reject"}
               </button>
             </div>
