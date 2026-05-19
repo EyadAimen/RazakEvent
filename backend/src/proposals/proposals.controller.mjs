@@ -27,7 +27,7 @@ export const reviewProposal = async (req, res) => {
         const { id } = req.params;
         const { status, adminComment, venueId } = req.body;
 
-        const adminId = req.user?.id || "SYSTEM_ADMIN";
+        const adminId = req.user?.userId ?? null;
 
         if (!["approved", "rejected"].includes(status?.toLowerCase())) {
             return res.status(400).json({ error: "Invalid status decision. Must be 'approved' or 'rejected'." });
