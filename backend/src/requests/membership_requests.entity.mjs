@@ -24,6 +24,11 @@ export const MembershipRequestEntity = new EntitySchema({
             type: "uuid",
             nullable: true,
         },
+        leadComment: {
+            name: "lead_comment",
+            type: "text",
+            nullable: true,
+        },
         status: {
             type: "enum",
             enum: ["pending", "approved", "rejected"],

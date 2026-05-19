@@ -50,5 +50,8 @@ next-env.d.ts
 backend/seed.mjs
 backend/seed_*.mjs
 backend/migrate_*.mjs
+backend/seed*.mjs
+backend/migrate_drop_club_members_uq.mjs
 
-.claude
+# Claude Code local settings
+.claude/
