@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   PlusCircle,
   Users,
@@ -76,6 +77,7 @@ const QUICK_ACTIONS = [
 
 /* ── Component ────────────────────────────────────────── */
 export default function LeadDashboard() {
+  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -186,7 +188,7 @@ export default function LeadDashboard() {
             ) : (
               <div className={styles.eventsGrid}>
                 {events.map((event) => (
-                  <LeadEventCard key={event.id} event={event} onManage={() => {}} />
+                  <LeadEventCard key={event.id} event={event} onManage={id => router.push(`/lead/events/${id}`)} />
                 ))}
               </div>
             )}

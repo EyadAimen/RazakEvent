@@ -24,8 +24,27 @@ export const createEventHandler = async (req, res, next) => {
 
 export const getEventHandler = async (req, res, next) => {
     try {
-        const event = await eventsService.getEventById(req.params.eventId, req.user.userId);
+        const event = await eventsService.getEventDetail(req.params.eventId, req.user.userId);
         res.status(200).json({ event });
+    } catch (err) { next(err); }
+};
+
+export const toggleVolunteeringHandler = async (req, res, next) => {
+    try {
+        const result = await eventsService.toggleVolunteering(req.params.eventId, req.user.userId, req.body.status);
+        res.status(200).json(result);
+    } catch (err) { next(err); }
+};
+
+export const decideVolunteerApplicationHandler = async (req, res, next) => {
+    try {
+        const result = await eventsService.decideVolunteerApplication(
+            req.params.eventId,
+            req.params.applicationId,
+            req.user.userId,
+            req.body.decision,
+        );
+        res.status(200).json(result);
     } catch (err) { next(err); }
 };
 

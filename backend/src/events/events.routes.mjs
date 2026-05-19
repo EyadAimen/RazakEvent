@@ -30,6 +30,22 @@ router.post(
     eventsController.createEventHandler
 );
 
+// PATCH /api/events/:eventId/volunteering  — toggle volunteering open/closed
+router.patch(
+    "/:eventId/volunteering",
+    authenticate,
+    requireRole("lead"),
+    eventsController.toggleVolunteeringHandler
+);
+
+// PATCH /api/events/:eventId/volunteers/:applicationId/decision  — accept/reject applicant
+router.patch(
+    "/:eventId/volunteers/:applicationId/decision",
+    authenticate,
+    requireRole("lead"),
+    eventsController.decideVolunteerApplicationHandler
+);
+
 // GET /api/events/:eventId  — single event detail (lead-owned)
 router.get(
     "/:eventId",
