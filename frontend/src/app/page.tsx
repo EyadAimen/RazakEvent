@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Button from "@/components/shared/button/button";
+import Alert from "@/components/shared/alertComponent/alert";
 import {
   getRefreshToken,
   getAccessToken,
@@ -11,12 +12,20 @@ import {
   refreshAccessToken,
   logoutUser,
   clearSession,
+  getUser,
 } from "@/lib/auth";
+
+const ROLE_REDIRECTS: Record<string, string> = {
+  lead:    "/lead/dashboard",
+  admin:   "/admin/dashboard",
+  student: "/dashboard",
+  member:  "/dashboard",
+};
 
 export default function Home() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
 
   useEffect(() => {
     const verifySession = async () => {
@@ -28,7 +37,11 @@ export default function Home() {
       try {
         const { accessToken } = await refreshAccessToken(refreshToken);
         setAccessToken(accessToken);
-        setChecking(false);
+
+        // Redirect to the role-specific dashboard
+        const user = getUser();
+        const destination = user ? (ROLE_REDIRECTS[user.role] ?? "/dashboard") : "/dashboard";
+        router.replace(destination);
       } catch {
         clearSession();
         router.replace("/login");
@@ -39,7 +52,6 @@ export default function Home() {
   }, [router]);
 
   const handleLogout = async () => {
-    setLoggingOut(true);
     const accessToken = getAccessToken();
     if (accessToken) {
       try {
@@ -56,12 +68,36 @@ export default function Home() {
 
   return (
     <div className={styles.home}>
-      <h1>
-        Home Page
-        </h1>
-      <Button variant="danger" onClick={handleLogout} isLoading={loggingOut}>
-        Log Out
-      </Button>
+      <h1>Component Test Page</h1>
+
+      <h2>Buttons</h2>
+      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+        <Button variant="default">Default Button</Button>
+        <Button variant="primary">Primary Button</Button>
+        <Button variant="red">Red Button</Button>
+        <Button variant="default" disabled>Disabled</Button>
+      </div>
+
+      <h2>Alert</h2>
+      <div style={{ display: "flex", gap: "12px" }}>
+        <Button variant="primary" onClick={() => setAlertOpen(true)}>
+          Open Alert
+        </Button>
+        <Button variant="red" onClick={handleLogout}>
+          Log Out
+        </Button>
+      </div>
+
+      <Alert isOpen={alertOpen} onClose={() => setAlertOpen(false)}>
+        <p style={{ fontWeight: 700, fontSize: "24px", margin: 0 }}>Pending Changes</p>
+        <p style={{ color: "var(--color-neutral-500)", textAlign: "center", margin: 0 }}>
+          You have unsaved changes to this user&apos;s role. Are you sure you want to discard them?
+        </p>
+        <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+          <Button variant="default" onClick={() => setAlertOpen(false)}>Cancel</Button>
+          <Button variant="red" onClick={() => setAlertOpen(false)}>Discard</Button>
+        </div>
+      </Alert>
     </div>
   );
 }

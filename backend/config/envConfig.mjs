@@ -9,6 +9,9 @@ const envVars = {
     database: process.env.DATABASE,
     port: process.env.PORT,
     jwtSecret: process.env.JWT_SECRET,
+    resendApiKey: process.env.RESEND_API_KEY,
+    mailFrom: process.env.MAIL_FROM,
+    frontendUrl: process.env.FRONTEND_URL,
 }
 
 export default envVars;

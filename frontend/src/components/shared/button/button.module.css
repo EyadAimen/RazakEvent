@@ -1,12 +1,19 @@
 .button {
-  height: 46px;
-  padding: 0 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: var(--text-body-size, 16px);
-  font-weight: var(--weight-semibold, 600);
+  min-height: 46px;
+  min-width: 80px;
+  padding: 12px 24px;
+  background-color: var(--btn-bg, var(--color-neutral-100));
+  color: var(--btn-fg, var(--color-neutral-800));
+  border: 2px solid var(--btn-border, var(--color-neutral-150));
+  border-radius: 12px;
+  font-size: var(--text-body-size);
+  font-weight: var(--weight-semibold);
   cursor: pointer;
-  transition: opacity var(--transition-fast, 0.2s ease);
+  transition: opacity var(--transition-fast);
+}
+
+.button:hover:not(:disabled) {
+  opacity: 0.85;
 }
 
 .button:disabled {
@@ -14,20 +21,20 @@
   cursor: not-allowed;
 }
 
+.default {
+  --btn-bg: var(--color-neutral-100);
+  --btn-fg: var(--color-neutral-800);
+  --btn-border: var(--color-neutral-150);
+}
+
 .primary {
-  background-color: var(--color-primary-500, #3b6fd4);
-  color: var(--color-neutral-50, #ffffff);
+  --btn-bg: var(--color-ktr-yellow);
+  --btn-fg: var(--color-primary-500);
+  --btn-border: transparent;
 }
 
-.primary:hover:not(:disabled) {
-  background-color: var(--color-primary-800, #1a2d6e);
-}
-
-.danger {
-  background-color: var(--color-status-red, #e11d48);
-  color: var(--color-neutral-50, #ffffff);
-}
-
-.danger:hover:not(:disabled) {
-  opacity: 0.85;
+.red {
+  --btn-bg: var(--color-status-red);
+  --btn-fg: var(--color-neutral-50);
+  --btn-border: transparent;
 }

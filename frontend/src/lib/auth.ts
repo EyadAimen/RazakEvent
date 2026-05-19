@@ -1,6 +1,6 @@
 import { apiFetch } from "./api";
 
-export type UserRole = "student" | "member" | "lead";
+export type UserRole = "student" | "member" | "lead" | "admin";
 
 export interface AuthUser {
   id: string;
@@ -22,17 +22,38 @@ export interface SignupResponse {
   user: AuthUser;
 }
 
-// ── Token storage ─────────────────────────────────────────────────────────────
+// ── Token / session storage ────────────────────────────────────────────────────
 
-export function saveSession(tokens: Pick<LoginResponse, "accessToken" | "refreshToken">) {
-  localStorage.setItem("accessToken", tokens.accessToken);
-  localStorage.setItem("refreshToken", tokens.refreshToken);
+export function saveSession(data: LoginResponse) {
+  localStorage.setItem("accessToken", data.accessToken);
+  localStorage.setItem("refreshToken", data.refreshToken);
+  saveUser(data.user);
 }
 
 export function clearSession() {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
 }
+
+// ── User storage ───────────────────────────────────────────────────────────────
+
+export function saveUser(user: AuthUser) {
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
+export function getUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem("user");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+// ── Token accessors ────────────────────────────────────────────────────────────
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -50,7 +71,10 @@ export function setAccessToken(token: string) {
 
 // ── API calls ─────────────────────────────────────────────────────────────────
 
-export async function loginUser(email: string, password: string): Promise<LoginResponse> {
+export async function loginUser(
+  email: string,
+  password: string
+): Promise<LoginResponse> {
   return apiFetch<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),

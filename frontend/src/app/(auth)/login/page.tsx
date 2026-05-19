@@ -9,7 +9,7 @@ import InputField from "@/components/shared/input-field/input-field";
 import Circle from "@/components/shared/circle/circle";
 import Rectangle from "@/components/shared/rectangle/rectangle";
 import Triangle from "@/components/shared/triangle/triangle";
-import { loginUser, saveSession } from "@/lib/auth";
+import { loginUser, saveSession, saveUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
 
 export default function Login() {
@@ -58,6 +58,7 @@ export default function Login() {
         try {
             const data = await loginUser(email, password);
             saveSession(data);
+            saveUser(data.user);
             router.push("/");
         } catch (err) {
             if (err instanceof ApiError) {
@@ -122,7 +123,7 @@ export default function Login() {
                             </button>
                         </div>
 
-                        <a href="#" className={styles.forgotLink}>
+                        <a href="/forgot-password" className={styles.forgotLink}>
                             Forgot Password?
                         </a>
 

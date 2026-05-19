@@ -44,3 +44,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local test artifacts
+/postman/
+backend/seed.mjs
+
+.claude

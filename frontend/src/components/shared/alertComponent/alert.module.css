@@ -1,0 +1,61 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--popup-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn var(--transition-veryfast) ease;
+}
+
+.container {
+  position: relative;
+  background-color: var(--color-neutral-50);
+  border-radius: 32px;
+  padding: 48px 40px 40px;
+  width: 100%;
+  max-width: 480px;
+  min-height: 200px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: slideUp var(--transition-veryfast) ease;
+}
+
+.closeButton {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px;
+  transition: color var(--transition-veryfast);
+}
+
+.closeButton:hover {
+  color: var(--color-neutral-800);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@media (max-width: 540px) {
+  .container {
+    max-width: calc(100% - 32px);
+    padding: 40px 24px 32px;
+  }
+}

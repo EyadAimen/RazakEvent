@@ -5,53 +5,78 @@ export const UserEntity = new EntitySchema({
     tableName: "users",
     columns: {
         id: {
-            type: "varchar",
+            type: "uuid",
             primary: true,
             generated: "uuid",
         },
-        name: {
+        fullName: {
+            name: "full_name",
             type: "varchar",
-            length: 100,
+            nullable: false,
+        },
+        staffOrMatricId: {
+            name: "staff_or_matric_id",
+            type: "varchar",
+            nullable: true,
+            unique: true,
         },
         email: {
             type: "varchar",
-            length: 150,
             unique: true,
+            nullable: false,
         },
         passwordHash: {
+            name: "password_hash",
             type: "varchar",
-            length: 255,
-        },
-        matricNumber: {
-            type: "varchar",
-            length: 9,
-            nullable: true,
+            nullable: false,
         },
         role: {
             type: "enum",
             enum: ["student", "member", "lead", "admin"],
+            nullable: false,
         },
-        clubId: {
+        profilePhotoUrl: {
+            name: "profile_photo_url",
             type: "varchar",
-            length: 36,
             nullable: true,
         },
-        isApproved: {
-            type: "boolean",
-            default: false,
-        },
+        // Auth fields — not in DB design doc but required for JWT refresh flow
         refreshTokenHash: {
+            name: "refresh_token_hash",
             type: "varchar",
-            length: 64,
             nullable: true,
         },
         refreshTokenExpiry: {
-            type: "timestamp",
+            name: "refresh_token_expiry",
+            type: "timestamptz",
+            nullable: true,
+        },
+        isEmailVerified: {
+            type: "boolean",
+            default: false,
+            nullable: false,
+        },
+        emailVerifyToken: {
+            type: "varchar",
+            nullable: true,
+        },
+        emailVerifyExpiry: {
+            type: "timestamptz",
+            nullable: true,
+        },
+        passwordResetToken: {
+            type: "varchar",
+            nullable: true,
+        },
+        passwordResetExpiry: {
+            type: "timestamptz",
             nullable: true,
         },
         createdAt: {
-            type: "timestamp",
+            name: "created_at",
+            type: "timestamptz",
             createDate: true,
+            nullable: false,
         },
     },
 });

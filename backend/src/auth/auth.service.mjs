@@ -3,7 +3,8 @@ import { UserEntity } from "../users/users.entity.mjs";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { UnauthenticatedError, ForbiddenError, ConflictError, ValidationError } from "../shared/errors.mjs";
+import { UnauthenticatedError, ForbiddenError, ConflictError, ValidationError, NotFoundError } from "../shared/errors.mjs";
+import { sendVerificationEmail, sendPasswordResetEmail } from "../shared/mailer.mjs";
 import envVars from "../../config/envConfig.mjs";
 
 const userRepo = () => appDataSource.getRepository(UserEntity)
@@ -20,17 +21,25 @@ export const signup = async (name, email, password, matricNumber, role) => {
 
     const existingEmail = await userRepo().findOne({ where: { email }})
     if(existingEmail) throw new ConflictError("Email already registered")
-    
-    const existingMatric = await userRepo().findOne({ where: { matricNumber }})
+
+    const existingMatric = await userRepo().findOne({ where: { staffOrMatricId: matricNumber }})
     if(existingMatric) throw new ConflictError("Matric Number already registered")
 
     const passwordHash = await bcrypt.hash(password, 10)
-    const isApproved = role === "student"
 
-    const user = userRepo().create( {name, email, passwordHash, matricNumber, role, isApproved })
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const emailVerifyToken = crypto.createHash('sha256').update(rawToken).digest('hex')
+    const emailVerifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+    const user = userRepo().create({
+        fullName: name, email, passwordHash, staffOrMatricId: matricNumber, role,
+        emailVerifyToken, emailVerifyExpiry,
+    })
     await userRepo().save(user)
 
-    const { passwordHash: _, ...safeUser } = user
+    await sendVerificationEmail(email, rawToken)
+
+    const { passwordHash: _, emailVerifyToken: __, emailVerifyExpiry: ___, ...safeUser } = user
     return safeUser
 }
 
@@ -41,7 +50,7 @@ export const login = async (email, password) => {
     const match = await bcrypt.compare(password, user.passwordHash)
     if(!match) throw new UnauthenticatedError("Invalid credentials")
 
-    if(!user.isApproved) throw new ForbiddenError('Account pending approval')
+    if(!user.isEmailVerified) throw new ForbiddenError("Please verify your email before logging in")
 
     const accessToken = jwt.sign(
         { userId: user.id, role: user.role },
@@ -79,4 +88,46 @@ export const refresh = async (refreshToken) => {
 
 export const logout = async (userId) => {
     await userRepo().update(userId, { refreshTokenHash: null, refreshTokenExpiry: null })
+}
+
+export const verifyEmail = async (rawToken) => {
+    const hash = crypto.createHash('sha256').update(rawToken).digest('hex')
+    const user = await userRepo().findOne({ where: { emailVerifyToken: hash } })
+
+    if (!user) throw new ValidationError("Invalid or expired verification link")
+    if (user.emailVerifyExpiry < new Date()) throw new ValidationError("Verification link has expired")
+
+    await userRepo().update(user.id, {
+        isEmailVerified: true,
+        emailVerifyToken: null,
+        emailVerifyExpiry: null,
+    })
+}
+
+export const forgotPassword = async (email) => {
+    const user = await userRepo().findOne({ where: { email } })
+    // Always return silently to avoid revealing whether the email exists
+    if (!user) return
+
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const passwordResetToken = crypto.createHash('sha256').update(rawToken).digest('hex')
+    const passwordResetExpiry = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+
+    await userRepo().update(user.id, { passwordResetToken, passwordResetExpiry })
+    await sendPasswordResetEmail(email, rawToken)
+}
+
+export const resetPassword = async (rawToken, newPassword) => {
+    const hash = crypto.createHash('sha256').update(rawToken).digest('hex')
+    const user = await userRepo().findOne({ where: { passwordResetToken: hash } })
+
+    if (!user) throw new ValidationError("Invalid or expired reset link")
+    if (user.passwordResetExpiry < new Date()) throw new ValidationError("Reset link has expired")
+
+    const passwordHash = await bcrypt.hash(newPassword, 10)
+    await userRepo().update(user.id, {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpiry: null,
+    })
 }
