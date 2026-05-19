@@ -215,15 +215,10 @@ export default function ProposeEventPage() {
               <div className={styles.row}>
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel}>Event Type</label>
-                  <select
-                    className={styles.select}
-                    value={clubType}
-                    onChange={e => setClubType(e.target.value as "club" | "community")}
-                  >
-                    <option value="club">Club Event</option>
-                    <option value="community">Community Event</option>
-                  </select>
-                  <p className={styles.fieldHint}>Auto-set based on your club type.</p>
+                  <div className={styles.readonlyField}>
+                    {clubType === "community" ? "Community Event" : "Club Event"}
+                  </div>
+                  <p className={styles.fieldHint}>Determined by your club type.</p>
                 </div>
 
                 <InputField
