@@ -12,6 +12,7 @@ export default function ForgotPasswordPage() {
     const [apiError, setApiError] = useState("");
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [resendStatus, setResendStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
 
     const validate = () => {
         if (!email.trim()) {
@@ -54,6 +55,31 @@ export default function ForgotPasswordPage() {
                         <p className={styles.message}>
                             If that email is registered, a password reset link has been sent.
                         </p>
+                        {resendStatus === "sent" ? (
+                            <p className={styles.resendSuccess}>Reset link resent!</p>
+                        ) : (
+                            <button
+                                className={styles.resendButton}
+                                onClick={async () => {
+                                    setResendStatus("loading");
+                                    try {
+                                        await apiFetch("/auth/forgot-password", {
+                                            method: "POST",
+                                            body: JSON.stringify({ email }),
+                                        });
+                                        setResendStatus("sent");
+                                    } catch {
+                                        setResendStatus("error");
+                                    }
+                                }}
+                                disabled={resendStatus === "loading"}
+                            >
+                                {resendStatus === "loading" ? "Sending..." : "Resend reset link"}
+                            </button>
+                        )}
+                        {resendStatus === "error" && (
+                            <p className={styles.resendError}>Something went wrong. Please try again.</p>
+                        )}
                         <div className={styles.backLink}>
                             <Link href="/login">Back to Login</Link>
                         </div>
