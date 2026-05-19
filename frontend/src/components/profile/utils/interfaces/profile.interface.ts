@@ -17,5 +17,5 @@ export interface VolunteeringRecord {
 }
 
 export interface UpdateProfilePayload {
-  name: string;
+  fullName: string;
 }

@@ -44,8 +44,8 @@ export default function LeadProfile() {
     setSaving(true);
     setApiLoading(true);
     try {
-      await updateProfileName({ name });
-      const updated = { ...user, name };
+      await updateProfileName({ fullName: name });
+      const updated = { ...user, fullName: name };
       saveUser(updated);
       setUser(updated);
       setModalOpen(false);
@@ -169,7 +169,7 @@ export default function LeadProfile() {
 
       <EditProfileModal
         isOpen={modalOpen}
-        currentName={user.name}
+        currentName={user.fullName}
         saving={saving}
         onClose={() => setModalOpen(false)}
         onSave={handleSaveName}

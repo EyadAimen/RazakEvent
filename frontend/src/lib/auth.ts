@@ -4,11 +4,11 @@ export type UserRole = "student" | "member" | "lead" | "admin";
 
 export interface AuthUser {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
-  matricNumber: string;
+  staffOrMatricId: string;
   role: UserRole;
-  isApproved: boolean;
+  isEmailVerified: boolean;
   createdAt: string;
 }
 

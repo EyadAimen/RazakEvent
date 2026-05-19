@@ -34,8 +34,8 @@ function getAvatarStyle(name: string | undefined): ColorPair {
 }
 
 export default function ProfileCard({ user, onEditClick }: Props) {
-  const initial = user.name?.trim()[0]?.toUpperCase() ?? "?";
-  const avatarStyle = getAvatarStyle(user.name);
+  const initial = user.fullName?.trim()[0]?.toUpperCase() ?? "?";
+  const avatarStyle = getAvatarStyle(user.fullName);
 
   return (
     <div className={styles.card}>
@@ -49,14 +49,14 @@ export default function ProfileCard({ user, onEditClick }: Props) {
         </div>
       </div>
       <div className={styles.info}>
-        <h2 className={styles.name}>{user.name}</h2>
+        <h2 className={styles.name}>{user.fullName}</h2>
         <span className={styles.roleBadge}>{user.role}</span>
         <div className={styles.details}>
           <div className={styles.detailRow}>
             <Hash size={14} className={styles.detailIcon} />
             <div>
               <p className={styles.detailLabel}>Matric Number</p>
-              <p className={styles.detailValue}>{user.matricNumber}</p>
+              <p className={styles.detailValue}>{user.staffOrMatricId}</p>
             </div>
           </div>
           <div className={styles.detailRow}>
