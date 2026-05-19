@@ -49,7 +49,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   lead: [
     { label: "Dashboard",     href: "/dashboard",    icon: LayoutDashboard },
     { label: "Events",        href: "/events",       icon: Ticket          },
-    { label: "Propose Event", href: "/propose-event",icon: FilePlus        },
+    { label: "Propose Event", href: "/lead/events/new", icon: FilePlus      },
     { label: "My Club",       href: "/my-club",      icon: Users           },
     { label: "Certificates",  href: "/certificates", icon: Award           },
     { label: "Profile",       href: "/profile",      icon: User            },
