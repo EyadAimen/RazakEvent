@@ -53,7 +53,7 @@ export default function Unauthorized() {
           bottom: "10vh",
           right: "18vw",
           transform: "rotate(12deg)",
-          background: "#3B6FD4",
+          background: "background: var(--color-primary-500)",
           opacity: 0.5
         }}
       />

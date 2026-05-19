@@ -411,3 +411,16 @@
     background-color: var(--color-neutral-150);
     color: var(--color-neutral-500);
 }
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: var(--text-body-size);
+}
+
+.errorTextContainer {
+  color: var(--color-status-red);
+  font-weight: var(--weight-medium);
+}
