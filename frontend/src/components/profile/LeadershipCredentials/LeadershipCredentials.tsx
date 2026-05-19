@@ -6,7 +6,8 @@ type Props = {
   club: ClubOverview;
 };
 
-function getTenure(createdAt: string): string {
+function getTenure(createdAt?: string): string {
+  if (!createdAt) return "—";
   const year = new Date(createdAt).getFullYear();
   return `${year} – ${year + 1}`;
 }
@@ -40,7 +41,7 @@ export default function LeadershipCredentials({ club }: Props) {
           </div>
           <div className={styles.stat}>
             <p className={styles.statLabel}>TOTAL EVENTS</p>
-            <p className={styles.statValue}>{club.stats.total} Proposed</p>
+            <p className={styles.statValue}>{club.eventStats.total} Proposed</p>
           </div>
         </div>
       </div>
