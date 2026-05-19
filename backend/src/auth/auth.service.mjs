@@ -117,6 +117,19 @@ export const forgotPassword = async (email) => {
     await sendPasswordResetEmail(email, rawToken)
 }
 
+export const resendVerification = async (email) => {
+    const user = await userRepo().findOne({ where: { email } })
+    // Silent no-op to avoid revealing whether email exists or is already verified
+    if (!user || user.isEmailVerified) return
+
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const emailVerifyToken = crypto.createHash('sha256').update(rawToken).digest('hex')
+    const emailVerifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+    await userRepo().update(user.id, { emailVerifyToken, emailVerifyExpiry })
+    await sendVerificationEmail(email, rawToken)
+}
+
 export const resetPassword = async (rawToken, newPassword) => {
     const hash = crypto.createHash('sha256').update(rawToken).digest('hex')
     const user = await userRepo().findOne({ where: { passwordResetToken: hash } })

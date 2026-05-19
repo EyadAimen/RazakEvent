@@ -48,5 +48,7 @@ next-env.d.ts
 # local test artifacts
 /postman/
 backend/seed.mjs
+backend/seed_*.mjs
+backend/migrate_*.mjs
 
 .claude
