@@ -1,0 +1,28 @@
+.card {
+  background: var(--color-neutral-50);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 8px;
+}
+
+.btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  border-radius: 12px;
+  font-size: var(--text-body-size);
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-status-red);
+  cursor: pointer;
+  transition: background var(--transition-veryfast);
+}
+
+.btn:hover {
+  background: var(--color-semantic-red-10);
+}

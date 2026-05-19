@@ -1,0 +1,95 @@
+.card {
+  background: var(--color-neutral-50);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.headerIcon {
+  color: var(--color-primary-500);
+}
+
+.title {
+  font-size: var(--text-body-size);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  flex: 1;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small-size);
+}
+
+.table thead tr {
+  border-bottom: 1px solid var(--color-neutral-150);
+}
+
+.table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: var(--text-caption-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-tight);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 12px;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover td {
+  background: var(--color-neutral-100);
+}
+
+.eventName {
+  font-weight: var(--weight-medium);
+  color: var(--color-primary-500) !important;
+}
+
+.date {
+  white-space: nowrap;
+  color: var(--color-neutral-600) !important;
+}
+
+.empty {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-400);
+  text-align: center;
+  padding: 40px 0;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .table th:nth-child(2),
+  .table td:nth-child(2) {
+    display: none;
+  }
+}

@@ -1,4 +1,4 @@
-import { apiFetch } from "./api";
+import { apiFetch, apiFetchAuth } from "./api";
 
 export type UserRole = "student" | "member" | "lead" | "admin";
 
@@ -88,10 +88,18 @@ export async function refreshAccessToken(refreshToken: string): Promise<{ access
   });
 }
 
-export async function logoutUser(accessToken: string): Promise<void> {
-  await apiFetch<void>("/auth/logout", {
+export async function logoutUser(): Promise<void> {
+  try {
+    await apiFetchAuth<void>("/auth/logout", { method: "POST" });
+  } finally {
+    clearSession();
+  }
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  await apiFetch<void>("/auth/forgot-password", {
     method: "POST",
-    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ email }),
   });
 }
 
