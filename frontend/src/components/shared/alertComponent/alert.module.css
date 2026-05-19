@@ -65,6 +65,28 @@
   color: var(--color-semantic-red);
 }
 
+/* ── Success variant ── */
+.successIcon {
+  color: var(--color-status-green);
+}
+
+.successTitle {
+  font-size: var(--text-h3-size);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+  text-align: center;
+}
+
+.successMessage {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  margin: 0;
+  text-align: center;
+  line-height: var(--text-body-height);
+}
+
 .errorTitle {
   font-size: var(--text-h3-size);
   font-family: var(--font-heading);

@@ -1,10 +1,10 @@
 "use client";
 
-import { HandHeart } from "lucide-react";
+import { Award } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
 import styles from "./page.module.css";
 
-export default function VolunteeringPage() {
+export default function CertificatesPage() {
   return (
     <div className={styles.page}>
       <div className={styles.body}>
@@ -14,13 +14,13 @@ export default function VolunteeringPage() {
         <Triangle style={{ right: "0px",  bottom: "60px",  transform: "rotate(20deg)",  borderBottomColor: "var(--color-primary-800)"   }} />
         <div className={styles.inner}>
           <div className={styles.heading}>
-            <h1 className={styles.title}>Volunteering</h1>
-            <p className={styles.subtitle}>Track your volunteering history and apply for new opportunities.</p>
+            <h1 className={styles.title}>Certificates</h1>
+            <p className={styles.subtitle}>View and download your earned certificates.</p>
           </div>
           <div className={styles.emptyCard}>
-            <HandHeart size={40} className={styles.emptyIcon} />
-            <p className={styles.emptyTitle}>No volunteering records</p>
-            <p className={styles.emptyDesc}>Events you volunteer for will appear here.</p>
+            <Award size={40} className={styles.emptyIcon} />
+            <p className={styles.emptyTitle}>No certificates yet</p>
+            <p className={styles.emptyDesc}>Certificates from completed events will appear here.</p>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import styles from "./requests.module.css";
 import { Proposal } from "./utils/interfaces/proposal.interface";
 import { fetchDatabaseProposals, patchProposalDecision } from "./utils/services/proposal.service";
-import { ApiError } from "@/lib/api";
+import Alert from "@/components/shared/alertComponent/alert";
 
 export default function AdminRequestsPage() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
@@ -16,6 +16,7 @@ export default function AdminRequestsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [errorContext, setErrorContext] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -35,19 +36,16 @@ export default function AdminRequestsPage() {
   }, []);
 
   const handleDecisionUpdate = async (id: number, decisionStatus: "approved" | "rejected") => {
+    setActionLoading(true);
     try {
-      setActionLoading(true);
-      setErrorContext(null);
       await patchProposalDecision(id, decisionStatus);
-      
       setProposals((prev) =>
         prev.map((prop) => (prop.id === id ? { ...prop, status: decisionStatus } : prop))
       );
       setIsDrawerOpen(false);
       setSelectedProposal(null);
     } catch (err: any) {
-      console.error(`Component catch layer caught action assignment failure on row ID ${id}:`, err);
-      setErrorContext(err.message || "The remote server rejected this status mutation choice.");
+      setActionError(err.message || "Failed to update proposal status.");
     } finally {
       setActionLoading(false);
     }
@@ -80,6 +78,7 @@ export default function AdminRequestsPage() {
   }
 
   return (
+    <>
     <div className={styles.containerWrapperRelative}>
       <div className={`${styles.mainPageWrapper} ${isDrawerOpen ? styles.faintBackgroundActive : ""}`}>
 
@@ -87,8 +86,6 @@ export default function AdminRequestsPage() {
           <h1 className={styles.text4xl}>Club Requests</h1>
           <p className={styles.textMuted}>Manage and review new club and community proposals.</p>
         </div>
-
-        {errorContext && <p className={styles.apiError}>{errorContext}</p>}
 
         <div className={styles.controlsRow}>
           <div className={styles.pillsGroup}>
@@ -207,5 +204,9 @@ export default function AdminRequestsPage() {
         )}
       </div>
     </div>
+
+      <Alert variant="loading" isOpen={actionLoading} onClose={() => {}} message="Processing decision…" />
+      <Alert variant="error" isOpen={actionError !== null} message={actionError ?? ""} onClose={() => setActionError(null)} />
+    </>
   );
 }
