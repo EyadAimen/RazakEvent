@@ -1,5 +1,7 @@
 import appDataSource from "../../config/dbConfig.mjs";
 import { UserEntity } from "../users/users.entity.mjs";
+import { MembershipRequestEntity } from "../requests/membership_requests.entity.mjs";
+import { ClubEntity } from "../clubs/clubs.entity.mjs";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -8,15 +10,20 @@ import { sendVerificationEmail, sendPasswordResetEmail } from "../shared/mailer.
 import envVars from "../../config/envConfig.mjs";
 
 const userRepo = () => appDataSource.getRepository(UserEntity)
+const clubRepo = () => appDataSource.getRepository(ClubEntity)
 const matricPattern = /^[A-Z]\d{2}[A-Z]{2}\d{4}$/i
 
-export const signup = async (name, email, password, matricNumber, role) => {
-    if(role==="admin") {
-        throw new ForbiddenError("Registering as Admin is not allowed")
+export const signup = async (name, email, password, matricNumber, role, clubId) => {
+    if (role === "admin" || role === "lead") {
+        throw new ForbiddenError("Registering as Admin or Lead is not allowed")
     }
 
     if (!matricPattern.test(matricNumber)) {
         throw new ValidationError("Invalid matric number format")
+    }
+
+    if (role === "member" && !clubId) {
+        throw new ValidationError("clubId is required when registering as a member")
     }
 
     const existingEmail = await userRepo().findOne({ where: { email }})
@@ -25,22 +32,56 @@ export const signup = async (name, email, password, matricNumber, role) => {
     const existingMatric = await userRepo().findOne({ where: { staffOrMatricId: matricNumber }})
     if(existingMatric) throw new ConflictError("Matric Number already registered")
 
-    const passwordHash = await bcrypt.hash(password, 10)
+    if (role === "member") {
+        const club = await clubRepo().findOne({ where: { id: clubId } })
+        if (!club) throw new NotFoundError("Club not found")
+    }
 
+    const passwordHash = await bcrypt.hash(password, 10)
     const rawToken = crypto.randomBytes(32).toString('hex')
     const emailVerifyToken = crypto.createHash('sha256').update(rawToken).digest('hex')
     const emailVerifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+    if (role === "member") {
+        const queryRunner = appDataSource.createQueryRunner()
+        await queryRunner.connect()
+        await queryRunner.startTransaction()
+        try {
+            const user = queryRunner.manager.create(UserEntity, {
+                fullName: name, email, passwordHash, staffOrMatricId: matricNumber,
+                role: "student", emailVerifyToken, emailVerifyExpiry,
+            })
+            const savedUser = await queryRunner.manager.save(UserEntity, user)
+
+            const request = queryRunner.manager.create(MembershipRequestEntity, {
+                studentId: savedUser.id,
+                clubId,
+                status: "pending",
+            })
+            const savedRequest = await queryRunner.manager.save(MembershipRequestEntity, request)
+
+            await queryRunner.commitTransaction()
+            await sendVerificationEmail(email, rawToken)
+
+            const { passwordHash: _, emailVerifyToken: __, emailVerifyExpiry: ___, ...safeUser } = savedUser
+            return { user: safeUser, requestId: savedRequest.id }
+        } catch (err) {
+            await queryRunner.rollbackTransaction()
+            throw err
+        } finally {
+            await queryRunner.release()
+        }
+    }
 
     const user = userRepo().create({
         fullName: name, email, passwordHash, staffOrMatricId: matricNumber, role,
         emailVerifyToken, emailVerifyExpiry,
     })
     await userRepo().save(user)
-
     await sendVerificationEmail(email, rawToken)
 
     const { passwordHash: _, emailVerifyToken: __, emailVerifyExpiry: ___, ...safeUser } = user
-    return safeUser
+    return { user: safeUser }
 }
 
 export const login = async (email, password) => {

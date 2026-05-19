@@ -4,6 +4,7 @@ import envVars from "../config/envConfig.mjs"
 import appDataSource from "../config/dbConfig.mjs"
 import authRoutes from "./auth/auth.routes.mjs"
 import usersRoutes from "./users/users.routes.mjs"
+import membershipRequestsRoutes from "./requests/membership_requests.routes.mjs"
 import clubsRoutes from "./clubs/clubs.routes.mjs"
 import eventsRoutes from "./events/events.routes.mjs"
 import proposalsRoutes from "./proposals/proposals.routes.mjs"
@@ -18,6 +19,7 @@ app.use(express.json())
 app.use(cors())
 app.use("/api/auth", authRoutes)
 app.use("/api/users", usersRoutes)
+app.use("/api/requests/membership", membershipRequestsRoutes)
 app.use("/api/clubs", clubsRoutes)
 app.use("/api/events", eventsRoutes)
 app.use("/api/proposals", proposalsRoutes)
