@@ -18,6 +18,7 @@
 4. [Club / Community Lead Screens](#4-club--community-lead-screens)
 5. [Admin Screens](#5-admin-screens)
    - 5.8 [Club Requests — Review Queue](#58-club-requests--review-queue)
+   - 5.9 [Club / Community Details — Admin View](#59-club--community-details--admin-view)
 6. [Shared UI Components](#6-shared-ui-components)
 7. [Navigation Structure Summary](#7-navigation-structure-summary)
 
@@ -618,6 +619,31 @@
 
 ---
 
+### 5.9 Club / Community Details — Admin View
+**Route:** `/admin/clubs/:clubId`  
+**Accessible by:** Admin
+
+**Screen Content:**
+- Club / Community name (header, e.g. "Cybersecurity KTR")
+- Type badge: `Club` / `Community`
+- Club description / about section
+- **Club Info section:**
+  - Current Lead name
+  - Date created / approved
+  - Total members count
+- **Tab / section switcher:**
+  - **Overview tab** — club description, stats summary (total events proposed, approved, rejected, completed)
+  - **Members tab** — list of all club members with columns: Name | Student ID | Role (Lead / Member) | Join Date; with a search bar
+- **Actions (top right):**
+  - "Edit Club Info" button (name, description)
+  - "Change Lead" button — reassign lead role to another member
+
+**Navigation:**
+- Accessible from Admin's Club Requests review queue (after approval) or from a future Clubs Overview list
+- Breadcrumb: Admin / Clubs / [Club Name]
+
+---
+
 ## 6. Shared UI Components
 
 These components appear across multiple screens and roles:
@@ -733,6 +759,7 @@ Consistent colour-coded badge used everywhere:
   users                                     ← User management
   club-requests                             ← Club requests review queue
   club-requests/:requestId                  ← Club request detail & decision
+  clubs/:clubId                             ← Club / community details (admin view)
   profile                                   ← Profile
 ```
 
@@ -750,6 +777,7 @@ Consistent colour-coded badge used everywhere:
 | Certificate Generation | Lead: Manage Certificates; Student: My Certificates |
 | User Role Management | Admin: User Management |
 | Club / Community Creation & Lead Requests | Student: Become a Club Lead; Admin: Club Requests Review Queue |
+| Club / Community Management | Admin: Club Details (5.9) |
 | Post-Event Reporting | Lead: Submit Reports; Admin: Event Detail (admin view) |
 
 ---
