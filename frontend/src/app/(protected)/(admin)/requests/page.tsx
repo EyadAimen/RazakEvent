@@ -221,7 +221,7 @@ export default function AdminRequestsPage() {
               )}
               <div className={styles.fullDetailsButtonContainer}>
                 <button 
-                  onClick={() => router.push(`/events/${selectedProposal.id}`)} 
+                  onClick={() => router.push(`admin/events/${selectedProposal.id}`)} 
                   className={styles.fullDetailsButton}
                 >
                   🖼️ View Full Details & Poster Page
