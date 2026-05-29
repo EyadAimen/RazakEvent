@@ -83,6 +83,7 @@ export default function AdminEventDetailPage() {
                 </span>
               </div>
             )}
+
             {event.budget && (
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>BUDGET</span>
@@ -105,17 +106,17 @@ export default function AdminEventDetailPage() {
           </div>
 
           {event.proposalPdfUrl && (
-            <div className={styles.cardActions}>
-              <a
-                href={event.proposalPdfUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={styles.actionSecondary}
-              >
-                <Download size={14} /> View Proposal PDF
-              </a>
-            </div>
-          )}
+          <div className={styles.cardActions}>
+          <a
+      href={`http://localhost:5000${event.proposalPdfUrl}`}
+      target="_blank"
+      rel="noreferrer"
+      className={styles.actionSecondary}
+    >
+          <Download size={14} /> View Proposal PDF
+        </a>
+        </div>
+        )}
         </div>
       </div>
     </div>

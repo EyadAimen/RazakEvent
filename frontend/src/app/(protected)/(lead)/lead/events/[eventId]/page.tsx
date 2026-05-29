@@ -213,7 +213,7 @@ export default function LeadEventDetailPage() {
             <div className={styles.cardActions}>
               {event.proposalPdfUrl && (
                 <a
-                  href={event.proposalPdfUrl}
+                  href={`http://localhost:5000${event.proposalPdfUrl}`}
                   target="_blank"
                   rel="noreferrer"
                   className={styles.actionSecondary}

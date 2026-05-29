@@ -144,7 +144,7 @@ export default function SharedEventDetailPage() {
 
           {event.proposalPdfUrl && (
             <div className={styles.pdfLink}>
-              <a href={event.proposalPdfUrl} target="_blank" rel="noreferrer">
+              <a href={`http://localhost:5000${event.proposalPdfUrl}`} target="_blank" rel="noreferrer">
                 <Download size={14} /> View proposal PDF
               </a>
             </div>
