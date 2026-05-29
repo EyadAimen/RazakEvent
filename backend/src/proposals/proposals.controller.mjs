@@ -28,7 +28,7 @@ export const getAllProposals = async (req, res) => {
                 "proposal.created_at AS createdAt",
                 "user.full_name AS requesterName"
             ])
-            .orderBys({ "proposal.created_at": "DESC" });
+            .orderBy({ "proposal.created_at": "DESC" });
 
         if (status && ["draft", "pending", "approved", "rejected"].includes(status.toLowerCase())) {
             query.where("proposal.status = :status", { status: status.toLowerCase() });

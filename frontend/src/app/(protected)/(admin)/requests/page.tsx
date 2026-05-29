@@ -21,7 +21,7 @@ export default function AdminRequestsPage() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState<boolean>(false);
-  const [rejectionReason, setRejectionReason] = useState<string>( "");
+  const [rejectionReason, setRejectionReason] = useState<string>("");
 
   useEffect(() => {
     async function loadData() {
@@ -214,16 +214,15 @@ export default function AdminRequestsPage() {
               </div>
 
               {selectedProposal.status === "rejected" && selectedProposal.adminComment && (
-                <div className={styles.detailMetaBlockSection} style={{ marginTop: "16px", padding: "12px", backgroundColor: "#fef2f2", borderRadius: "6px", border: "1px solid #fca5a5" }}>
-                  <h4 className={styles.metaLabelHeaderTitle} style={{ color: "#dc2626" }}>❌ REJECTION REASON</h4>
-                  <p style={{ fontSize: "0.875rem", color: "#991b1b", marginTop: "4px" }}>{selectedProposal.adminComment}</p>
+                <div className={styles.rejectionInfoBlock}>
+                  <h4 className={styles.rejectionInfoTitle}>❌ REJECTION REASON</h4>
+                  <p className={styles.rejectionInfoText}>{selectedProposal.adminComment}</p>
                 </div>
               )}
-              <div className={styles.detailMetaBlockSection} style={{ marginTop: "24px" }}>
+              <div className={styles.fullDetailsButtonContainer}>
                 <button 
                   onClick={() => router.push(`/admin/events/${selectedProposal.id}`)} 
-                  className={styles.reviewButton}
-                  style={{ width: "100%", padding: "12px", textAlign: "center" }}
+                  className={styles.fullDetailsButton}
                 >
                   🖼️ View Full Details & Poster Page
                 </button>
@@ -245,24 +244,24 @@ export default function AdminRequestsPage() {
       </div>
 
       {isRejectionModalOpen && (
-        <div className={styles.drawerOverlayShield} style={{ zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ backgroundColor: "#fff", padding: "24px", borderRadius: "8px", width: "400px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "12px", color: "#111" }}>Specify Rejection Reason</h3>
+        <div className={styles.rejectionModalOverlay}>
+          <div className={styles.rejectionModalContent} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.rejectionModalTitle}>Specify Rejection Reason</h3>
             <textarea
-              style={{ width: "100%", height: "120px", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", marginBottom: "16px", color: "#333", fontFamily: "inherit" }}
+              className={styles.rejectionModalTextarea}
               placeholder="Provide clean and detailed reasons explaining why this proposal request is rejected..."
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
             />
-            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+            <div className={styles.rejectionModalActions}>
               <button 
-                style={{ padding: "8px 16px", borderRadius: "4px", backgroundColor: "#f3f4f6", color: "#4b5563", border: "none", cursor: "pointer" }}
+                className={styles.rejectionModalCancelButton}
                 onClick={() => { setIsRejectionModalOpen(false); setRejectionReason(""); }}
               >
                 Cancel
               </button>
               <button 
-                style={{ padding: "8px 16px", borderRadius: "4px", backgroundColor: "#ef4444", color: "#fff", border: "none", cursor: "pointer" }}
+                className={styles.rejectionModalSubmitButton}
                 onClick={submitRejectionFlow}
               >
                 Submit Rejection
