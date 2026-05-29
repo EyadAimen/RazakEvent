@@ -318,17 +318,35 @@ export const getStudentEventDetail = async (eventId) => {
   const id = Number(eventId);
   const proposal = await proposalRepo().findOne({ where: { id } });
   if (!proposal) throw new NotFoundError("Event not found");
-  // No ownership check
 
   const liveEvent = proposal.status === "approved"
     ? await eventRepo().findOne({ where: { proposalId: proposal.id } })
     : null;
+
   const club = proposal.clubId
     ? await clubRepo().findOne({ where: { id: proposal.clubId } })
     : null;
   const venue = proposal.venueId
     ? await venueRepo().findOne({ where: { id: proposal.venueId } })
     : null;
+
+  let volunteeringStatus = null;
+  let volunteerRoles = [];
+
+  if (liveEvent) {
+    volunteeringStatus = liveEvent.volunteeringStatus; // "open", "closed", "full"
+    const roles = await roleRepo().find({
+      where: { eventId: liveEvent.id },
+      order: { roleName: "ASC" },
+    });
+    volunteerRoles = roles.map(role => ({
+      id: role.id,
+      name: role.roleName,
+      slotsAvailable: role.slotsAvailable,
+      slotsFilled: role.slotsFilled,
+      remainingSlots: role.slotsAvailable - role.slotsFilled,
+    }));
+  }
 
   return {
     id: String(proposal.id),
@@ -342,9 +360,10 @@ export const getStudentEventDetail = async (eventId) => {
     budget: proposal.estimatedBudget ? Number(proposal.estimatedBudget) : null,
     proposalPdfUrl: proposal.proposalPdfUrl ?? null,
     adminComment: proposal.adminComment ?? null,
+    volunteeringStatus,    // "open", "closed", or "full"
+    volunteerRoles,        // array of roles
   };
 };
-
 // All other existing functions (getLeadDashboard, createEvent, getAllEvents, etc.) remain exactly as you had them.
 // ── Lead — Toggle volunteering open / closed ─────────────────────────────────
 
