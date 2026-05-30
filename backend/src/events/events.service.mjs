@@ -316,12 +316,13 @@ export const getEventDetail = async (eventId, userId, userRole) => {
 // Add this new function for student detail (no ownership check)
 export const getStudentEventDetail = async (eventId) => {
   const id = Number(eventId);
-  const proposal = await proposalRepo().findOne({ where: { id } });
-  if (!proposal) throw new NotFoundError("Event not found");
+  // First, find the event in the events table
+  const liveEvent = await eventRepo().findOne({ where: { id } });
+  if (!liveEvent) throw new NotFoundError("Event not found");
 
-  const liveEvent = proposal.status === "approved"
-    ? await eventRepo().findOne({ where: { proposalId: proposal.id } })
-    : null;
+  // Then get the associated proposal
+  const proposal = await proposalRepo().findOne({ where: { id: liveEvent.proposalId } });
+  if (!proposal) throw new NotFoundError("Associated proposal not found");
 
   const club = proposal.clubId
     ? await clubRepo().findOne({ where: { id: proposal.clubId } })
@@ -330,38 +331,35 @@ export const getStudentEventDetail = async (eventId) => {
     ? await venueRepo().findOne({ where: { id: proposal.venueId } })
     : null;
 
-  let volunteeringStatus = null;
+  let volunteeringStatus = liveEvent.volunteeringStatus ?? null;
   let volunteerRoles = [];
 
-  if (liveEvent) {
-    volunteeringStatus = liveEvent.volunteeringStatus; // "open", "closed", "full"
-    const roles = await roleRepo().find({
-      where: { eventId: liveEvent.id },
-      order: { roleName: "ASC" },
-    });
-    volunteerRoles = roles.map(role => ({
-      id: role.id,
-      name: role.roleName,
-      slotsAvailable: role.slotsAvailable,
-      slotsFilled: role.slotsFilled,
-      remainingSlots: role.slotsAvailable - role.slotsFilled,
-    }));
-  }
+  const roles = await roleRepo().find({
+    where: { eventId: liveEvent.id },
+    order: { roleName: "ASC" },
+  });
+  volunteerRoles = roles.map(role => ({
+    id: role.id,
+    name: role.roleName,
+    slotsAvailable: role.slotsAvailable,
+    slotsFilled: role.slotsFilled,
+    remainingSlots: role.slotsAvailable - role.slotsFilled,
+  }));
 
   return {
-    id: String(proposal.id),
-    name: proposal.eventName,
-    description: proposal.description,
+    id: String(liveEvent.id),
+    name: liveEvent.name,
+    description: liveEvent.description,
     clubName: club?.name ?? "Unknown Club",
     clubType: club?.type ?? "club",
-    eventDate: proposal.proposedDate ?? null,
-    status: liveEvent ? liveEvent.status : proposal.status,
+    eventDate: liveEvent.eventDate,
+    status: liveEvent.status,
     venueName: venue?.name ?? null,
     budget: proposal.estimatedBudget ? Number(proposal.estimatedBudget) : null,
     proposalPdfUrl: proposal.proposalPdfUrl ?? null,
     adminComment: proposal.adminComment ?? null,
-    volunteeringStatus,    // "open", "closed", or "full"
-    volunteerRoles,        // array of roles
+    volunteeringStatus,
+    volunteerRoles,
   };
 };
 // All other existing functions (getLeadDashboard, createEvent, getAllEvents, etc.) remain exactly as you had them.

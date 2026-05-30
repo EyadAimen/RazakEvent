@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Calendar, Loader2 } from "lucide-react";
 import { fetchSharedEvents } from "./utils/services/events.services";
 import { SharedEvent } from "./utils/interface/events.interface";
+import Alert from "@/components/shared/alertComponent/alert";
 import styles from "./events.module.css";
 
 type Tab = "all" | "approved" | "ongoing" | "completed" | "report_due";
@@ -27,7 +28,15 @@ export default function SharedEventsPage() {
 
   useEffect(() => {
     fetchSharedEvents()
-      .then(setEvents)
+      .then(data => {
+        // Filter upcoming events (eventDate >= today)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = data.filter(event => new Date(event.eventDate) >= today);
+        // Sort by date ascending (earliest first)
+        upcoming.sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
+        setEvents(upcoming);
+      })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -40,11 +49,11 @@ export default function SharedEventsPage() {
   });
 
   if (loading) {
-    return <div className={styles.loading}><Loader2 className={styles.spinner} /> Loading events...</div>;
+    return <Alert isOpen={true} onClose={() => {}} variant="loading" message="Loading events..." />;
   }
 
   if (error) {
-    return <div className={styles.error}>⚠ {error}</div>;
+    return <Alert isOpen={true} onClose={() => {}} variant="error" message={error} />;
   }
 
   return (
@@ -86,7 +95,7 @@ export default function SharedEventsPage() {
                 <div
                   key={event.id}
                   className={styles.card}
-                  onClick={() => router.push(`/student/events/${event.id}`)} // detail page will be created later
+                  onClick={() => router.push(`/student/events/${event.id}`)}
                 >
                   <div className={styles.cardHeader}>
                     <h3>{event.name}</h3>

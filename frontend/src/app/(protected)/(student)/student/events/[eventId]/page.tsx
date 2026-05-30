@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, MapPin, Wallet, Download, Loader2, Users } from "lucide-react";
 import { fetchSharedEventDetail } from "./utils/services/events.services";
 import { SharedEventDetail } from "./utils/interface/events.interface";
+import Alert from "@/components/shared/alertComponent/alert";
 import styles from "./events.module.css";
 
 export default function SharedEventDetailPage() {
@@ -25,19 +26,15 @@ export default function SharedEventDetailPage() {
   }, [eventId]);
 
   if (loading) {
-    return (
-      <div className={styles.loading}>
-        <Loader2 className={styles.spinner} /> Loading event...
-      </div>
-    );
+    return <Alert isOpen={true} onClose={() => {}} variant="loading" message="Loading event details..." />;
   }
 
   if (error) {
-    return <div className={styles.error}>⚠ {error}</div>;
+    return <Alert isOpen={true} onClose={() => router.back()} variant="error" message={error} />;
   }
 
   if (!event) {
-    return <div className={styles.error}>Event not found</div>;
+    return <Alert isOpen={true} onClose={() => router.back()} variant="error" message="Event not found" />;
   }
 
   const statusClass = styles[event.status] || styles.defaultStatus;

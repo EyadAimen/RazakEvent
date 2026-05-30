@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, MapPin, Wallet, Download, Loader2 } from "lucide-react";
 import { fetchAdminEventDetail } from "./utils/services/events.services";
 import { AdminEventDetail as EventType } from "./utils/interface/events.interface";
+import Alert from "@/components/shared/alertComponent/alert";
 import styles from "./events.module.css";
 
 export default function AdminEventDetailPage() {
@@ -26,19 +27,29 @@ export default function AdminEventDetailPage() {
   }, [eventId]);
 
   if (loading) {
-    return (
-      <div className={styles.loadingWrapper}>
-        <Loader2 className={styles.spinner} /> Loading event...
-      </div>
-    );
+    return <Alert isOpen={true} onClose={() => {}} variant="loading" message="Loading event details..." />;
   }
 
   if (error) {
-    return <div className={styles.loadingWrapper} style={{ color: "red" }}>⚠ {error}</div>;
+    return (
+      <Alert
+        isOpen={true}
+        onClose={() => router.back()}  // Go back on error dismiss
+        variant="error"
+        message={error}
+      />
+    );
   }
 
   if (!event) {
-    return <div className={styles.loadingWrapper}>Event not found</div>;
+    return (
+      <Alert
+        isOpen={true}
+        onClose={() => router.back()}
+        variant="error"
+        message="Event not found"
+      />
+    );
   }
 
   // Map status to a CSS class for badge styling
@@ -83,7 +94,6 @@ export default function AdminEventDetailPage() {
                 </span>
               </div>
             )}
-
             {event.budget && (
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>BUDGET</span>
@@ -106,17 +116,17 @@ export default function AdminEventDetailPage() {
           </div>
 
           {event.proposalPdfUrl && (
-          <div className={styles.cardActions}>
-          <a
-      href={`http://localhost:5000${event.proposalPdfUrl}`}
-      target="_blank"
-      rel="noreferrer"
-      className={styles.actionSecondary}
-    >
-          <Download size={14} /> View Proposal PDF
-        </a>
-        </div>
-        )}
+            <div className={styles.cardActions}>
+              <a
+                href={`http://localhost:5000${event.proposalPdfUrl}`}
+                target="_blank"
+                rel="noreferrer"
+                className={styles.actionSecondary}
+              >
+                <Download size={14} /> View Proposal PDF
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>
