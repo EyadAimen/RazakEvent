@@ -20,8 +20,15 @@ export interface ClubMember {
 export interface ClubEvent {
   id: number;
   name: string;
-  date: string;
-  location: string;
-  fill: string;
-  spots: string;
+  description: string;
+  eventDate: string;
+  status: "approved" | "ongoing" | "completed" | "report_due";
+  venueId: number;
+}
+
+export interface AvailableUser {
+  id: string;
+  fullName: string;
+  email: string;
+  staffOrMatricId: string | null;
 }

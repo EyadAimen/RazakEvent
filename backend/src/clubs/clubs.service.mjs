@@ -262,12 +262,12 @@ export const getMyClub = async (leadId) => {
         description: club.description,
         memberCount: memberCount + 1, // include lead
         eventStats: stats,
-        id:             club.id,
-        name:           club.name,
-        type:           club.type,
-        description:    club.description,
-        memberCount:    memberCount + 1,
-        eventStats:     stats,
+        id: club.id,
+        name: club.name,
+        type: club.type,
+        description: club.description,
+        memberCount: memberCount + 1,
+        eventStats: stats,
         pendingRequests,
     };
 };
@@ -276,7 +276,7 @@ export const getMyClub = async (leadId) => {
 
 const buildClubStats = async (club) => {
     const memberCount = await clubMemberRepo().count({ where: { clubId: club.id } });
-    const proposals   = await proposalRepo().find({ where: { clubId: club.id } });
+    const proposals = await proposalRepo().find({ where: { clubId: club.id } });
     const stats = proposals.reduce(
         (acc, p) => {
             acc.total++;
@@ -326,7 +326,7 @@ export const getMyClubs = async (leadId) => {
 
 const resolveLeadClub = async (leadId, clubId) => {
     const where = clubId ? { id: parseInt(clubId), leadId } : { leadId };
-    const club  = await clubRepo().findOne({ where });
+    const club = await clubRepo().findOne({ where });
     if (!club) throw new NotFoundError("Club not found or you are not its lead");
     return club;
 };
@@ -507,6 +507,216 @@ export const getClubMembersByClubId = async (clubId) => {
 
         return a.fullName.localeCompare(b.fullName);
     });
+};
+
+export const listUsersWithoutClub = async ({ search }) => {
+    const memberRecords = await clubMemberRepo().find();
+    const memberIds = memberRecords.map((record) => record.userId);
+
+    const clubs = await clubRepo().find({
+        where: { deletedAt: null },
+    });
+
+    const leadIds = clubs
+        .map((club) => club.leadId)
+        .filter(Boolean);
+
+    const blockedIds = [...new Set([...memberIds, ...leadIds])];
+
+    let users = await userRepo().find();
+
+    users = users.filter((user) =>
+        user.role === "student" &&
+        !blockedIds.includes(user.id)
+    );
+
+    if (search) {
+        const term = search.toLowerCase();
+
+        users = users.filter((user) =>
+            user.fullName.toLowerCase().includes(term) ||
+            user.email.toLowerCase().includes(term) ||
+            user.staffOrMatricId?.toLowerCase().includes(term)
+        );
+    }
+
+    return users.map((user) => ({
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        staffOrMatricId: user.staffOrMatricId,
+        role: user.role,
+    }));
+};
+
+export const addClubMemberByAdmin = async (clubId, userId) => {
+    const club = await clubRepo().findOne({
+        where: {
+            id: Number(clubId),
+            deletedAt: null,
+        },
+    });
+
+    if (!club) throw new NotFoundError("Club not found");
+
+    if (club.leadId === userId) {
+        throw new ConflictError("This user is already the club lead");
+    }
+
+    const user = await userRepo().findOne({
+        where: { id: userId },
+    });
+
+    if (!user) throw new NotFoundError("User not found");
+
+    const alreadyInAnyClub = await clubMemberRepo().findOne({
+        where: { userId },
+    });
+
+    if (alreadyInAnyClub) {
+        throw new ConflictError("This user is already in a club");
+    }
+
+    await clubMemberRepo().save(
+        clubMemberRepo().create({
+            userId,
+            clubId: club.id,
+        })
+    );
+
+    await userRepo().update(userId, { role: "member" });
+
+    return { message: "Member added successfully" };
+};
+
+export const removeClubMemberByAdmin = async (clubId, userId) => {
+    const club = await clubRepo().findOne({
+        where: {
+            id: Number(clubId),
+            deletedAt: null,
+        },
+    });
+
+    if (!club) throw new NotFoundError("Club not found");
+
+    if (club.leadId === userId) {
+        throw new ValidationError("Cannot remove the lead directly. Assign another lead first.");
+    }
+
+    const member = await clubMemberRepo().findOne({
+        where: {
+            clubId: club.id,
+            userId,
+        },
+    });
+
+    if (!member) throw new NotFoundError("Member not found in this club");
+
+    await clubMemberRepo().delete({
+        clubId: club.id,
+        userId,
+    });
+
+    await userRepo().update(userId, { role: "student" });
+
+    return { message: "Member removed successfully" };
+};
+
+export const changeClubLeadByAdmin = async (clubId, newLeadId) => {
+    const club = await clubRepo().findOne({
+        where: {
+            id: Number(clubId),
+            deletedAt: null,
+        },
+    });
+
+    if (!club) throw new NotFoundError("Club not found");
+
+    const newLead = await userRepo().findOne({
+        where: { id: newLeadId },
+    });
+
+    if (!newLead) throw new NotFoundError("New lead user not found");
+
+    const oldLeadId = club.leadId;
+
+    const newLeadMembership = await clubMemberRepo().findOne({
+        where: {
+            clubId: club.id,
+            userId: newLeadId,
+        },
+    });
+
+    if (!newLeadMembership) {
+        throw new ValidationError("New lead must already be a member of this club");
+    }
+
+    await clubRepo().update(club.id, {
+        leadId: newLeadId,
+    });
+
+    await clubMemberRepo().delete({
+        clubId: club.id,
+        userId: newLeadId,
+    });
+
+    await userRepo().update(newLeadId, { role: "lead" });
+
+    if (oldLeadId) {
+        await clubMemberRepo().save(
+            clubMemberRepo().create({
+                userId: oldLeadId,
+                clubId: club.id,
+            })
+        );
+
+        await userRepo().update(oldLeadId, { role: "member" });
+    }
+
+    return { message: "Club lead changed successfully" };
+};
+
+export const updateClubDetailsByAdmin = async (clubId, data) => {
+    const club = await clubRepo().findOne({
+        where: {
+            id: Number(clubId),
+            deletedAt: null,
+        },
+    });
+
+    if (!club) throw new NotFoundError("Club not found");
+
+    const updateData = {};
+
+    if (data.name?.trim()) updateData.name = data.name.trim();
+    if (data.type && ["club", "community"].includes(data.type)) updateData.type = data.type;
+    if (data.description?.trim()) updateData.description = data.description.trim();
+
+    await clubRepo().update(club.id, updateData);
+
+    return { message: "Club updated successfully" };
+};
+
+export const getClubEventsByClubId = async (clubId) => {
+    const club = await clubRepo().findOne({
+        where: {
+            id: Number(clubId),
+            deletedAt: null,
+        },
+    });
+
+    if (!club) throw new NotFoundError("Club not found");
+
+    const events = await eventRepo().find({
+        where: {
+            clubId: club.id,
+        },
+        order: {
+            eventDate: "ASC",
+        },
+    });
+
+    return events;
 };
 
 export const deleteClub = async (clubId, adminId, deleteReason) => {

@@ -12,10 +12,10 @@ router.get("/", authenticate, clubsController.listClubsHandler);
 router.get("/mine", authenticate, requireRole("lead"), clubsController.getMyClubHandler);
 router.get("/mine/members", authenticate, requireRole("lead"), clubsController.getMyClubMembersHandler);
 router.get("/mine/membership-requests", authenticate, requireRole("lead"), clubsController.getMembershipRequestsHandler);
-router.get("/mine",                                           authenticate, requireRole("lead"), clubsController.getMyClubHandler);
-router.get("/mine/all",                                       authenticate, requireRole("lead"), clubsController.getMyClubsHandler);
-router.get("/mine/members",                                   authenticate, requireRole("lead"), clubsController.getMyClubMembersHandler);
-router.get("/mine/membership-requests",                       authenticate, requireRole("lead"), clubsController.getMembershipRequestsHandler);
+router.get("/mine", authenticate, requireRole("lead"), clubsController.getMyClubHandler);
+router.get("/mine/all", authenticate, requireRole("lead"), clubsController.getMyClubsHandler);
+router.get("/mine/members", authenticate, requireRole("lead"), clubsController.getMyClubMembersHandler);
+router.get("/mine/membership-requests", authenticate, requireRole("lead"), clubsController.getMembershipRequestsHandler);
 router.patch("/mine/membership-requests/:requestId/decision", authenticate, requireRole("lead"), clubsController.decideMembershipRequestHandler);
 router.delete("/mine/members/:userId", authenticate, requireRole("lead"), clubsController.removeMemberHandler);
 
@@ -23,11 +23,20 @@ router.delete("/mine/members/:userId", authenticate, requireRole("lead"), clubsC
 router.post("/requests", authenticate, uploadClubLetter, clubsController.createClubRequestHandler);
 
 // Admin only
+// Admin only
 router.get("/requests", authenticate, requireRole("admin"), clubsController.listClubRequestsHandler);
 router.get("/requests/:requestId", authenticate, requireRole("admin"), clubsController.getClubRequestHandler);
 router.patch("/requests/:requestId/decision", authenticate, requireRole("admin"), clubsController.decideClubRequestHandler);
-router.delete("/:clubId", authenticate, requireRole("admin"), clubsController.deleteClubHandler);
+
+router.get("/users/available", authenticate, requireRole("admin"), clubsController.listUsersWithoutClubHandler);
+
 router.get("/:clubId/members", authenticate, clubsController.getClubMembersByClubIdHandler);
+router.patch("/:clubId", authenticate, requireRole("admin"), clubsController.updateClubDetailsByAdminHandler);
+router.post("/:clubId/members", authenticate, requireRole("admin"), clubsController.addClubMemberByAdminHandler);
+router.delete("/:clubId/members/:userId", authenticate, requireRole("admin"), clubsController.removeClubMemberByAdminHandler);
+router.patch("/:clubId/lead", authenticate, requireRole("admin"), clubsController.changeClubLeadByAdminHandler);
+router.get("/:clubId/events", authenticate, clubsController.getClubEventsByClubIdHandler);
+router.delete("/:clubId", authenticate, requireRole("admin"), clubsController.deleteClubHandler);
 
 // Lead only
 router.get("/mine", authenticate, requireRole("lead"), clubsController.getMyClubHandler);
