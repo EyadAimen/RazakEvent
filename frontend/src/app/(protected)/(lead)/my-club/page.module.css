@@ -194,9 +194,30 @@
   color: var(--color-secondary-800);
 }
 
+.selectorPillRejected {
+  border-color: var(--color-semantic-red);
+  color: var(--color-semantic-red);
+}
+
+.selectorPillRejected.selectorPillActive {
+  background: var(--color-semantic-red-10);
+  border-color: var(--color-semantic-red);
+  color: var(--color-semantic-red);
+}
+
 .pendingBadge {
   display: inline-block;
   background: var(--color-secondary-800);
+  color: var(--color-neutral-50);
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+}
+
+.rejectedBadge {
+  display: inline-block;
+  background: var(--color-semantic-red);
   color: var(--color-neutral-50);
   font-size: 10px;
   font-weight: var(--weight-bold);
@@ -226,7 +247,7 @@
   background: var(--color-primary-800);
 }
 
-/* ── Pending club info card ───────────────────────────────────────────────── */
+/* ── Pending / Rejected club info card ───────────────────────────────────── */
 .pendingCard {
   background: var(--color-neutral-50);
   border: 2px dashed var(--color-secondary-800);
@@ -235,6 +256,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+}
+
+.rejectedCard {
+  border-color: var(--color-semantic-red);
+  background: var(--color-semantic-red-10);
 }
 
 .pendingHeader {
@@ -258,6 +284,50 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0 0 4px;
+}
+
+.rejectedStatus {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-semantic-red);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 4px;
+}
+
+.rejectedIcon {
+  color: var(--color-semantic-red);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.rejectionReasonBox {
+  background: var(--color-semantic-red-15);
+  border: 1px solid var(--color-semantic-red);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rejectionReasonLabel {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  color: var(--color-semantic-red);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.rejectionReasonText {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-800);
+  line-height: 1.55;
+  margin: 0;
 }
 
 .pendingName {
