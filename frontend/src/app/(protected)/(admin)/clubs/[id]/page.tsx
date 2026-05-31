@@ -162,11 +162,6 @@ export default function ClubDetailsPage() {
                         <span>Events</span>
                     </div>
 
-                    <div className={styles.statCard}>
-                        <strong>4</strong>
-                        <span>Objectives</span>
-                    </div>
-
                     <button
                         type="button"
                         className={styles.editButton}
@@ -227,14 +222,11 @@ export default function ClubDetailsPage() {
 
                         <p className={styles.aboutText}>{club.description}</p>
 
-                        <h3>Objectives</h3>
+                        <h3>Description</h3>
 
-                        <ul className={styles.objectiveList}>
-                            <li>Host bi-monthly competitions open to all students.</li>
-                            <li>Conduct awareness workshops each semester.</li>
-                            <li>Collaborate with industry partners for internship pipelines.</li>
-                            <li>Maintain a shared lab environment for hands-on learning.</li>
-                        </ul>
+                        <p className={styles.aboutText}>
+                            {club.description || "No description available."}
+                        </p>
                     </div>
 
                     <aside className={styles.detailsCard}>
@@ -299,7 +291,7 @@ export default function ClubDetailsPage() {
                                 <th>Student ID</th>
                                 <th>Email</th>
                                 <th>Role</th>
-                                <th>Actions</th>
+                                <th></th>
                             </tr>
                         </thead>
 
