@@ -150,7 +150,8 @@ export const deleteRole = async (roleId, leadId) => {
 
 // ── Student — Apply to a role ─────────────────────────────────────────────────
 
-export const applyToRole = async (studentId, roleId) => {
+export const applyToRole = async (studentId, body) => {
+    const { roleId, reason } = body;
     const role = await roleRepo().findOne({ where: { id: roleId } });
     if (!role) throw new NotFoundError("Role not found");
 
@@ -165,7 +166,7 @@ export const applyToRole = async (studentId, roleId) => {
     if (existing) throw new ConflictError("You have already applied to volunteer for this event");
 
     const application = await appRepo().save(
-        appRepo().create({ studentId, roleId, eventId: role.eventId, status: "pending" })
+        appRepo().create({ studentId, roleId, eventId: role.eventId, status: "pending", reason })
     );
 
     return {
