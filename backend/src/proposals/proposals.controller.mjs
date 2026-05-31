@@ -6,21 +6,43 @@ const getRepo = () => appDataSource.getRepository(EventProposalEntity);
 export const getAllProposals = async (req, res) => {
     try {
         const { status } = req.query;
-        const findOptions = {
-            order: { createdAt: "DESC" }
-        };
+
+        const query = getRepo()
+            .createQueryBuilder("proposal")
+            .leftJoin("users", "user", "user.id = proposal.lead_id") 
+            .select([
+                "proposal.id AS id",
+                "proposal.lead_id AS leadId",
+                "proposal.club_id AS clubId",
+                "proposal.admin_id AS adminId",
+                "proposal.venue_id AS venueId",
+                "proposal.event_name AS eventName",
+                "proposal.proposed_date AS proposedDate",
+                "proposal.description AS description",
+                "proposal.estimated_budget AS estimatedBudget",
+                "proposal.proposal_pdf_url AS proposalPdfUrl",
+                "proposal.status AS status",
+                "proposal.admin_comment AS adminComment",
+                "proposal.submitted_at AS submittedAt",
+                "proposal.reviewed_at AS reviewedAt",
+                "proposal.created_at AS createdAt",
+                "user.full_name AS requesterName"
+            ])
+            .orderBy({ "proposal.created_at": "DESC" });
 
         if (status && ["draft", "pending", "approved", "rejected"].includes(status.toLowerCase())) {
-            findOptions.where = { status: status.toLowerCase() };
+            query.where("proposal.status = :status", { status: status.toLowerCase() });
         }
 
-        const proposals = await getRepo().find(findOptions);
-        return res.status(200).json({ success: true, data: proposals });
+        const rawProposals = await query.getRawMany();
+
+        return res.status(200).json({ success: true, data: rawProposals });
     } catch (error) {
-        console.error("Error fetching proposals:", error);
+        console.error("Error fetching proposals with user joins:", error);
         return res.status(500).json({ error: "Internal server error while fetching proposals." });
     }
 };
+
 
 export const reviewProposal = async (req, res) => {
     try {

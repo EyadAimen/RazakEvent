@@ -12,4 +12,6 @@ export interface Proposal {
   estimatedBudget: string;
   proposedDate: string;
   docAttached?: string;
+  adminComment?: string;
+  proposalPdfUrl?: string;
 }
