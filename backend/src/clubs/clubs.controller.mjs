@@ -1,6 +1,7 @@
 import {
     listClubs, listClubRequests, getClubRequest, decideClubRequest,
     getMyClub, getMyClubMembers, getMembershipRequests, decideMembershipRequest, removeMember,
+    deleteClub, getClubMembersByClubId,
 } from "./clubs.service.mjs";
 
 export const listClubsHandler = async (req, res, next) => {
@@ -40,6 +41,39 @@ export const decideClubRequestHandler = async (req, res, next) => {
             action,
             adminComment
         );
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const getClubMembersByClubIdHandler = async (
+    req,
+    res,
+    next
+) => {
+    try {
+        const members =
+            await getClubMembersByClubId(
+                req.params.clubId
+            );
+
+        res.json({ members });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const deleteClubHandler = async (req, res, next) => {
+    try {
+        const { deleteReason } = req.body;
+
+        const result = await deleteClub(
+            req.params.clubId,
+            req.user.userId,
+            deleteReason
+        );
+
         res.json(result);
     } catch (err) {
         next(err);
