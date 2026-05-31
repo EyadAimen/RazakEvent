@@ -1,0 +1,190 @@
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-neutral-150);
+  box-shadow: var(--shadow-card);
+  border-radius: 24px;
+  padding: 40px;
+  max-width: 704px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 8px;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--text-h2-size);
+  color: var(--color-primary-800);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  color: var(--color-neutral-600);
+}
+
+.eventDetailsBox {
+  background-color: rgba(239, 246, 255, 0.5); /* blue-50 */
+  border: 1px solid #DBEAFE; /* blue-100 */
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eventName {
+  font-family: var(--font-heading);
+  font-size: var(--text-body-size);
+  color: var(--color-primary-800);
+  margin-bottom: 4px;
+}
+
+.eventMeta {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-600);
+}
+
+.roleSeparator {
+  height: 1px;
+  background-color: #DBEAFE;
+  margin: 16px 0;
+}
+
+.roleSelectGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.roleSelect {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-neutral-300);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+}
+
+.roleLabel {
+  font-family: var(--font-heading);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-800);
+}
+
+.roleDescription {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-700);
+  line-height: 1.6;
+}
+
+.reasonGroup, .checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: 700;
+  color: var(--color-neutral-800);
+}
+
+.sublabel {
+  font-family: var(--font-body);
+  font-size: var(--text-caption-size);
+  color: var(--color-neutral-600);
+}
+
+.textArea {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-800);
+  resize: vertical;
+}
+
+.textArea::placeholder {
+  color: var(--color-neutral-400);
+}
+
+.textArea:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 2px var(--color-primary-500-15);
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.checkbox {
+  margin-top: 4px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--color-primary-500);
+}
+
+.checkboxText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checkboxTitle {
+  font-size: var(--text-small-size);
+  font-weight: 500;
+  color: var(--color-neutral-800);
+}
+
+.checkboxSubtitle {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-600);
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  align-items: center;
+}
+
+.cancelButton {
+  background-color: transparent;
+  color: var(--color-neutral-600);
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: var(--text-body-size);
+  font-family: var(--font-body);
+}
+
+.cancelButton:hover {
+  text-decoration: underline;
+}
+
+.errorText {
+  color: var(--color-semantic-red);
+  font-size: var(--text-small-size);
+  text-align: center;
+  background-color: var(--color-semantic-red-10);
+  padding: 12px;
+  border-radius: 8px;
+}
