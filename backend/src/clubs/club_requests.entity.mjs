@@ -39,6 +39,16 @@ export const ClubRequestEntity = new EntitySchema({
             type: "text",
             nullable: false,
         },
+        category: {
+            type: "varchar",
+            length: 100,
+            nullable: true,
+        },
+        supportingLetterPath: {
+            name: "supporting_letter_path",
+            type: "text",
+            nullable: true,
+        },
         status: {
             type: "enum",
             enum: ["pending", "approved", "rejected"],

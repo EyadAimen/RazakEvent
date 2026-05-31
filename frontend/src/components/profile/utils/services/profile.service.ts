@@ -1,10 +1,11 @@
 import { apiFetchAuth } from "@/lib/api";
 import type { VolunteeringRecord, UpdateProfilePayload } from "../interfaces/profile.interface";
-import type { ClubOverview } from "@/types/lead";
+import type { ClubItem } from "@/types/lead";
 import type { AuthUser } from "@/lib/auth";
 
-export async function fetchLeadClub(): Promise<ClubOverview> {
-  return apiFetchAuth<ClubOverview>("/clubs/mine");
+export async function fetchLeadClubs(): Promise<ClubItem[]> {
+  const { clubs } = await apiFetchAuth<{ clubs: ClubItem[] }>("/clubs/mine/all");
+  return clubs;
 }
 
 export async function fetchVolunteeringHistory(): Promise<VolunteeringRecord[]> {
