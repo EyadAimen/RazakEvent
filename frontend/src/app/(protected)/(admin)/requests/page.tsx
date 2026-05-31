@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./requests.module.css";
 import { Proposal } from "./utils/interfaces/proposal.interface";
 import { fetchDatabaseProposals, patchProposalDecision } from "./utils/services/proposal.service";
 import Alert from "@/components/shared/alertComponent/alert";
 
 export default function AdminRequestsPage() {
+  const router = useRouter();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,6 +19,9 @@ export default function AdminRequestsPage() {
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [errorContext, setErrorContext] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  const [isRejectionModalOpen, setIsRejectionModalOpen] = useState<boolean>(false);
+  const [rejectionReason, setRejectionReason] = useState<string>("");
 
   useEffect(() => {
     async function loadData() {
@@ -35,14 +40,19 @@ export default function AdminRequestsPage() {
     loadData();
   }, []);
 
-  const handleDecisionUpdate = async (id: number, decisionStatus: "approved" | "rejected") => {
+  const handleDecisionUpdate = async (id: number, decisionStatus: "approved" | "rejected", commentString?: string) => {
+    const finalComment = commentString || `Proposal evaluation completed: ${decisionStatus}`;
+    
     setActionLoading(true);
     try {
-      await patchProposalDecision(id, decisionStatus);
+      await patchProposalDecision(id, decisionStatus, finalComment);
+      
       setProposals((prev) =>
-        prev.map((prop) => (prop.id === id ? { ...prop, status: decisionStatus } : prop))
+        prev.map((prop) => (prop.id === id ? { ...prop, status: decisionStatus, adminComment: finalComment } : prop))
       );
       setIsDrawerOpen(false);
+      setIsRejectionModalOpen(false);
+      setRejectionReason("");
       setSelectedProposal(null);
     } catch (err: any) {
       setActionError(err.message || "Failed to update proposal status.");
@@ -51,13 +61,25 @@ export default function AdminRequestsPage() {
     }
   };
 
+  const openRejectionFlow = () => {
+    setIsRejectionModalOpen(true);
+  };
+
+  const submitRejectionFlow = () => {
+    if (!rejectionReason.trim()) {
+      alert("Please specify an evaluation reason detailing why this application is rejected.");
+      return;
+    }
+    if (selectedProposal) {
+      handleDecisionUpdate(selectedProposal.id, "rejected", rejectionReason);
+    }
+  };
+
   const filteredProposals = proposals.filter((p: Proposal) => {
     const matchesFilter = activeFilter === "all" || p.status === activeFilter;
-
     const matchesSearch =
       p.eventName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.requesterName.toLowerCase().includes(searchQuery.toLowerCase());
-
     return matchesFilter && matchesSearch;
   });
 
@@ -146,7 +168,7 @@ export default function AdminRequestsPage() {
         </div>
       </div>
 
-      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); }} />}
+      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={() => { if(!isRejectionModalOpen) { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); } }} />}
 
       <div className={`${styles.sidebarDrawerContainer} ${isDrawerOpen ? styles.drawerOpenActive : ""}`}>
         {selectedProposal && (
@@ -190,19 +212,64 @@ export default function AdminRequestsPage() {
                   </a>
                 </div>
               </div>
+
+              {selectedProposal.status === "rejected" && selectedProposal.adminComment && (
+                <div className={styles.rejectionInfoBlock}>
+                  <h4 className={styles.rejectionInfoTitle}>❌ REJECTION REASON</h4>
+                  <p className={styles.rejectionInfoText}>{selectedProposal.adminComment}</p>
+                </div>
+              )}
+              <div className={styles.fullDetailsButtonContainer}>
+                <button 
+                  onClick={() => router.push(`admin/events/${selectedProposal.id}`)} 
+                  className={styles.fullDetailsButton}
+                >
+                  🖼️ View Full Details & Poster Page
+                </button>
+              </div>
             </div>
 
-            <div className={styles.drawerStickyActionBarRow}>
-              <button disabled={actionLoading} onClick={() => handleDecisionUpdate(selectedProposal.id, "approved")} className={styles.approveActionLargeButton}>
-                {actionLoading ? "Processing..." : "✓ Approve"}
-              </button>
-              <button disabled={actionLoading} onClick={() => handleDecisionUpdate(selectedProposal.id, "rejected")} className={styles.rejectActionLargeButton}>
-                {actionLoading ? "Processing..." : "✕ Reject"}
-              </button>
-            </div>
+            {selectedProposal.status === "pending" && (
+              <div className={styles.drawerStickyActionBarRow}>
+                <button disabled={actionLoading} onClick={() => handleDecisionUpdate(selectedProposal.id, "approved")} className={styles.approveActionLargeButton}>
+                  {actionLoading ? "Processing..." : "✓ Approve"}
+                </button>
+                <button disabled={actionLoading} onClick={openRejectionFlow} className={styles.rejectActionLargeButton}>
+                  ✕ Reject
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {isRejectionModalOpen && (
+        <div className={styles.rejectionModalOverlay}>
+          <div className={styles.rejectionModalContent} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.rejectionModalTitle}>Specify Rejection Reason</h3>
+            <textarea
+              className={styles.rejectionModalTextarea}
+              placeholder="Provide clean and detailed reasons explaining why this proposal request is rejected..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+            />
+            <div className={styles.rejectionModalActions}>
+              <button 
+                className={styles.rejectionModalCancelButton}
+                onClick={() => { setIsRejectionModalOpen(false); setRejectionReason(""); }}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.rejectionModalSubmitButton}
+                onClick={submitRejectionFlow}
+              >
+                Submit Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
       <Alert variant="loading" isOpen={actionLoading} onClose={() => {}} message="Processing decision…" />

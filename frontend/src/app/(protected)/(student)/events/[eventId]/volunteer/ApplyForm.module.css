@@ -17,14 +17,14 @@
 
 .title {
   font-family: var(--font-heading);
-  font-size: 30px;
+  font-size: var(--text-h2-size);
   color: var(--color-primary-800);
   margin-bottom: 4px;
 }
 
 .subtitle {
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: var(--text-body-size);
   color: var(--color-neutral-600);
 }
 
@@ -40,14 +40,14 @@
 
 .eventName {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: var(--text-body-size);
   color: var(--color-primary-800);
   margin-bottom: 4px;
 }
 
 .eventMeta {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--text-small-size);
   color: var(--color-neutral-600);
 }
 
@@ -69,18 +69,18 @@
   border-radius: 12px;
   border: 1px solid var(--color-neutral-300);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--text-small-size);
 }
 
 .roleLabel {
   font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: var(--text-small-size);
   color: var(--color-neutral-800);
 }
 
 .roleDescription {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--text-small-size);
   color: var(--color-neutral-700);
   line-height: 1.6;
 }
@@ -93,14 +93,14 @@
 
 .label {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--text-small-size);
   font-weight: 700;
   color: var(--color-neutral-800);
 }
 
 .sublabel {
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: var(--text-caption-size);
   color: var(--color-neutral-600);
 }
 
@@ -111,7 +111,7 @@
   border-radius: 12px;
   padding: 12px 16px;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--text-small-size);
   color: var(--color-neutral-800);
   resize: vertical;
 }
@@ -147,13 +147,13 @@
 }
 
 .checkboxTitle {
-  font-size: 14px;
+  font-size: var(--text-small-size);
   font-weight: 500;
   color: var(--color-neutral-800);
 }
 
 .checkboxSubtitle {
-  font-size: 14px;
+  font-size: var(--text-small-size);
   color: var(--color-neutral-600);
   line-height: 1.6;
 }
@@ -172,7 +172,7 @@
   border: none;
   font-weight: 700;
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--text-body-size);
   font-family: var(--font-body);
 }
 
@@ -182,7 +182,7 @@
 
 .errorText {
   color: var(--color-semantic-red);
-  font-size: 14px;
+  font-size: var(--text-small-size);
   text-align: center;
   background-color: var(--color-semantic-red-10);
   padding: 12px;

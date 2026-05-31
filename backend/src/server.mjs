@@ -21,6 +21,9 @@ app.use(cors())
 app.use(express.json())
 applyMiddleware(app)
 
+// ── Serve uploaded files statically ──────────────────────────────────────────
+app.use("/uploads", express.static("uploads"));
+
 // ── Route registration ────────────────────────────────────────────────────────
 app.use("/api/auth",         authRoutes)
 app.use("/api/users",        usersRoutes)

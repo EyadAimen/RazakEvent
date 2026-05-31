@@ -1,7 +1,19 @@
 import {
     listClubs, listClubRequests, getClubRequest, decideClubRequest,
-    getMyClub, getMyClubMembers, getMembershipRequests, decideMembershipRequest, removeMember,
+    getMyClub, getMyClubs, getMyClubMembers, getMembershipRequests, decideMembershipRequest, removeMember,
+    createClubRequest,
 } from "./clubs.service.mjs";
+
+export const createClubRequestHandler = async (req, res, next) => {
+    try {
+        const { clubName, clubType, description, category } = req.body;
+        const supportingLetterPath = req.file?.path ?? null;
+        const result = await createClubRequest(req.user.userId, { clubName, clubType, description, category, supportingLetterPath });
+        res.status(201).json(result);
+    } catch (err) {
+        next(err);
+    }
+};
 
 export const listClubsHandler = async (req, res, next) => {
     try {
@@ -53,13 +65,18 @@ export const getMyClubHandler = async (req, res, next) => {
     catch (err) { next(err); }
 };
 
+export const getMyClubsHandler = async (req, res, next) => {
+    try { res.json({ clubs: await getMyClubs(req.user.userId) }); }
+    catch (err) { next(err); }
+};
+
 export const getMyClubMembersHandler = async (req, res, next) => {
-    try { res.json({ members: await getMyClubMembers(req.user.userId) }); }
+    try { res.json({ members: await getMyClubMembers(req.user.userId, req.query.clubId) }); }
     catch (err) { next(err); }
 };
 
 export const getMembershipRequestsHandler = async (req, res, next) => {
-    try { res.json({ requests: await getMembershipRequests(req.user.userId) }); }
+    try { res.json({ requests: await getMembershipRequests(req.user.userId, req.query.clubId) }); }
     catch (err) { next(err); }
 };
 
@@ -69,12 +86,13 @@ export const decideMembershipRequestHandler = async (req, res, next) => {
             req.user.userId,
             req.params.requestId,
             req.body.decision,
+            req.query.clubId,
         );
         res.json(result);
     } catch (err) { next(err); }
 };
 
 export const removeMemberHandler = async (req, res, next) => {
-    try { res.json(await removeMember(req.user.userId, req.params.userId)); }
+    try { res.json(await removeMember(req.user.userId, req.params.userId, req.query.clubId)); }
     catch (err) { next(err); }
 };

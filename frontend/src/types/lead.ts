@@ -87,6 +87,29 @@ export interface ClubOverview {
   pendingRequests: number;
 }
 
+export interface ApprovedClub {
+  status: "approved";
+  id: number;
+  name: string;
+  type: "club" | "community";
+  description: string;
+  memberCount: number;
+  eventStats: { total: number; approved: number; rejected: number };
+  pendingRequests: number;
+}
+
+export interface PendingClubItem {
+  status: "pending";
+  requestId: number;
+  name: string;
+  type: "club" | "community";
+  description: string;
+  category: string | null;
+  submittedAt: string;
+}
+
+export type ClubItem = ApprovedClub | PendingClubItem;
+
 export interface ClubMember {
   userId: string;
   fullName: string;
