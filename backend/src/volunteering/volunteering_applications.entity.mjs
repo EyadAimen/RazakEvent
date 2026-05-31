@@ -41,6 +41,10 @@ export const VolunteeringApplicationEntity = new EntitySchema({
             type: "timestamptz",
             nullable: true,
         },
+        reason: {
+            type: "text",
+            nullable: true,
+        },
     },
     indices: [
         {

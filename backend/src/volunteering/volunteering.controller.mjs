@@ -30,7 +30,7 @@ export const deleteRoleHandler = async (req, res, next) => {
 
 export const applyToRoleHandler = async (req, res, next) => {
     try {
-        const result = await volunteeringService.applyToRole(req.user.userId, req.body.roleId);
+        const result = await volunteeringService.applyToRole(req.user.userId, req.body);
         res.status(201).json(result);
     } catch (err) { next(err); }
 };
