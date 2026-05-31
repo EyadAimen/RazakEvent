@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Calendar, ExternalLink } from "lucide-react";
 import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
 import styles from "./VolunteeringCard.module.css";
-import { VolunteeringApplication } from "@/app/(protected)/(student)/volunteering/utils/services/volunteering.service";
+import { VolunteeringApplication } from "@/app/(protected)/(student)/volunteering/utils/interfaces/volunteering.interface";
 
 interface VolunteeringCardProps {
   application: VolunteeringApplication;

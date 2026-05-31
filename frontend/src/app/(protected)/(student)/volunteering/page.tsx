@@ -5,7 +5,8 @@ import { HandHeart } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
 import Alert from "@/components/shared/alertComponent/alert";
 import VolunteeringCard, { VolunteeringCardSkeleton } from "@/components/volunteering/VolunteeringCard";
-import { fetchMyVolunteeringApplications, VolunteeringApplication } from "./utils/services/volunteering.service";
+import { fetchMyVolunteeringApplications } from "./utils/services/volunteering.service";
+import { VolunteeringApplication } from "./utils/interfaces/volunteering.interface";
 import styles from "./page.module.css";
 
 type FilterType = "all" | "pending" | "accepted" | "rejected";
