@@ -16,7 +16,7 @@
   color: var(--color-neutral-600);
   text-decoration: none;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--text-small-size);
   font-weight: 500;
   margin-bottom: 24px;
   transition: color 0.2s;
@@ -29,7 +29,6 @@
   color: var(--color-primary-500);
 }
 
-.loadingState,
 .errorState {
   display: flex;
   flex-direction: column;
@@ -39,19 +38,4 @@
   color: var(--color-neutral-600);
   gap: 16px;
   font-family: var(--font-body);
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  color: var(--color-primary-500);
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }

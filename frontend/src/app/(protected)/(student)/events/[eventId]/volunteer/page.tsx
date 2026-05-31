@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Alert from "@/components/shared/alertComponent/alert";
 import ApplyForm from "./ApplyForm";
 import styles from "./page.module.css";
@@ -42,10 +42,7 @@ export default function VolunteerApplicationPage() {
     return (
       <div className={styles.page}>
         <div className={styles.inner}>
-          <div className={styles.loadingState}>
-            <Loader2 size={32} className={styles.spinner} />
-            <p>Loading event details…</p>
-          </div>
+          <Alert isOpen={true} onClose={() => {}} variant="loading" message="Loading event details…" />
         </div>
       </div>
     );
