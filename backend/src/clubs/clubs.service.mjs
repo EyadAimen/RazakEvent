@@ -23,6 +23,31 @@ export const listClubs = async () => {
     return clubRepo().find();
 };
 
+export const createClubRequest = async (userId, { clubName, clubType, description, category, supportingLetterPath }) => {
+    if (!clubName?.trim()) throw new ValidationError("Club name is required");
+    if (!["club", "community"].includes(clubType)) throw new ValidationError("clubType must be 'club' or 'community'");
+    if (!description?.trim()) throw new ValidationError("Description is required");
+
+    const request = clubRequestRepo().create({
+        studentId: userId,
+        clubName: clubName.trim(),
+        clubType,
+        description: description.trim(),
+        category: category?.trim() || null,
+        supportingLetterPath: supportingLetterPath || null,
+        status: "pending",
+    });
+
+    try {
+        await clubRequestRepo().save(request);
+    } catch (err) {
+        if (err.code === "23505") throw new ConflictError("You already have a pending club request");
+        throw err;
+    }
+
+    return { message: "Club request submitted for admin review" };
+};
+
 export const listClubRequests = async ({ status, search }) => {
     if (status && status !== "all" && !VALID_STATUSES.includes(status)) {
         throw new ValidationError("Invalid status value. Must be pending, approved, rejected, or all");
@@ -156,7 +181,7 @@ export const decideClubRequest = async (requestId, adminId, action, adminComment
     return { message: "Club request rejected" };
 };
 
-// ── Lead — Get my club overview ───────────────────────────────────────────────
+// ── Lead — Get single club overview (kept for profile page compat) ────────────
 
 export const getMyClub = async (leadId) => {
     const club = await clubRepo().findOne({ where: { leadId } });
@@ -184,17 +209,75 @@ export const getMyClub = async (leadId) => {
         name:           club.name,
         type:           club.type,
         description:    club.description,
-        memberCount:    memberCount + 1, // include lead
+        memberCount:    memberCount + 1,
         eventStats:     stats,
         pendingRequests,
     };
 };
 
+// ── Lead — Get all clubs + pending requests ───────────────────────────────────
+
+const buildClubStats = async (club) => {
+    const memberCount = await clubMemberRepo().count({ where: { clubId: club.id } });
+    const proposals   = await proposalRepo().find({ where: { clubId: club.id } });
+    const stats = proposals.reduce(
+        (acc, p) => {
+            acc.total++;
+            if (p.status === "approved") acc.approved++;
+            else if (p.status === "rejected") acc.rejected++;
+            return acc;
+        },
+        { total: 0, approved: 0, rejected: 0 },
+    );
+    const pendingRequests = await membershipReqRepo().count({
+        where: { clubId: club.id, status: "pending" },
+    });
+    return {
+        status: "approved",
+        id: club.id,
+        name: club.name,
+        type: club.type,
+        description: club.description,
+        memberCount: memberCount + 1,
+        eventStats: stats,
+        pendingRequests,
+    };
+};
+
+export const getMyClubs = async (leadId) => {
+    const clubs = await clubRepo().find({ where: { leadId } });
+    const approvedClubs = await Promise.all(clubs.map(buildClubStats));
+
+    const pendingReqs = await clubRequestRepo().find({
+        where: { studentId: leadId, status: "pending" },
+        order: { submittedAt: "DESC" },
+    });
+    const pendingClubs = pendingReqs.map(r => ({
+        status: "pending",
+        requestId: r.id,
+        name: r.clubName,
+        type: r.clubType,
+        description: r.description,
+        category: r.category ?? null,
+        submittedAt: r.submittedAt,
+    }));
+
+    return [...approvedClubs, ...pendingClubs];
+};
+
+// ── Shared helper — resolve lead's club by optional clubId ────────────────────
+
+const resolveLeadClub = async (leadId, clubId) => {
+    const where = clubId ? { id: parseInt(clubId), leadId } : { leadId };
+    const club  = await clubRepo().findOne({ where });
+    if (!club) throw new NotFoundError("Club not found or you are not its lead");
+    return club;
+};
+
 // ── Lead — List club members ──────────────────────────────────────────────────
 
-export const getMyClubMembers = async (leadId) => {
-    const club = await clubRepo().findOne({ where: { leadId } });
-    if (!club) throw new NotFoundError("You are not leading any club");
+export const getMyClubMembers = async (leadId, clubId) => {
+    const club = await resolveLeadClub(leadId, clubId);
 
     const lead    = await userRepo().findOne({ where: { id: leadId } });
     const records = await clubMemberRepo().find({ where: { clubId: club.id } });
@@ -228,9 +311,8 @@ export const getMyClubMembers = async (leadId) => {
 
 // ── Lead — List pending membership requests ───────────────────────────────────
 
-export const getMembershipRequests = async (leadId) => {
-    const club = await clubRepo().findOne({ where: { leadId } });
-    if (!club) throw new NotFoundError("You are not leading any club");
+export const getMembershipRequests = async (leadId, clubId) => {
+    const club = await resolveLeadClub(leadId, clubId);
 
     const requests = await membershipReqRepo().find({
         where: { clubId: club.id, status: "pending" },
@@ -253,9 +335,8 @@ export const getMembershipRequests = async (leadId) => {
 
 // ── Lead — Accept or reject a membership request ──────────────────────────────
 
-export const decideMembershipRequest = async (leadId, requestId, decision) => {
-    const club = await clubRepo().findOne({ where: { leadId } });
-    if (!club) throw new NotFoundError("You are not leading any club");
+export const decideMembershipRequest = async (leadId, requestId, decision, clubId) => {
+    const club = await resolveLeadClub(leadId, clubId);
 
     const req = await membershipReqRepo().findOne({ where: { id: Number(requestId) } });
     if (!req) throw new NotFoundError("Membership request not found");
@@ -285,9 +366,8 @@ export const decideMembershipRequest = async (leadId, requestId, decision) => {
 
 // ── Lead — Remove a member from the club ─────────────────────────────────────
 
-export const removeMember = async (leadId, userId) => {
-    const club = await clubRepo().findOne({ where: { leadId } });
-    if (!club) throw new NotFoundError("You are not leading any club");
+export const removeMember = async (leadId, userId, clubId) => {
+    const club = await resolveLeadClub(leadId, clubId);
     if (userId === leadId) throw new ForbiddenError("Cannot remove yourself as lead");
 
     const member = await clubMemberRepo().findOne({ where: { userId, clubId: club.id } });
