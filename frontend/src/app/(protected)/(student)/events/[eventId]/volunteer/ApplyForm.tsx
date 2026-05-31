@@ -4,23 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/shared/button/button";
 import styles from "./ApplyForm.module.css";
-import { apiFetchAuth } from "@/lib/api";
-
-type Role = {
-  roleId: number;
-  roleName: string;
-  description: string | null;
-  slotsAvailable: number;
-  slotsFilled: number;
-};
-
-type EventData = {
-  eventId: number;
-  eventName: string;
-  eventDate: string;
-  clubName: string;
-  roles: Role[];
-};
+import Alert from "@/components/shared/alertComponent/alert";
+import { applyForVolunteering } from "./utils/services/volunteer.service";
+import { EventData } from "./utils/interfaces/volunteer.interface";
 
 type Props = {
   eventData: EventData;
@@ -50,13 +36,7 @@ export default function ApplyForm({ eventData }: Props) {
     setError(null);
 
     try {
-      await apiFetchAuth("/volunteering/applications", {
-        method: "POST",
-        body: JSON.stringify({
-          roleId: selectedRoleId,
-          reason: reason.trim()
-        })
-      });
+      await applyForVolunteering(selectedRoleId as number, reason.trim());
 
       // Redirect to applications page on success
       router.push("/volunteering");
@@ -149,9 +129,12 @@ export default function ApplyForm({ eventData }: Props) {
         </div>
       </div>
 
-      {error && (
-        <div className={styles.errorText}>{error}</div>
-      )}
+      <Alert 
+        isOpen={!!error} 
+        onClose={() => setError(null)} 
+        variant="error" 
+        message={error || "An error occurred"} 
+      />
 
       <div className={styles.actions}>
         <button 

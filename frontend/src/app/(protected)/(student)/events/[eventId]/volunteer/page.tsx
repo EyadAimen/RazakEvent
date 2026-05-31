@@ -4,29 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { apiFetchAuth } from "@/lib/api";
+import Alert from "@/components/shared/alertComponent/alert";
 import ApplyForm from "./ApplyForm";
 import styles from "./page.module.css";
-
-type Role = {
-  roleId: number;
-  roleName: string;
-  description: string | null;
-  slotsAvailable: number;
-  slotsFilled: number;
-};
-
-type EventData = {
-  eventId: number;
-  eventName: string;
-  eventDate: string;
-  clubName: string;
-  roles: Role[];
-};
-
-type OpenEventsResponse = {
-  events: EventData[];
-};
+import { fetchOpenVolunteeringEvents } from "./utils/services/volunteer.service";
+import { EventData } from "./utils/interfaces/volunteer.interface";
 
 export default function VolunteerApplicationPage() {
   const params = useParams();
@@ -39,7 +21,7 @@ export default function VolunteerApplicationPage() {
 
   useEffect(() => {
     // We fetch all open events and find the one that matches eventId
-    apiFetchAuth<OpenEventsResponse>("/volunteering/events")
+    fetchOpenVolunteeringEvents()
       .then(res => {
         const found = res.events.find(e => e.eventId === eventId);
         if (!found) {
@@ -74,7 +56,7 @@ export default function VolunteerApplicationPage() {
       <div className={styles.page}>
         <div className={styles.inner}>
           <div className={styles.errorState}>
-            <p>⚠ {error}</p>
+            <Alert isOpen={!!error} onClose={() => setError(null)} variant="error" message={error || "Event not found"} />
             <button className={styles.backLink} onClick={() => router.back()}>
               <ArrowLeft size={14} /> Go Back
             </button>
