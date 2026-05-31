@@ -19,7 +19,17 @@ router.delete("/mine/members/:userId",                        authenticate, requ
 // Any authenticated user — submit a new club / community request
 router.post("/requests", authenticate, uploadClubLetter, clubsController.createClubRequestHandler);
 
-// Admin only
+// Admin — club management
+router.get("/admin",                              authenticate, requireRole("admin"), clubsController.adminListClubsHandler);
+router.post("/admin",                             authenticate, requireRole("admin"), clubsController.adminCreateClubHandler);
+router.get("/admin/:clubId",                      authenticate, requireRole("admin"), clubsController.adminGetClubHandler);
+router.patch("/admin/:clubId",                    authenticate, requireRole("admin"), clubsController.adminUpdateClubHandler);
+router.delete("/admin/:clubId",                   authenticate, requireRole("admin"), clubsController.adminDissolveClubHandler);
+router.get("/admin/:clubId/members",              authenticate, requireRole("admin"), clubsController.adminGetClubMembersHandler);
+router.delete("/admin/:clubId/members/:userId",   authenticate, requireRole("admin"), clubsController.adminRemoveClubMemberHandler);
+router.get("/admin/:clubId/events",               authenticate, requireRole("admin"), clubsController.adminGetClubEventsHandler);
+
+// Admin — club requests
 router.get("/requests",                     authenticate, requireRole("admin"), clubsController.listClubRequestsHandler);
 router.get("/requests/:requestId",          authenticate, requireRole("admin"), clubsController.getClubRequestHandler);
 router.patch("/requests/:requestId/decision", authenticate, requireRole("admin"), clubsController.decideClubRequestHandler);

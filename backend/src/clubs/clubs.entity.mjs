@@ -28,6 +28,20 @@ export const ClubEntity = new EntitySchema({
             type: "uuid",
             nullable: true,
         },
+        category: {
+            type: "varchar",
+            length: 100,
+            nullable: true,
+        },
+        facultyAdvisor: {
+            name: "faculty_advisor",
+            type: "varchar",
+            nullable: true,
+        },
+        objectives: {
+            type: "simple-json",
+            nullable: true,
+        },
         createdAt: {
             name: "created_at",
             type: "timestamptz",

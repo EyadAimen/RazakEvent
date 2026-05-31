@@ -2,6 +2,8 @@ import {
     listClubs, listClubRequests, getClubRequest, decideClubRequest,
     getMyClub, getMyClubs, getMyClubMembers, getMembershipRequests, decideMembershipRequest, removeMember,
     createClubRequest,
+    adminListClubs, adminGetClub, adminUpdateClub, adminDissolveClub,
+    adminGetClubMembers, adminRemoveClubMember, adminGetClubEvents, adminCreateClub,
 } from "./clubs.service.mjs";
 
 export const createClubRequestHandler = async (req, res, next) => {
@@ -94,5 +96,50 @@ export const decideMembershipRequestHandler = async (req, res, next) => {
 
 export const removeMemberHandler = async (req, res, next) => {
     try { res.json(await removeMember(req.user.userId, req.params.userId, req.query.clubId)); }
+    catch (err) { next(err); }
+};
+
+// ── Admin — Club management handlers ─────────────────────────────────────────
+
+export const adminListClubsHandler = async (req, res, next) => {
+    try { res.json({ clubs: await adminListClubs({ search: req.query.search }) }); }
+    catch (err) { next(err); }
+};
+
+export const adminGetClubHandler = async (req, res, next) => {
+    try { res.json(await adminGetClub(req.params.clubId)); }
+    catch (err) { next(err); }
+};
+
+export const adminUpdateClubHandler = async (req, res, next) => {
+    try { res.json(await adminUpdateClub(req.params.clubId, req.body)); }
+    catch (err) { next(err); }
+};
+
+export const adminDissolveClubHandler = async (req, res, next) => {
+    try { res.json(await adminDissolveClub(req.params.clubId)); }
+    catch (err) { next(err); }
+};
+
+export const adminGetClubMembersHandler = async (req, res, next) => {
+    try { res.json({ members: await adminGetClubMembers(req.params.clubId) }); }
+    catch (err) { next(err); }
+};
+
+export const adminRemoveClubMemberHandler = async (req, res, next) => {
+    try { res.json(await adminRemoveClubMember(req.params.clubId, req.params.userId)); }
+    catch (err) { next(err); }
+};
+
+export const adminGetClubEventsHandler = async (req, res, next) => {
+    try { res.json({ events: await adminGetClubEvents(req.params.clubId) }); }
+    catch (err) { next(err); }
+};
+
+export const adminCreateClubHandler = async (req, res, next) => {
+    try {
+        const { name, type, description, category, facultyAdvisor, objectives } = req.body;
+        res.status(201).json(await adminCreateClub({ name, type, description, category, facultyAdvisor, objectives }));
+    }
     catch (err) { next(err); }
 };
