@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Fragment } from "react";
 import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, Clock } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
-import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubTab } from "@/types/lead";
+import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubTab, ClubVolunteerApplication } from "@/types/lead";
 import Alert from "@/components/shared/alertComponent/alert";
+import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
 import CreateClubModal from "@/components/lead/CreateClubModal/CreateClubModal";
+import RejectApplicationModal from "@/components/lead/RejectApplicationModal/RejectApplicationModal";
 import styles from "./page.module.css";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -16,6 +18,7 @@ export default function MyClubPage() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [members, setMembers]         = useState<ClubMember[]>([]);
   const [requests, setRequests]       = useState<MembershipRequest[]>([]);
+  const [volApps, setVolApps]         = useState<ClubVolunteerApplication[]>([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
   const [tab, setTab]                 = useState<ClubTab>("members");
@@ -24,6 +27,23 @@ export default function MyClubPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createSuccess, setCreateSuccess]     = useState(false);
+  const [rejectingAppId, setRejectingAppId]   = useState<number | null>(null);
+  const [expandedVolRows, setExpandedVolRows] = useState<Set<number>>(new Set());
+
+  const VOL_BADGE: Record<ClubVolunteerApplication["status"], { variant: BadgeVariant; label: string }> = {
+    pending:  { variant: "pending",  label: "Pending"  },
+    accepted: { variant: "approved", label: "Accepted" },
+    rejected: { variant: "rejected", label: "Rejected" },
+    dropped:  { variant: "draft",    label: "Dropped"  },
+  };
+
+  const toggleVolRow = (id: number) => {
+    setExpandedVolRows(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   // ── Derived selection ──────────────────────────────────────────────────────
 
@@ -38,12 +58,14 @@ export default function MyClubPage() {
   // ── Load management data for an approved club ──────────────────────────────
 
   const loadClubData = useCallback(async (clubId: number) => {
-    const [membersData, requestsData] = await Promise.all([
+    const [membersData, requestsData, volData] = await Promise.all([
       apiFetchAuth<{ members: ClubMember[] }>(`/clubs/mine/members?clubId=${clubId}`),
       apiFetchAuth<{ requests: MembershipRequest[] }>(`/clubs/mine/membership-requests?clubId=${clubId}`),
+      apiFetchAuth<{ applications: ClubVolunteerApplication[] }>(`/volunteering/applications/club?clubId=${clubId}`),
     ]);
     setMembers(membersData.members);
     setRequests(requestsData.requests);
+    setVolApps(volData.applications);
   }, []);
 
   const fetchAllClubs = useCallback(async () => {
@@ -72,6 +94,7 @@ export default function MyClubPage() {
     setSelectedKey(key);
     setSearch("");
     setTab("members");
+    setExpandedVolRows(new Set());
     if (item.status === "approved") {
       await loadClubData(item.id).catch(() => {});
     } else {
@@ -81,6 +104,28 @@ export default function MyClubPage() {
   };
 
   // ── Actions ────────────────────────────────────────────────────────────────
+
+  const handleDecideVolApp = async (applicationId: number, decision: "accepted" | "rejected", rejectionMessage?: string) => {
+    if (acting !== null) return;
+    setActing(applicationId);
+    try {
+      await apiFetchAuth(`/volunteering/applications/${applicationId}/decision`, {
+        method: "PATCH",
+        body: JSON.stringify({ decision, rejectionMessage }),
+      });
+      setVolApps(prev => prev.map(a =>
+        a.applicationId === applicationId
+          ? { ...a, status: decision, rejectionMessage: rejectionMessage ?? null }
+          : a
+      ));
+      if (decision === "rejected") setRejectingAppId(null);
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Action failed.");
+      throw err;
+    } finally {
+      setActing(null);
+    }
+  };
 
   const handleDecideRequest = async (requestId: number, decision: "approved" | "rejected") => {
     if (!selectedClub || acting !== null) return;
@@ -295,9 +340,18 @@ export default function MyClubPage() {
                     className={`${styles.tabBtn} ${tab === "requests" ? styles.tabActive : ""}`}
                     onClick={() => setTab("requests")}
                   >
+                    Membership Requests
+                    {requests.length > 0 && (
+                      <span className={styles.badge}>{requests.length}</span>
+                    )}
+                  </button>
+                  <button
+                    className={`${styles.tabBtn} ${tab === "volunteers" ? styles.tabActive : ""}`}
+                    onClick={() => { setTab("volunteers"); setSearch(""); }}
+                  >
                     Volunteer Applications
-                    {selectedClub.pendingRequests > 0 && (
-                      <span className={styles.badge}>{selectedClub.pendingRequests}</span>
+                    {volApps.filter(a => a.status === "pending").length > 0 && (
+                      <span className={styles.badge}>{volApps.filter(a => a.status === "pending").length}</span>
                     )}
                   </button>
                 </div>
@@ -413,6 +467,98 @@ export default function MyClubPage() {
                   )}
                 </div>
               )}
+
+              {/* Volunteer Applications tab */}
+              {tab === "volunteers" && (
+                <div className={styles.tabPanel}>
+                  <div className={styles.searchWrap}>
+                    <Search size={14} className={styles.searchIcon} />
+                    <input
+                      className={styles.searchInput}
+                      placeholder="Search by student or event…"
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                    />
+                  </div>
+                  {volApps.length === 0 ? (
+                    <div className={styles.stateBox}>
+                      <p>No volunteering applications yet.</p>
+                    </div>
+                  ) : (
+                    <div className={styles.tableWrap}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Student</th>
+                            <th>Event</th>
+                            <th>Role</th>
+                            <th>Date Applied</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {volApps
+                            .filter(a =>
+                              !search ||
+                              a.studentName.toLowerCase().includes(search.toLowerCase()) ||
+                              a.eventName.toLowerCase().includes(search.toLowerCase())
+                            )
+                            .map(app => {
+                              const badge = VOL_BADGE[app.status];
+                              const isExpanded = expandedVolRows.has(app.applicationId);
+                              return (
+                                <Fragment key={app.applicationId}>
+                                  <tr style={{ cursor: "pointer" }} onClick={() => toggleVolRow(app.applicationId)}>
+                                    <td>{app.studentName}<br /><small style={{ color: "var(--color-neutral-400)" }}>{app.studentMatricId ?? "—"}</small></td>
+                                    <td>{app.eventName}</td>
+                                    <td>{app.roleName}</td>
+                                    <td>{new Date(app.appliedAt).toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" })}</td>
+                                    <td><Badge label={badge.label} variant={badge.variant} /></td>
+                                    <td onClick={e => e.stopPropagation()}>
+                                      {app.status === "pending" && (
+                                        <div className={styles.appActions}>
+                                          <button
+                                            className={styles.acceptBtn}
+                                            disabled={acting === app.applicationId}
+                                            onClick={() => handleDecideVolApp(app.applicationId, "accepted")}
+                                          >
+                                            <Check size={12} /> Accept
+                                          </button>
+                                          <button
+                                            className={styles.rejectBtn}
+                                            disabled={acting === app.applicationId}
+                                            onClick={() => setRejectingAppId(app.applicationId)}
+                                          >
+                                            <X size={12} /> Reject
+                                          </button>
+                                        </div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                  {isExpanded && (
+                                    <tr style={{ background: "var(--color-primary-500-10)" }}>
+                                      <td colSpan={6} style={{ padding: "var(--space-md) var(--space-lg)", fontSize: "var(--text-small-size)", color: "var(--color-neutral-700)" }}>
+                                        <strong>Reason for applying:</strong><br />
+                                        {app.reason ?? <em>No reason provided.</em>}
+                                        {app.rejectionMessage && (
+                                          <div style={{ marginTop: 8 }}>
+                                            <strong>Rejection message:</strong><br />{app.rejectionMessage}
+                                          </div>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  )}
+                                </Fragment>
+                              );
+                            })
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -433,6 +579,14 @@ export default function MyClubPage() {
         message="Your club request has been submitted. The admin will review it and notify you via your dashboard."
         onClose={() => setCreateSuccess(false)}
       />
+      {rejectingAppId !== null && (
+        <RejectApplicationModal
+          isOpen={true}
+          onClose={() => setRejectingAppId(null)}
+          studentName={volApps.find(a => a.applicationId === rejectingAppId)?.studentName ?? "Student"}
+          onSubmit={(msg) => handleDecideVolApp(rejectingAppId, "rejected", msg)}
+        />
+      )}
     </div>
   );
 }

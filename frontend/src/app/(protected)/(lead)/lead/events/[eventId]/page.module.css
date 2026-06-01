@@ -388,6 +388,222 @@
   to   { transform: rotate(360deg); }
 }
 
+/* ── Expandable Row ──────────────────────────────────────────────────────── */
+.expandableRow {
+  cursor: pointer;
+}
+
+.expandedRow {
+  background: var(--color-primary-500-10);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.reasonContent {
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-700);
+  line-height: 1.5;
+}
+
+.reasonTitle {
+  font-weight: var(--weight-bold);
+  margin-bottom: 6px;
+  color: var(--color-neutral-800);
+}
+
+/* ── Roles Section ───────────────────────────────────────────────────────── */
+.rolesSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  border-top: 1px solid var(--color-neutral-200);
+  padding-top: var(--space-md);
+}
+
+.rolesSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.roleCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-700);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.addRoleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-200);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.addRoleBtn:hover {
+  background: var(--color-neutral-200);
+}
+
+/* ── Add Role Form ───────────────────────────────────────────────────────── */
+.addRoleForm {
+  background: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.addRoleFields {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.fieldLabel {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-700);
+}
+
+.fieldInput {
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-300);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-800);
+  background: #fff;
+  transition: border-color var(--transition-veryfast);
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+}
+
+.roleError {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-semantic-red);
+}
+
+.addRoleActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ── Roles List ──────────────────────────────────────────────────────────── */
+.rolesList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.roleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.roleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.roleName {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-800);
+}
+
+.roleDesc {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-neutral-500);
+}
+
+.roleSlots {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-md);
+}
+
+.slotsBadge {
+  display: inline-block;
+  background: var(--color-primary-500-10);
+  color: var(--color-primary-800);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+}
+
+.slotsBadge.slotsFull {
+  background: var(--color-status-warning-bg);
+  color: var(--color-status-warning-text);
+}
+
+.deleteRoleBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-veryfast);
+}
+
+.deleteRoleBtn:hover:not(:disabled) {
+  background: var(--color-semantic-red-10);
+  color: var(--color-semantic-red);
+}
+
+.deleteRoleBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .body {

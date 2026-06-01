@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,11 +13,15 @@ import {
   Check,
   X,
   Loader2,
+  Plus,
+  Trash2,
+  Users,
 } from "lucide-react";
 import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
 import DeadlineAlert from "@/components/shared/DeadlineAlert/DeadlineAlert";
+import RejectApplicationModal from "@/components/lead/RejectApplicationModal/RejectApplicationModal";
 import { apiFetchAuth } from "@/lib/api";
-import type { EventDetail, VolunteerApplicant } from "@/types/lead";
+import type { EventDetail, VolunteerApplicant, VolunteerRole } from "@/types/lead";
 import styles from "./page.module.css";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -38,7 +42,16 @@ const APP_BADGE: Record<VolunteerApplicant["status"], { variant: BadgeVariant; l
   pending:  { variant: "pending",  label: "Pending"  },
   accepted: { variant: "approved", label: "Accepted" },
   rejected: { variant: "rejected", label: "Rejected" },
+  dropped:  { variant: "draft",    label: "Dropped"  },
 };
+
+const PREDEFINED_ROLES = [
+  "Registration Desk",
+  "Stage Setup",
+  "Tech Support",
+  "Event Crew",
+  "Usher"
+];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -46,11 +59,33 @@ export default function LeadEventDetailPage() {
   const params  = useParams();
   const eventId = params.eventId as string;
 
-  const [event, setEvent]         = useState<EventDetail | null>(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState<string | null>(null);
+  const [event, setEvent]               = useState<EventDetail | null>(null);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState<string | null>(null);
   const [togglingVol, setTogglingVol]   = useState(false);
   const [decidingApp, setDecidingApp]   = useState<number | null>(null);
+  const [rejectingAppId, setRejectingAppId] = useState<number | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  // Role management state
+  const [showAddRole, setShowAddRole]   = useState(false);
+  const [newRole, setNewRole]           = useState({ roleName: "", description: "", slotsAvailable: 1 });
+  const [addingRole, setAddingRole]     = useState(false);
+  const [deletingRoleId, setDeletingRoleId] = useState<number | null>(null);
+  const [roleError, setRoleError]       = useState<string | null>(null);
+  const [actionError, setActionError]   = useState<string | null>(null);
+
+  const toggleRow = (applicationId: number) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(applicationId)) {
+        next.delete(applicationId);
+      } else {
+        next.add(applicationId);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     apiFetchAuth<{ event: EventDetail }>(`/events/${eventId}`)
@@ -63,6 +98,7 @@ export default function LeadEventDetailPage() {
     if (!event || togglingVol || event.volunteeringStatus === "full") return;
     const newStatus = event.volunteeringStatus === "open" ? "closed" : "open";
     setTogglingVol(true);
+    setActionError(null);
     try {
       await apiFetchAuth(`/events/${eventId}/volunteering`, {
         method: "PATCH",
@@ -70,33 +106,69 @@ export default function LeadEventDetailPage() {
       });
       setEvent(prev => prev ? { ...prev, volunteeringStatus: newStatus } : prev);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to update volunteering status";
-      alert(msg);
+      setActionError(err instanceof Error ? err.message : "Failed to update volunteering status");
     } finally {
       setTogglingVol(false);
     }
   };
 
-  const handleDecideApplication = async (applicationId: number, decision: "accepted" | "rejected") => {
+  const handleAddRole = async () => {
+    if (!newRole.roleName.trim()) { setRoleError("Role name is required."); return; }
+    if (newRole.slotsAvailable < 1) { setRoleError("Slots must be at least 1."); return; }
+    setAddingRole(true);
+    setRoleError(null);
+    try {
+      const created = await apiFetchAuth<VolunteerRole>(`/volunteering/events/${eventId}/roles`, {
+        method: "POST",
+        body: JSON.stringify(newRole),
+      });
+      setEvent(prev => prev ? { ...prev, volunteerRoles: [...prev.volunteerRoles, created] } : prev);
+      setNewRole({ roleName: "", description: "", slotsAvailable: 1 });
+      setShowAddRole(false);
+    } catch (err: unknown) {
+      setRoleError(err instanceof Error ? err.message : "Failed to create role.");
+    } finally {
+      setAddingRole(false);
+    }
+  };
+
+  const handleDeleteRole = async (roleId: number) => {
+    if (deletingRoleId !== null) return;
+    setDeletingRoleId(roleId);
+    setActionError(null);
+    try {
+      await apiFetchAuth(`/volunteering/roles/${roleId}`, { method: "DELETE" });
+      setEvent(prev => prev ? { ...prev, volunteerRoles: prev.volunteerRoles.filter(r => r.roleId !== roleId) } : prev);
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to delete role.");
+    } finally {
+      setDeletingRoleId(null);
+    }
+  };
+
+  const handleDecideApplication = async (applicationId: number, decision: "accepted" | "rejected", rejectionMessage?: string) => {
     if (!event || decidingApp !== null) return;
     setDecidingApp(applicationId);
+    setActionError(null);
     try {
-      await apiFetchAuth(`/events/${eventId}/volunteers/${applicationId}/decision`, {
+      await apiFetchAuth(`/volunteering/applications/${applicationId}/decision`, {
         method: "PATCH",
-        body: JSON.stringify({ decision }),
+        body: JSON.stringify({ decision, rejectionMessage }),
       });
       setEvent(prev => {
         if (!prev) return prev;
         return {
           ...prev,
           volunteers: prev.volunteers.map(v =>
-            v.applicationId === applicationId ? { ...v, status: decision } : v
+            v.applicationId === applicationId ? { ...v, status: decision, rejectionMessage } : v
           ),
         };
       });
+      if (decision === "rejected") {
+        setRejectingAppId(null);
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to update application";
-      alert(msg);
+      setActionError(err instanceof Error ? err.message : "Failed to update application");
     } finally {
       setDecidingApp(null);
     }
@@ -231,7 +303,6 @@ export default function LeadEventDetailPage() {
             </div>
           </div>
 
-          {/* ── Volunteering Settings ──────────────────────────────────────── */}
           {isLive && (
             <div className={styles.section}>
               <h2 className={styles.sectionTitle}>Volunteering Settings</h2>
@@ -261,16 +332,111 @@ export default function LeadEventDetailPage() {
                   </button>
                 </div>
 
+                {/* ── Roles section ───────────────────────────────────────── */}
+                <div className={styles.rolesSection}>
+                  <div className={styles.rolesSectionHeader}>
+                    <h3 className={styles.applicantsTitle}>
+                      <Users size={15} /> Volunteer Roles
+                      <span className={styles.roleCount}>{(event.volunteerRoles || []).length}</span>
+                    </h3>
+                    {!showAddRole && (
+                      <button className={styles.addRoleBtn} onClick={() => { setShowAddRole(true); setRoleError(null); }}>
+                        <Plus size={13} /> Add Role
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Add role form */}
+                  {showAddRole && (
+                    <div className={styles.addRoleForm}>
+                      <div className={styles.addRoleFields}>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>Role Name *</label>
+                          <select
+                            className={styles.fieldInput}
+                            value={newRole.roleName}
+                            onChange={e => setNewRole(p => ({ ...p, roleName: e.target.value }))}
+                          >
+                            <option value="" disabled>Select a role...</option>
+                            {PREDEFINED_ROLES.map(role => (
+                              <option key={role} value={role}>{role}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.fieldLabel}>Description</label>
+                          <input
+                            className={styles.fieldInput}
+                            placeholder="What will this volunteer do?"
+                            value={newRole.description}
+                            onChange={e => setNewRole(p => ({ ...p, description: e.target.value }))}
+                          />
+                        </div>
+                        <div className={styles.fieldGroup} style={{ maxWidth: 120 }}>
+                          <label className={styles.fieldLabel}>Slots *</label>
+                          <input
+                            type="number"
+                            min={1}
+                            className={styles.fieldInput}
+                            value={newRole.slotsAvailable}
+                            onChange={e => setNewRole(p => ({ ...p, slotsAvailable: Number(e.target.value) }))}
+                          />
+                        </div>
+                      </div>
+                      {roleError && <p className={styles.roleError}>{roleError}</p>}
+                      <div className={styles.addRoleActions}>
+                        <button className={styles.acceptBtn} onClick={handleAddRole} disabled={addingRole}>
+                          {addingRole ? <Loader2 size={12} className={styles.spinnerSm} /> : <Check size={12} />}
+                          Save Role
+                        </button>
+                        <button className={styles.rejectBtn} onClick={() => { setShowAddRole(false); setRoleError(null); }}>
+                          <X size={12} /> Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Roles list */}
+                  {(event.volunteerRoles || []).length === 0 && !showAddRole ? (
+                    <p className={styles.noApplicants}>No roles defined yet. Add a role so students can apply.</p>
+                  ) : (
+                    <div className={styles.rolesList}>
+                      {(event.volunteerRoles || []).map(role => (
+                        <div key={role.roleId} className={styles.roleRow}>
+                          <div className={styles.roleInfo}>
+                            <span className={styles.roleName}>{role.roleName}</span>
+                            {role.description && <span className={styles.roleDesc}>{role.description}</span>}
+                          </div>
+                          <div className={styles.roleSlots}>
+                            <span className={`${styles.slotsBadge} ${role.slotsFilled >= role.slotsAvailable ? styles.slotsFull : ""}`}>
+                              {role.slotsFilled} / {role.slotsAvailable} filled
+                            </span>
+                          </div>
+                          <button
+                            className={styles.deleteRoleBtn}
+                            disabled={deletingRoleId === role.roleId || role.slotsFilled > 0}
+                            title={role.slotsFilled > 0 ? "Cannot delete a role with accepted volunteers" : "Delete role"}
+                            onClick={() => handleDeleteRole(role.roleId)}
+                          >
+                            {deletingRoleId === role.roleId ? <Loader2 size={13} className={styles.spinnerSm} /> : <Trash2 size={13} />}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Applications table */}
                 {event.volunteers.length > 0 && (
                   <div className={styles.applicantsSection}>
-                    <h3 className={styles.applicantsTitle}>Pending Applications</h3>
+                    <h3 className={styles.applicantsTitle}>Applications</h3>
                     <div className={styles.tableWrap}>
                       <table className={styles.table}>
                         <thead>
                           <tr>
                             <th>Name</th>
                             <th>Student ID</th>
+                            <th>Role</th>
                             <th>Date Applied</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -279,39 +445,57 @@ export default function LeadEventDetailPage() {
                         <tbody>
                           {event.volunteers.map(app => {
                             const badge = APP_BADGE[app.status];
+                            const isExpanded = expandedRows.has(app.applicationId);
                             return (
-                              <tr key={app.applicationId}>
-                                <td>{app.studentName}</td>
-                                <td>{app.studentMatricId ?? "—"}</td>
-                                <td>
-                                  {new Date(app.appliedAt).toLocaleDateString("en-MY", {
-                                    year: "numeric", month: "short", day: "numeric",
-                                  })}
-                                </td>
-                                <td>
-                                  <Badge label={badge.label} variant={badge.variant} />
-                                </td>
-                                <td>
-                                  {app.status === "pending" && (
-                                    <div className={styles.appActions}>
-                                      <button
-                                        className={styles.acceptBtn}
-                                        onClick={() => handleDecideApplication(app.applicationId, "accepted")}
-                                        disabled={decidingApp === app.applicationId}
-                                      >
-                                        <Check size={12} /> Accept
-                                      </button>
-                                      <button
-                                        className={styles.rejectBtn}
-                                        onClick={() => handleDecideApplication(app.applicationId, "rejected")}
-                                        disabled={decidingApp === app.applicationId}
-                                      >
-                                        <X size={12} /> Reject
-                                      </button>
-                                    </div>
-                                  )}
-                                </td>
-                              </tr>
+                              <Fragment key={app.applicationId}>
+                                <tr className={styles.expandableRow} onClick={() => toggleRow(app.applicationId)}>
+                                  <td>{app.studentName}</td>
+                                  <td>{app.studentMatricId ?? "—"}</td>
+                                  <td>{app.roleName}</td>
+                                  <td>
+                                    {new Date(app.appliedAt).toLocaleDateString("en-MY", {
+                                      year: "numeric", month: "short", day: "numeric",
+                                    })}
+                                  </td>
+                                  <td>
+                                    <Badge label={badge.label} variant={badge.variant} />
+                                  </td>
+                                  <td onClick={e => e.stopPropagation()}>
+                                    {app.status === "pending" && (
+                                      <div className={styles.appActions}>
+                                        <button
+                                          className={styles.acceptBtn}
+                                          onClick={() => handleDecideApplication(app.applicationId, "accepted")}
+                                          disabled={decidingApp === app.applicationId}
+                                        >
+                                          <Check size={12} /> Accept
+                                        </button>
+                                        <button
+                                          className={styles.rejectBtn}
+                                          onClick={() => setRejectingAppId(app.applicationId)}
+                                          disabled={decidingApp === app.applicationId}
+                                        >
+                                          <X size={12} /> Reject
+                                        </button>
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                                {isExpanded && (
+                                  <tr className={styles.expandedRow}>
+                                    <td colSpan={6} className={styles.reasonContent}>
+                                      <div className={styles.reasonTitle}>Reason for applying:</div>
+                                      {app.reason ? app.reason : <em>No reason provided.</em>}
+                                      {app.rejectionMessage && (
+                                        <div style={{ marginTop: 8 }}>
+                                          <div className={styles.reasonTitle}>Rejection Message:</div>
+                                          {app.rejectionMessage}
+                                        </div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                )}
+                              </Fragment>
                             );
                           })}
                         </tbody>
@@ -329,6 +513,15 @@ export default function LeadEventDetailPage() {
 
         </div>
       </div>
+      
+      {rejectingAppId !== null && (
+        <RejectApplicationModal
+          isOpen={true}
+          onClose={() => setRejectingAppId(null)}
+          studentName={event?.volunteers.find(v => v.applicationId === rejectingAppId)?.studentName ?? "Student"}
+          onSubmit={(msg) => handleDecideApplication(rejectingAppId, "rejected", msg)}
+        />
+      )}
     </div>
   );
 }
