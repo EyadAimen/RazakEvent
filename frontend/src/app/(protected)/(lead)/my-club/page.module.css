@@ -395,7 +395,7 @@
   font-family: var(--font-body);
   font-size: var(--text-small-size);
   color: var(--color-neutral-800);
-  background: var(--color-neutral-100);
+  background: var(--color-neutral-50);
   outline: none;
   box-sizing: border-box;
   transition: border-color var(--transition-veryfast);
@@ -579,4 +579,143 @@
   .eventStatsRow {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* ── Volunteer Application Cards ─────────────────────────────────────────── */
+.volCardList {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-neutral-50);
+  border: var(--border-thin) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.pendingRequestsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  background: var(--color-neutral-50);
+  border-bottom: var(--border-thin) solid var(--color-neutral-200);
+  padding: var(--space-md) var(--space-lg);
+}
+
+.pendingRequestsTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.pendingRequestsTitle {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: var(--weight-bold);
+  color: var(--color-primary-800);
+  margin: 0;
+}
+
+.volAppCard {
+  display: flex;
+  flex-direction: column;
+  border-bottom: var(--border-thin) solid var(--color-neutral-200);
+  cursor: pointer;
+  transition: background var(--transition-veryfast);
+}
+
+.volAppCard:last-child {
+  border-bottom: none;
+}
+
+.volAppCard:hover {
+  background: var(--color-neutral-100);
+}
+
+.volAppCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-lg);
+}
+
+.volAppStudentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.volAppStudentNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.volAppStudentName {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.volAppStudentId {
+  background: var(--color-neutral-150);
+  color: var(--color-neutral-700);
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+}
+
+.volAppEventInfoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.volAppEventName {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary-500);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+}
+
+.volAppDate {
+  color: var(--color-neutral-500);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+}
+
+.volAppExpanded {
+  background: rgba(239, 246, 255, 0.3);
+  border-top: var(--border-thin) solid var(--color-neutral-200);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.volAppSectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-primary-800);
+  margin: 0 0 8px 0;
+}
+
+.volAppMotivationBox {
+  background: var(--color-neutral-50);
+  border: var(--border-thin) solid rgba(219, 234, 254, 1);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  color: var(--color-neutral-700);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  line-height: 1.6;
 }

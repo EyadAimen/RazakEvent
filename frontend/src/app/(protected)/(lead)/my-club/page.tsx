@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, Fragment } from "react";
-import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, Clock } from "lucide-react";
+import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, Clock, Inbox, Calendar } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
 import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubTab, ClubVolunteerApplication } from "@/types/lead";
@@ -14,24 +14,24 @@ import styles from "./page.module.css";
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function MyClubPage() {
-  const [clubs, setClubs]             = useState<ClubItem[]>([]);
+  const [clubs, setClubs] = useState<ClubItem[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [members, setMembers]         = useState<ClubMember[]>([]);
-  const [requests, setRequests]       = useState<MembershipRequest[]>([]);
-  const [volApps, setVolApps]         = useState<ClubVolunteerApplication[]>([]);
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState<string | null>(null);
-  const [tab, setTab]                 = useState<ClubTab>("members");
-  const [search, setSearch]           = useState("");
-  const [acting, setActing]           = useState<string | number | null>(null);
+  const [members, setMembers] = useState<ClubMember[]>([]);
+  const [requests, setRequests] = useState<MembershipRequest[]>([]);
+  const [volApps, setVolApps] = useState<ClubVolunteerApplication[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<ClubTab>("members");
+  const [search, setSearch] = useState("");
+  const [acting, setActing] = useState<string | number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [createSuccess, setCreateSuccess]     = useState(false);
-  const [rejectingAppId, setRejectingAppId]   = useState<number | null>(null);
+  const [createSuccess, setCreateSuccess] = useState(false);
+  const [rejectingAppId, setRejectingAppId] = useState<number | null>(null);
   const [expandedVolRows, setExpandedVolRows] = useState<Set<number>>(new Set());
 
   const VOL_BADGE: Record<ClubVolunteerApplication["status"], { variant: BadgeVariant; label: string }> = {
-    pending:  { variant: "pending",  label: "Pending"  },
+    pending: { variant: "pending", label: "Pending" },
     accepted: { variant: "approved", label: "Accepted" },
     rejected: { variant: "rejected", label: "Rejected" },
   };
@@ -95,7 +95,7 @@ export default function MyClubPage() {
     setTab("members");
     setExpandedVolRows(new Set());
     if (item.status === "approved") {
-      await loadClubData(item.id).catch(() => {});
+      await loadClubData(item.id).catch(() => { });
     } else {
       setMembers([]);
       setRequests([]);
@@ -138,13 +138,13 @@ export default function MyClubPage() {
       setClubs(prev => prev.map(c =>
         c.status === "approved" && c.id === selectedClub.id
           ? {
-              ...c,
-              pendingRequests: c.pendingRequests - 1,
-              ...(decision === "approved" ? { memberCount: c.memberCount + 1 } : {}),
-            }
+            ...c,
+            pendingRequests: c.pendingRequests - 1,
+            ...(decision === "approved" ? { memberCount: c.memberCount + 1 } : {}),
+          }
           : c
       ));
-      if (decision === "approved") loadClubData(selectedClub.id).catch(() => {});
+      if (decision === "approved") loadClubData(selectedClub.id).catch(() => { });
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Action failed.");
     } finally {
@@ -221,10 +221,10 @@ export default function MyClubPage() {
     <div className={styles.page}>
       <div className={styles.body}>
 
-        <Triangle style={{ left: "0px",   top: "60px",     transform: "rotate(-20deg)", borderBottomColor: "var(--color-semantic-red)"   }} />
-        <Triangle style={{ right: "30px", top: "40px",     transform: "rotate(10deg)",  borderBottomColor: "var(--color-primary-800)"    }} />
-        <Triangle style={{ left: "20px",  bottom: "120px", transform: "rotate(-10deg)", borderBottomColor: "var(--color-primary-500)"    }} />
-        <Triangle style={{ right: "0px",  bottom: "60px",  transform: "rotate(20deg)",  borderBottomColor: "var(--color-secondary-500)" }} />
+        <Triangle style={{ left: "0px", top: "60px", transform: "rotate(-20deg)", borderBottomColor: "var(--color-semantic-red)" }} />
+        <Triangle style={{ right: "30px", top: "40px", transform: "rotate(10deg)", borderBottomColor: "var(--color-primary-800)" }} />
+        <Triangle style={{ left: "20px", bottom: "120px", transform: "rotate(-10deg)", borderBottomColor: "var(--color-primary-500)" }} />
+        <Triangle style={{ right: "0px", bottom: "60px", transform: "rotate(20deg)", borderBottomColor: "var(--color-secondary-500)" }} />
 
         <div className={styles.inner}>
 
@@ -232,8 +232,8 @@ export default function MyClubPage() {
           <div className={styles.selectorRow}>
             <div className={styles.selectorPills}>
               {clubs.map(item => {
-                const key       = item.status === "approved" ? `club-${item.id}` : `pending-${item.requestId}`;
-                const isActive  = key === selectedKey;
+                const key = item.status === "approved" ? `club-${item.id}` : `pending-${item.requestId}`;
+                const isActive = key === selectedKey;
                 const isPending = item.status === "pending";
                 return (
                   <button
@@ -314,10 +314,10 @@ export default function MyClubPage() {
               {/* Event summary strip */}
               <div className={styles.eventStatsRow}>
                 {[
-                  { value: selectedClub.eventStats.total,    label: "Total Proposed", cls: ""              },
-                  { value: selectedClub.eventStats.approved, label: "Approved",       cls: styles.approved },
-                  { value: selectedClub.eventStats.rejected, label: "Rejected",       cls: styles.rejected },
-                  { value: pendingDraft,                     label: "Pending / Draft", cls: styles.pending },
+                  { value: selectedClub.eventStats.total, label: "Total Proposed", cls: "" },
+                  { value: selectedClub.eventStats.approved, label: "Approved", cls: styles.approved },
+                  { value: selectedClub.eventStats.rejected, label: "Rejected", cls: styles.rejected },
+                  { value: pendingDraft, label: "Pending / Draft", cls: styles.pending },
                 ].map(s => (
                   <div key={s.label} className={styles.eventStat}>
                     <span className={`${styles.eventStatValue} ${s.cls}`}>{s.value}</span>
@@ -469,92 +469,99 @@ export default function MyClubPage() {
 
               {/* Volunteer Applications tab */}
               {tab === "volunteers" && (
-                <div className={styles.tabPanel}>
-                  <div className={styles.searchWrap}>
-                    <Search size={14} className={styles.searchIcon} />
-                    <input
-                      className={styles.searchInput}
-                      placeholder="Search by student or event…"
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                    />
+                <div className={styles.volCardList}>
+                  <div className={styles.pendingRequestsHeader}>
+                    <div className={styles.pendingRequestsTitleGroup}>
+                      <h3 className={styles.pendingRequestsTitle}>Pending Requests ({volApps.filter(a => a.status === 'pending').length})</h3>
+                    </div>
+                    <div className={styles.searchWrap} style={{ maxWidth: '320px', width: '100%' }}>
+                      <Search size={14} className={styles.searchIcon} />
+                      <input
+                        className={styles.searchInput}
+                        placeholder="Search by student or event…"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                      />
+                    </div>
                   </div>
                   {volApps.length === 0 ? (
-                    <div className={styles.stateBox}>
+                    <div className={styles.stateBox} style={{ border: 'none', borderRadius: 0 }}>
                       <p>No volunteering applications yet.</p>
                     </div>
                   ) : (
-                    <div className={styles.tableWrap}>
-                      <table className={styles.table}>
-                        <thead>
-                          <tr>
-                            <th>Student</th>
-                            <th>Event</th>
-                            <th>Role</th>
-                            <th>Date Applied</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {volApps
-                            .filter(a =>
-                              !search ||
-                              a.studentName.toLowerCase().includes(search.toLowerCase()) ||
-                              a.eventName.toLowerCase().includes(search.toLowerCase())
-                            )
-                            .map(app => {
-                              const badge = VOL_BADGE[app.status];
-                              const isExpanded = expandedVolRows.has(app.applicationId);
-                              return (
-                                <Fragment key={app.applicationId}>
-                                  <tr style={{ cursor: "pointer" }} onClick={() => toggleVolRow(app.applicationId)}>
-                                    <td>{app.studentName}<br /><small style={{ color: "var(--color-neutral-400)" }}>{app.studentMatricId ?? "—"}</small></td>
-                                    <td>{app.eventName}</td>
-                                    <td>{app.roleName}</td>
-                                    <td>{new Date(app.appliedAt).toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" })}</td>
-                                    <td><Badge label={badge.label} variant={badge.variant} /></td>
-                                    <td onClick={e => e.stopPropagation()}>
-                                      {app.status === "pending" && (
-                                        <div className={styles.appActions}>
-                                          <button
-                                            className={styles.acceptBtn}
-                                            disabled={acting === app.applicationId}
-                                            onClick={() => handleDecideVolApp(app.applicationId, "accepted")}
-                                          >
-                                            <Check size={12} /> Accept
-                                          </button>
-                                          <button
-                                            className={styles.rejectBtn}
-                                            disabled={acting === app.applicationId}
-                                            onClick={() => setRejectingAppId(app.applicationId)}
-                                          >
-                                            <X size={12} /> Reject
-                                          </button>
-                                        </div>
-                                      )}
-                                    </td>
-                                  </tr>
-                                  {isExpanded && (
-                                    <tr style={{ background: "var(--color-primary-500-10)" }}>
-                                      <td colSpan={6} style={{ padding: "var(--space-md) var(--space-lg)", fontSize: "var(--text-small-size)", color: "var(--color-neutral-700)" }}>
-                                        <strong>Reason for applying:</strong><br />
-                                        {app.reason ?? <em>No reason provided.</em>}
-                                        {app.rejectionMessage && (
-                                          <div style={{ marginTop: 8 }}>
-                                            <strong>Rejection message:</strong><br />{app.rejectionMessage}
-                                          </div>
-                                        )}
-                                      </td>
-                                    </tr>
+                    <>
+                      {volApps
+                        .filter(a =>
+                          !search ||
+                          a.studentName.toLowerCase().includes(search.toLowerCase()) ||
+                          a.eventName.toLowerCase().includes(search.toLowerCase())
+                        )
+                        .map(app => {
+                          const badge = VOL_BADGE[app.status];
+                          const isExpanded = expandedVolRows.has(app.applicationId);
+                          return (
+                            <div key={app.applicationId} className={styles.volAppCard} onClick={() => toggleVolRow(app.applicationId)}>
+                              <div className={styles.volAppCardHeader}>
+                                <div className={styles.volAppStudentInfo}>
+                                  <div className={styles.volAppStudentNameRow}>
+                                    <h4 className={styles.volAppStudentName}>{app.studentName}</h4>
+                                    <span className={styles.volAppStudentId}>{app.studentMatricId ?? "N/A"}</span>
+                                  </div>
+                                  <div className={styles.volAppEventInfoRow}>
+                                    <span className={styles.volAppEventName}>
+                                      <Calendar size={14} /> {app.eventName}
+                                    </span>
+                                    <span className={styles.volAppDate}>
+                                      Applied: {new Date(app.appliedAt).toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" })}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div onClick={e => e.stopPropagation()}>
+                                  {app.status === "pending" ? (
+                                    <div className={styles.appActions}>
+                                      <button
+                                        className={styles.acceptBtn}
+                                        disabled={acting === app.applicationId}
+                                        onClick={() => handleDecideVolApp(app.applicationId, "accepted")}
+                                      >
+                                        <Check size={14} /> Accept
+                                      </button>
+                                      <button
+                                        className={styles.rejectBtn}
+                                        disabled={acting === app.applicationId}
+                                        onClick={() => setRejectingAppId(app.applicationId)}
+                                      >
+                                        <X size={14} /> Reject
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <Badge label={badge.label} variant={badge.variant} />
                                   )}
-                                </Fragment>
-                              );
-                            })
-                          }
-                        </tbody>
-                      </table>
-                    </div>
+                                </div>
+                              </div>
+                              {isExpanded && (
+                                <div className={styles.volAppExpanded} onClick={e => e.stopPropagation()}>
+                                  <div>
+                                    <h5 className={styles.volAppSectionTitle}>Motivation</h5>
+                                    <div className={styles.volAppMotivationBox}>
+                                      {app.reason ? `"${app.reason}"` : <em>No reason provided.</em>}
+                                    </div>
+                                  </div>
+                                  {app.rejectionMessage && (
+                                    <div style={{ marginTop: 8 }}>
+                                      <h5 className={styles.volAppSectionTitle}>Rejection message</h5>
+                                      <div className={styles.volAppMotivationBox} style={{ borderColor: 'var(--color-semantic-red-10)', backgroundColor: 'var(--color-semantic-red-10)', color: 'var(--color-semantic-red)' }}>
+                                        {app.rejectionMessage}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      }
+                    </>
                   )}
                 </div>
               )}
@@ -564,7 +571,7 @@ export default function MyClubPage() {
         </div>
       </div>
 
-      <Alert variant="loading" isOpen={acting !== null} onClose={() => {}} message="Processing…" />
+      <Alert variant="loading" isOpen={acting !== null} onClose={() => { }} message="Processing…" />
       <Alert variant="error" isOpen={actionError !== null} message={actionError ?? ""} onClose={() => setActionError(null)} />
 
       <CreateClubModal
