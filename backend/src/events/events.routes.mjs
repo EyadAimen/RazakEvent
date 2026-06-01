@@ -13,7 +13,6 @@ router.get("/lead/dashboard", authenticate, requireRole("lead"), eventsControlle
 router.get("/lead", authenticate, requireRole("lead"), eventsController.getLeadEventsHandler);
 router.post("/", authenticate, requireRole("lead"), eventsController.createEventHandler);
 router.patch("/:eventId/volunteering", authenticate, requireRole("lead"), eventsController.toggleVolunteeringHandler);
-router.patch("/:eventId/volunteers/:applicationId/decision", authenticate, requireRole("lead"), eventsController.decideVolunteerApplicationHandler);
 router.get("/:eventId", authenticate, requireRole("lead", "admin"), eventsController.getEventHandler);
 router.patch("/:eventId", authenticate, requireRole("lead"), eventsController.updateEventHandler);
 router.delete("/:eventId", authenticate, requireRole("lead"), eventsController.deleteEventHandler);

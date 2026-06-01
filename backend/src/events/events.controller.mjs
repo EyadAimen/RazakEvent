@@ -44,17 +44,7 @@ export const toggleVolunteeringHandler = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-export const decideVolunteerApplicationHandler = async (req, res, next) => {
-  try {
-    const result = await eventsService.decideVolunteerApplication(
-      req.params.eventId,
-      req.params.applicationId,
-      req.user.userId,
-      req.body.decision
-    );
-    res.status(200).json(result);
-  } catch (err) { next(err); }
-};
+
 
 export const updateEventHandler = async (req, res, next) => {
   try {
@@ -128,7 +118,7 @@ export const getStudentEventsHandler = async (req, res, next) => {
 
 export const getStudentEventHandler = async (req, res, next) => {
   try {
-    const event = await eventsService.getStudentEventDetail(req.params.eventId);
+    const event = await eventsService.getStudentEventDetail(req.params.eventId, req.user?.userId);
     res.status(200).json({ event });
   } catch (err) { next(err); }
 };
