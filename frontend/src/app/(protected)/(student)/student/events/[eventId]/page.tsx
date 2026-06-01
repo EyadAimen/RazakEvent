@@ -141,7 +141,7 @@ export default function SharedEventDetailPage() {
                 ) : (
                   <button 
                     className={styles.applyBtn}
-                    onClick={() => router.push(`/events/${eventId}/volunteer`)}
+                    onClick={() => router.push(`/student/events/${eventId}/volunteer`)}
                   >
                     Apply to volunteer
                   </button>
