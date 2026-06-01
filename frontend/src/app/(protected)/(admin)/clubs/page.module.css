@@ -103,7 +103,7 @@
 .statLabel {
   display: block;
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: var(--text-caption-size);
   font-weight: var(--weight-semibold);
   color: var(--color-neutral-400);
   text-transform: uppercase;
@@ -170,7 +170,7 @@
   background: var(--color-neutral-200);
   color: var(--color-neutral-700);
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: var(--text-caption-size);
   font-weight: var(--weight-bold);
   padding: 2px 9px;
   border-radius: var(--radius-pill);
@@ -207,7 +207,7 @@
   padding: 2px 9px;
   border-radius: var(--radius-pill);
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: var(--text-caption-size);
   font-weight: var(--weight-bold);
 }
 
@@ -218,7 +218,7 @@
 }
 
 .chipCommunity {
-  background: rgba(232, 160, 32, 0.1);
+  background: var(--color-secondary-800-10);
   color: var(--color-secondary-800);
   border: 1px solid var(--color-secondary-800);
 }
@@ -302,12 +302,12 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: var(--text-caption-size);
   font-weight: var(--weight-bold);
   flex-shrink: 0;
 }
 
-.avatarSm { width: 28px; height: 28px; font-size: 10px; }
+.avatarSm { width: 28px; height: 28px; font-size: var(--text-caption-size); }
 
 .requestorName {
   font-family: var(--font-body);
@@ -349,8 +349,8 @@
   transition: all var(--transition-veryfast);
 }
 
-.approveBtn { background: rgba(16, 185, 129, 0.12); color: #065f46; }
-.approveBtn:hover:not(:disabled) { background: rgba(16, 185, 129, 0.25); }
+.approveBtn { background: var(--color-status-green-10); color: var(--color-status-green-text); }
+.approveBtn:hover:not(:disabled) { background: var(--color-status-green-25); }
 
 .rejectBtn { background: var(--color-semantic-red-10); color: var(--color-semantic-red); }
 .rejectBtn:hover:not(:disabled) { background: var(--color-semantic-red-15); }
@@ -411,7 +411,7 @@
   background: var(--color-neutral-100);
   color: var(--color-neutral-500);
   font-weight: var(--weight-semibold);
-  font-size: 11px;
+  font-size: var(--text-caption-size);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   text-align: left;
@@ -437,7 +437,7 @@
 .emptyRow { text-align: center; color: var(--color-neutral-400); padding: var(--space-2xl) !important; }
 
 .clubNameMain { font-weight: var(--weight-semibold); color: var(--color-neutral-800); margin: 0; }
-.estDate { font-size: 11px; color: var(--color-neutral-400); margin: 2px 0 0; }
+.estDate { font-size: var(--text-caption-size); color: var(--color-neutral-400); margin: 2px 0 0; }
 .categoryCell { color: var(--color-neutral-500); }
 
 .leadCell {
@@ -581,7 +581,7 @@
 
 .fieldLabel {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: var(--text-caption-size);
   font-weight: var(--weight-semibold);
   color: var(--color-neutral-600);
   text-transform: uppercase;
@@ -692,5 +692,5 @@
   transition: all var(--transition-veryfast);
 }
 
-.rejectSubmitBtn:hover:not(:disabled) { background: #a93226; border-color: #a93226; }
+.rejectSubmitBtn:hover:not(:disabled) { background: var(--color-semantic-red-dark); border-color: var(--color-semantic-red-dark); }
 .rejectSubmitBtn:disabled { opacity: 0.5; cursor: not-allowed; }
