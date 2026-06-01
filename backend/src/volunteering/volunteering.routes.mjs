@@ -52,12 +52,20 @@ router.post(
     volunteeringController.applyToRoleHandler,
 );
 
-// Student + Lead — drop an application
-router.delete(
-    "/applications/:applicationId",
+// Lead — get all volunteer applications for their club
+router.get(
+    "/applications/club",
     authenticate,
-    requireRole("student", "member", "lead"),
-    volunteeringController.dropApplicationHandler,
+    requireRole("lead"),
+    volunteeringController.getClubVolunteerApplicationsHandler,
+);
+
+// Lead — decide on an application (accept/reject)
+router.patch(
+    "/applications/:applicationId/decision",
+    authenticate,
+    requireRole("lead"),
+    volunteeringController.decideApplicationHandler,
 );
 
 export default router;

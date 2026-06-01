@@ -26,7 +26,7 @@ export const VolunteeringApplicationEntity = new EntitySchema({
         },
         status: {
             type: "enum",
-            enum: ["pending", "accepted", "rejected", "dropped"],
+            enum: ["pending", "accepted", "rejected"],
             default: "pending",
             nullable: false,
         },
@@ -42,6 +42,11 @@ export const VolunteeringApplicationEntity = new EntitySchema({
             nullable: true,
         },
         reason: {
+            type: "text",
+            nullable: true,
+        },
+        rejectionMessage: {
+            name: "rejection_message",
             type: "text",
             nullable: true,
         },

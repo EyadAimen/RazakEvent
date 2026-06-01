@@ -42,13 +42,24 @@ export const getMyApplicationsHandler = async (req, res, next) => {
     } catch (err) { next(err); }
 };
 
-export const dropApplicationHandler = async (req, res, next) => {
+export const decideApplicationHandler = async (req, res, next) => {
     try {
-        await volunteeringService.dropApplication(
-            Number(req.params.applicationId),
+        const result = await volunteeringService.decideVolunteerApplication(
+            req.params.applicationId,
             req.user.userId,
-            req.user.role,
+            req.body.decision,
+            req.body.rejectionMessage,
         );
-        res.status(200).json({ message: "Application dropped" });
+        res.status(200).json(result);
+    } catch (err) { next(err); }
+};
+
+export const getClubVolunteerApplicationsHandler = async (req, res, next) => {
+    try {
+        const result = await volunteeringService.getClubVolunteerApplications(
+            req.query.clubId,
+            req.user.userId,
+        );
+        res.status(200).json(result);
     } catch (err) { next(err); }
 };
