@@ -106,13 +106,14 @@ export interface ApprovedClub {
 }
 
 export interface PendingClubItem {
-  status: "pending";
+  status: "pending" | "rejected";
   requestId: number;
   name: string;
   type: "club" | "community";
   description: string;
   category: string | null;
   submittedAt: string;
+  adminComment: string | null;
 }
 
 export type ClubItem = ApprovedClub | PendingClubItem;

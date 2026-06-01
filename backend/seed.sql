@@ -13,6 +13,19 @@
 --   9 proposals | 7 events
 -- ============================================================
 
+-- ── 0. Schema patches (idempotent — safe to re-run) ─────────
+-- Adds new columns that TypeORM would normally add via synchronize.
+-- Running these here makes the seed self-contained.
+
+ALTER TABLE clubs
+    ADD COLUMN IF NOT EXISTS category        VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS faculty_advisor VARCHAR,
+    ADD COLUMN IF NOT EXISTS objectives      TEXT;
+
+ALTER TABLE club_requests
+    ADD COLUMN IF NOT EXISTS category              VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS supporting_letter_path TEXT;
+
 -- ── 1. Venues ────────────────────────────────────────────────
 
 INSERT INTO venues (name, location)
@@ -336,15 +349,343 @@ SELECT
     '2026-03-20 07:00:00', 'completed', NOW() - INTERVAL '65 days'
 WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Fun Run 5K');
 
+-- ── 8. Update existing clubs with new metadata columns ───────
+
+UPDATE clubs SET
+    category       = 'Technology',
+    faculty_advisor = 'Dr. Siti Aminah',
+    objectives     = '["Host monthly tech talks and workshops","Run coding bootcamps for beginners","Organise inter-college hackathons","Collaborate with industry for internship pipelines"]'
+WHERE name = 'Tech Club' AND category IS NULL;
+
+UPDATE clubs SET
+    category       = 'Arts & Culture',
+    faculty_advisor = 'Dr. Rosmah Binti Ariffin',
+    objectives     = '["Showcase Malaysian cultural heritage","Host annual cultural night","Run creative arts workshops","Build cultural exchange with other colleges"]'
+WHERE name = 'Culture Club' AND category IS NULL;
+
+UPDATE clubs SET
+    category       = 'Sports & Fitness',
+    faculty_advisor = 'En. Farid Azri',
+    objectives     = '["Organise inter-college sports tournaments","Promote health and fitness among students","Run weekly recreational activities","Represent KTR in UTM sports events"]'
+WHERE name = 'Sports Community' AND category IS NULL;
+
+-- ── 9. Additional venues ──────────────────────────────────────
+
+INSERT INTO venues (name, location)
+SELECT 'Lab Block C, Room 204', 'Block C, Kolej Tun Razak'
+WHERE NOT EXISTS (SELECT 1 FROM venues WHERE name = 'Lab Block C, Room 204');
+
+INSERT INTO venues (name, location)
+SELECT 'Auditorium B, KTR', 'Block E, Kolej Tun Razak'
+WHERE NOT EXISTS (SELECT 1 FROM venues WHERE name = 'Auditorium B, KTR');
+
+-- ── 10. Additional users ──────────────────────────────────────
+
+-- Lead: Adam Lee — will lead Cybersecurity KTR AND Photography Society (multi-club lead)
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Adam Lee Zheng Wei', 'A22CS0101', 'adam.lee@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'lead', true, NOW() - INTERVAL '9 months'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'adam.lee@graduate.utm.my');
+
+-- Lead: Nadia Hassan — leads Green Earth Initiative
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Nadia Hassan', 'A22CE0056', 'nadia.hassan@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'lead', true, NOW() - INTERVAL '7 months'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'nadia.hassan@graduate.utm.my');
+
+-- Members (dedicated per club to avoid cross-club constraints)
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Chen Wei Liang', 'A23CS1050', 'chen.wei@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'member', true, NOW() - INTERVAL '7 months'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'chen.wei@graduate.utm.my');
+
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Priya Nair', 'A23CS1055', 'priya.nair@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'member', true, NOW() - INTERVAL '6 months'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'priya.nair@graduate.utm.my');
+
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Marcus Tan Jian Hao', 'A23CS1060', 'marcus.tan@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'member', true, NOW() - INTERVAL '5 months'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'marcus.tan@graduate.utm.my');
+
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Liyana Binti Zulkifli', 'A23ET1021', 'liyana.zulkifli@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'member', true, NOW() - INTERVAL '5 months'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'liyana.zulkifli@graduate.utm.my');
+
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Kevin Wong', 'A23ME1077', 'kevin.wong@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'member', true, NOW() - INTERVAL '4 months'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'kevin.wong@graduate.utm.my');
+
+-- Students who will have pending club requests
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Alif Zulkifli', 'A24CS3001', 'alif.zulkifli@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'student', true, NOW() - INTERVAL '2 months'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'alif.zulkifli@graduate.utm.my');
+
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Sarah Binti Idris', 'A24EE3010', 'sarah.binti@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'student', true, NOW() - INTERVAL '1 month'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'sarah.binti@graduate.utm.my');
+
+INSERT INTO users (full_name, staff_or_matric_id, email, password_hash, role, "isEmailVerified", created_at)
+SELECT 'Chen Wei Liang Jr', 'A24CS3020', 'chenweil.jr@graduate.utm.my',
+       '$2b$10$D5uthMQFirb.lencPQ.WuuhTojhTmrMvZ.ooMkMeGB5rVL5AhUZR2',
+       'student', true, NOW() - INTERVAL '3 weeks'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'chenweil.jr@graduate.utm.my');
+
+UPDATE users SET "isEmailVerified" = true WHERE email IN (
+    'adam.lee@graduate.utm.my', 'nadia.hassan@graduate.utm.my',
+    'chen.wei@graduate.utm.my', 'priya.nair@graduate.utm.my',
+    'marcus.tan@graduate.utm.my', 'liyana.zulkifli@graduate.utm.my',
+    'kevin.wong@graduate.utm.my', 'alif.zulkifli@graduate.utm.my',
+    'sarah.binti@graduate.utm.my', 'chenweil.jr@graduate.utm.my'
+);
+
+-- ── 11. New clubs (with category, faculty_advisor, objectives) ─
+
+INSERT INTO clubs (name, type, description, category, faculty_advisor, objectives, lead_id, created_at)
+SELECT
+    'Cybersecurity KTR', 'club',
+    'A club dedicated to ethical hacking, cybersecurity awareness, and CTF competitions for KTR students. We build security-minded engineers through workshops, guest lectures, and hands-on labs.',
+    'Technology',
+    'Dr. Azlan Rashid',
+    '["Host bi-monthly CTF competitions open to all students","Conduct cybersecurity awareness workshops each semester","Collaborate with industry partners for internship pipelines","Maintain a shared lab environment for hands-on learning"]',
+    (SELECT id FROM users WHERE email = 'adam.lee@graduate.utm.my'),
+    NOW() - INTERVAL '8 months'
+WHERE NOT EXISTS (SELECT 1 FROM clubs WHERE name = 'Cybersecurity KTR');
+
+INSERT INTO clubs (name, type, description, category, faculty_advisor, objectives, lead_id, created_at)
+SELECT
+    'Green Earth Initiative', 'community',
+    'An environmental community focused on sustainability, eco-awareness, and green campus initiatives at KTR and UTM.',
+    'Environment',
+    'Dr. Siti Rahimah',
+    '["Plant 500 trees across the UTM campus by 2027","Reduce single-use plastic usage in KTR by 60%","Organise monthly campus clean-up drives","Run eco-awareness campaigns for new students"]',
+    (SELECT id FROM users WHERE email = 'nadia.hassan@graduate.utm.my'),
+    NOW() - INTERVAL '6 months'
+WHERE NOT EXISTS (SELECT 1 FROM clubs WHERE name = 'Green Earth Initiative');
+
+-- Photography Society — also led by Adam Lee to test multi-club lead feature
+INSERT INTO clubs (name, type, description, category, faculty_advisor, objectives, lead_id, created_at)
+SELECT
+    'Photography Society', 'club',
+    'A creative space for KTR students passionate about photography — from mobile shots to DSLR techniques, photo editing, and exhibitions.',
+    'Arts & Media',
+    NULL,
+    '["Host semester photography exhibitions","Run weekly photo-walk sessions around UTM","Teach editing skills through monthly workshops","Build a digital archive of KTR events"]',
+    (SELECT id FROM users WHERE email = 'adam.lee@graduate.utm.my'),
+    NOW() - INTERVAL '3 months'
+WHERE NOT EXISTS (SELECT 1 FROM clubs WHERE name = 'Photography Society');
+
+-- ── 12. Club members for new clubs ────────────────────────────
+
+-- Cybersecurity KTR
+INSERT INTO club_members (user_id, club_id, joined_at)
+SELECT (SELECT id FROM users WHERE email = 'chen.wei@graduate.utm.my'),
+       (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
+       NOW() - INTERVAL '7 months'
+WHERE NOT EXISTS (
+    SELECT 1 FROM club_members
+    WHERE user_id = (SELECT id FROM users WHERE email = 'chen.wei@graduate.utm.my')
+);
+
+INSERT INTO club_members (user_id, club_id, joined_at)
+SELECT (SELECT id FROM users WHERE email = 'priya.nair@graduate.utm.my'),
+       (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
+       NOW() - INTERVAL '6 months'
+WHERE NOT EXISTS (
+    SELECT 1 FROM club_members
+    WHERE user_id = (SELECT id FROM users WHERE email = 'priya.nair@graduate.utm.my')
+);
+
+INSERT INTO club_members (user_id, club_id, joined_at)
+SELECT (SELECT id FROM users WHERE email = 'marcus.tan@graduate.utm.my'),
+       (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
+       NOW() - INTERVAL '5 months'
+WHERE NOT EXISTS (
+    SELECT 1 FROM club_members
+    WHERE user_id = (SELECT id FROM users WHERE email = 'marcus.tan@graduate.utm.my')
+);
+
+-- Green Earth Initiative
+INSERT INTO club_members (user_id, club_id, joined_at)
+SELECT (SELECT id FROM users WHERE email = 'liyana.zulkifli@graduate.utm.my'),
+       (SELECT id FROM clubs WHERE name = 'Green Earth Initiative'),
+       NOW() - INTERVAL '5 months'
+WHERE NOT EXISTS (
+    SELECT 1 FROM club_members
+    WHERE user_id = (SELECT id FROM users WHERE email = 'liyana.zulkifli@graduate.utm.my')
+);
+
+INSERT INTO club_members (user_id, club_id, joined_at)
+SELECT (SELECT id FROM users WHERE email = 'kevin.wong@graduate.utm.my'),
+       (SELECT id FROM clubs WHERE name = 'Green Earth Initiative'),
+       NOW() - INTERVAL '4 months'
+WHERE NOT EXISTS (
+    SELECT 1 FROM club_members
+    WHERE user_id = (SELECT id FROM users WHERE email = 'kevin.wong@graduate.utm.my')
+);
+
+-- ── 13. Pending club requests (tests admin approval UI) ────────
+
+-- Mental Health Allies — community, Wellness — by Alif
+INSERT INTO club_requests (student_id, club_name, club_type, description, category, status, submitted_at)
+SELECT
+    (SELECT id FROM users WHERE email = 'alif.zulkifli@graduate.utm.my'),
+    'Mental Health Allies', 'community',
+    'A peer-support community focused on mental wellness, stress management workshops, and creating safe spaces for students to openly discuss their mental health challenges.',
+    'Wellness',
+    'pending',
+    NOW() - INTERVAL '5 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM club_requests
+    WHERE student_id = (SELECT id FROM users WHERE email = 'alif.zulkifli@graduate.utm.my')
+    AND status = 'pending'
+);
+
+-- Entrepreneurship Hub — club, Business — by Sarah
+INSERT INTO club_requests (student_id, club_name, club_type, description, category, status, submitted_at)
+SELECT
+    (SELECT id FROM users WHERE email = 'sarah.binti@graduate.utm.my'),
+    'Entrepreneurship Hub', 'club',
+    'A startup-minded club hosting pitch competitions, startup weekends, and mentorship sessions with industry founders. Building the next generation of Malaysian entrepreneurs from KTR.',
+    'Business',
+    'pending',
+    NOW() - INTERVAL '2 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM club_requests
+    WHERE student_id = (SELECT id FROM users WHERE email = 'sarah.binti@graduate.utm.my')
+    AND status = 'pending'
+);
+
+-- ── 14. Proposals + events for new clubs ──────────────────────
+
+-- Cybersecurity KTR: 2 approved proposals → 2 events
+INSERT INTO event_proposals (lead_id, club_id, venue_id, event_name, proposed_date, description, estimated_budget, status, submitted_at, reviewed_at, created_at)
+SELECT
+    (SELECT id FROM users WHERE email = 'adam.lee@graduate.utm.my'),
+    (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
+    (SELECT id FROM venues WHERE name = 'Lab Block C, Room 204'),
+    'KTR CTF 2026 Season Opener', '2026-06-12 09:00:00',
+    'Capture-the-flag competition open to all KTR students to test their hacking and problem-solving skills.',
+    1200.00, 'approved',
+    NOW() - INTERVAL '35 days', NOW() - INTERVAL '30 days', NOW() - INTERVAL '35 days'
+WHERE NOT EXISTS (SELECT 1 FROM event_proposals WHERE event_name = 'KTR CTF 2026 Season Opener');
+
+INSERT INTO event_proposals (lead_id, club_id, venue_id, event_name, proposed_date, description, estimated_budget, status, submitted_at, reviewed_at, created_at)
+SELECT
+    (SELECT id FROM users WHERE email = 'adam.lee@graduate.utm.my'),
+    (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
+    (SELECT id FROM venues WHERE name = 'Auditorium B, KTR'),
+    'Guest Lecture: Threat Intelligence in 2026', '2026-06-28 14:00:00',
+    'Industry guest lecture on modern threat intelligence and security operations for KTR students.',
+    500.00, 'approved',
+    NOW() - INTERVAL '20 days', NOW() - INTERVAL '16 days', NOW() - INTERVAL '20 days'
+WHERE NOT EXISTS (SELECT 1 FROM event_proposals WHERE event_name = 'Guest Lecture: Threat Intelligence in 2026');
+
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
+SELECT
+    (SELECT id FROM event_proposals WHERE event_name = 'KTR CTF 2026 Season Opener'),
+    (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
+    (SELECT id FROM venues WHERE name = 'Lab Block C, Room 204'),
+    'KTR CTF 2026 Season Opener',
+    'Capture-the-flag competition open to all KTR students.',
+    '2026-06-12 09:00:00', 'approved', NOW() - INTERVAL '30 days'
+WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'KTR CTF 2026 Season Opener');
+
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
+SELECT
+    (SELECT id FROM event_proposals WHERE event_name = 'Guest Lecture: Threat Intelligence in 2026'),
+    (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
+    (SELECT id FROM venues WHERE name = 'Auditorium B, KTR'),
+    'Guest Lecture: Threat Intelligence in 2026',
+    'Industry guest lecture on modern threat intelligence.',
+    '2026-06-28 14:00:00', 'approved', NOW() - INTERVAL '16 days'
+WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Guest Lecture: Threat Intelligence in 2026');
+
+-- Green Earth Initiative: 1 approved proposal → 1 completed event + 1 pending proposal
+INSERT INTO event_proposals (lead_id, club_id, venue_id, event_name, proposed_date, description, estimated_budget, status, submitted_at, reviewed_at, created_at)
+SELECT
+    (SELECT id FROM users WHERE email = 'nadia.hassan@graduate.utm.my'),
+    (SELECT id FROM clubs WHERE name = 'Green Earth Initiative'),
+    (SELECT id FROM venues WHERE name = 'Sports Field, KTR'),
+    'Campus Clean-Up Drive', '2026-05-10 08:00:00',
+    'Monthly campus clean-up and recycling awareness activity for all KTR residents.',
+    300.00, 'approved',
+    NOW() - INTERVAL '28 days', NOW() - INTERVAL '24 days', NOW() - INTERVAL '28 days'
+WHERE NOT EXISTS (SELECT 1 FROM event_proposals WHERE event_name = 'Campus Clean-Up Drive');
+
+INSERT INTO event_proposals (lead_id, club_id, venue_id, event_name, proposed_date, description, estimated_budget, status, submitted_at, created_at)
+SELECT
+    (SELECT id FROM users WHERE email = 'nadia.hassan@graduate.utm.my'),
+    (SELECT id FROM clubs WHERE name = 'Green Earth Initiative'),
+    (SELECT id FROM venues WHERE name = 'Seminar Room A, KTR'),
+    'Zero Waste Workshop', '2026-07-05 10:00:00',
+    'Workshop on sustainable living, composting and zero-waste practices for campus life.',
+    400.00, 'pending',
+    NOW() - INTERVAL '4 days', NOW() - INTERVAL '4 days'
+WHERE NOT EXISTS (SELECT 1 FROM event_proposals WHERE event_name = 'Zero Waste Workshop');
+
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
+SELECT
+    (SELECT id FROM event_proposals WHERE event_name = 'Campus Clean-Up Drive'),
+    (SELECT id FROM clubs WHERE name = 'Green Earth Initiative'),
+    (SELECT id FROM venues WHERE name = 'Sports Field, KTR'),
+    'Campus Clean-Up Drive',
+    'Monthly campus clean-up and recycling awareness activity.',
+    '2026-05-10 08:00:00', 'completed', NOW() - INTERVAL '24 days'
+WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Campus Clean-Up Drive');
+
 -- ── Done ─────────────────────────────────────────────────────
 -- All passwords: Password123!
 --
--- admin.ktr@graduate.utm.my          → admin
--- sarah.lead@graduate.utm.my         → lead  (Tech Club)
--- haziq.lead@graduate.utm.my         → lead  (Culture Club)
--- nurul.lead@graduate.utm.my         → lead  (Sports Community)
--- ahmad.faiz@graduate.utm.my         → member (Tech Club)
--- siti.nurhaliza@graduate.utm.my     → member (Culture Club)
--- khairul.aizat@graduate.utm.my      → member (Sports Community)
--- izzatul.husna@graduate.utm.my      → student
--- nadia.zainudin@graduate.utm.my     → student
+-- ADMIN
+--   admin.ktr@graduate.utm.my              → admin
+--
+-- LEADS
+--   sarah.lead@graduate.utm.my             → lead  (Tech Club)
+--   haziq.lead@graduate.utm.my             → lead  (Culture Club)
+--   nurul.lead@graduate.utm.my             → lead  (Sports Community)
+--   adam.lee@graduate.utm.my               → lead  (Cybersecurity KTR + Photography Society) ← multi-club
+--   nadia.hassan@graduate.utm.my           → lead  (Green Earth Initiative)
+--
+-- MEMBERS
+--   ahmad.faiz@graduate.utm.my             → member (Tech Club)
+--   siti.nurhaliza@graduate.utm.my         → member (Culture Club)
+--   khairul.aizat@graduate.utm.my          → member (Sports Community)
+--   chen.wei@graduate.utm.my               → member (Cybersecurity KTR)
+--   priya.nair@graduate.utm.my             → member (Cybersecurity KTR)
+--   marcus.tan@graduate.utm.my             → member (Cybersecurity KTR)
+--   liyana.zulkifli@graduate.utm.my        → member (Green Earth Initiative)
+--   kevin.wong@graduate.utm.my             → member (Green Earth Initiative)
+--
+-- STUDENTS
+--   izzatul.husna@graduate.utm.my          → student
+--   nadia.zainudin@graduate.utm.my         → student
+--   alif.zulkifli@graduate.utm.my          → student (pending club request: Mental Health Allies)
+--   sarah.binti@graduate.utm.my            → student (pending club request: Entrepreneurship Hub)
+--   chenweil.jr@graduate.utm.my            → student
+--
+-- CLUBS (6 approved + 3 existing = 9 total, 2 pending requests)
+--   Tech Club          · Technology   · Dr. Siti Aminah
+--   Culture Club       · Arts & Culture · Dr. Rosmah Binti Ariffin
+--   Sports Community   · Sports & Fitness · En. Farid Azri
+--   Cybersecurity KTR  · Technology   · Dr. Azlan Rashid   (4 objectives)
+--   Green Earth Init.  · Environment  · Dr. Siti Rahimah   (4 objectives)
+--   Photography Society · Arts & Media · —                 (4 objectives)
+--
+-- PENDING REQUESTS
+--   Mental Health Allies  (community, Wellness)  — by Alif Zulkifli
+--   Entrepreneurship Hub  (club, Business)        — by Sarah Binti Idris
