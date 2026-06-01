@@ -34,5 +34,20 @@ export const ClubEntity = new EntitySchema({
             createDate: true,
             nullable: false,
         },
+        deletedAt: {
+            name: "deleted_at",
+            type: "timestamptz",
+            nullable: true,
+        },
+        deleteReason: {
+            name: "delete_reason",
+            type: "text",
+            nullable: true,
+        },
+        deletedBy: {
+            name: "deleted_by",
+            type: "uuid",
+            nullable: true,
+        },
     },
 });
