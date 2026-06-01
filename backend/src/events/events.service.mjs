@@ -250,9 +250,18 @@ export const uploadProposalPdf = async (eventId, leadId, fileUrl) => {
 // ... (all your imports and other functions remain exactly as they were, except the two below)
 
 export const getEventDetail = async (eventId, userId, userRole) => {
-  const id = Number(eventId);
-  const proposal = await proposalRepo().findOne({ where: { id } });
-  if (!proposal) throw new NotFoundError("Event not found");
+    const id = Number(eventId);
+    if (isNaN(id)) throw new NotFoundError("Event not found");
+
+    // Try proposal table first; if not found, fall back via EventEntity (approved events)
+    let proposal = await proposalRepo().findOne({ where: { id } });
+    if (!proposal) {
+        const liveEventById = await eventRepo().findOne({ where: { id } });
+        if (liveEventById) {
+            proposal = await proposalRepo().findOne({ where: { id: liveEventById.proposalId } });
+        }
+    }
+    if (!proposal) throw new NotFoundError("Event not found");
 
   // Allow admin to bypass ownership
   if (userRole !== "admin" && proposal.leadId !== userId) {

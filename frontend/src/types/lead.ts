@@ -85,6 +85,13 @@ export interface CreateEventPayload {
   status: "draft" | "submitted";
 }
 
+export interface BookedDate {
+  eventId: number;
+  name: string;
+  eventDate: string;
+  status: string;
+}
+
 // ── My Club ───────────────────────────────────────────────────────────────────
 
 export interface ClubOverview {
@@ -110,13 +117,14 @@ export interface ApprovedClub {
 }
 
 export interface PendingClubItem {
-  status: "pending";
+  status: "pending" | "rejected";
   requestId: number;
   name: string;
   type: "club" | "community";
   description: string;
   category: string | null;
   submittedAt: string;
+  adminComment: string | null;
 }
 
 export type ClubItem = ApprovedClub | PendingClubItem;

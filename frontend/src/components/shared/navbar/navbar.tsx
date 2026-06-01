@@ -47,18 +47,19 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { label: "Profile",       href: "/student/profile",    icon: User            },
   ],
   lead: [
-    { label: "Dashboard",     href: "/lead/dashboard",    icon: LayoutDashboard },
-    { label: "Events",        href: "/lead/events",       icon: Ticket          },
-    { label: "Propose Event", href: "/lead/events/new",   icon: FilePlus        },
-    { label: "My Club",       href: "/my-club",           icon: Users           },
-    { label: "Certificates",  href: "/certificates",      icon: Award           },
-    { label: "Profile",       href: "/lead/profile",      icon: User            },
+    { label: "Dashboard",     href: "/lead/dashboard",   icon: LayoutDashboard },
+    { label: "My Events",     href: "/lead/events",      icon: Ticket          },
+    { label: "Propose Event", href: "/lead/events/new",  icon: FilePlus        },
+    { label: "My Club",       href: "/my-club",          icon: Users           },
+    { label: "Certificates",  href: "/lead/certificates", icon: Award           },
+    { label: "Profile",       href: "/lead/profile",     icon: User            },
   ],
   admin: [
     { label: "Dashboard",    href: "/admin/dashboard",   icon: LayoutDashboard },
+    { label: "Profile",      href: "/admin/profile",     icon: User            },
+    { label: "Clubs",        href: "/clubs",             icon: Users           },
     { label: "Requests",     href: "/requests",          icon: ClipboardList   },
     { label: "Manage Roles", href: "/manage-roles",      icon: ShieldCheck     },
-    { label: "Profile",      href: "/admin/profile",     icon: User            },
   ],
 };
 

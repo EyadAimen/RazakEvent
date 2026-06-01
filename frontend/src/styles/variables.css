@@ -12,6 +12,9 @@
   /* SECONDARY */
   --color-secondary-500: #F4C200;
   --color-secondary-800: #E8A020;
+  --color-secondary-800-10: rgba(232, 160, 32, 0.1);
+  --color-secondary-800-15: rgba(232, 160, 32, 0.15);
+  --color-secondary-800-50: rgba(232, 160, 32, 0.5);
 
   /* KTR BRAND */
   --color-ktr-navy: #0A1128;
@@ -20,6 +23,7 @@
   --color-ktr-blue: #0055FF;
   --color-ktr-ice: #EFF3FF;
   --color-ktr-crimson: #E11D48;
+  --color-ktr-amber: #fde68a;
 
   /* NEUTRAL (complete scale) */
   --color-neutral-50: #FFFFFF;
@@ -37,9 +41,13 @@
   --color-semantic-red: #C0392B;
   --color-semantic-red-10: rgba(201, 54, 43, 0.1);
   --color-semantic-red-15: rgba(201, 54, 43, 0.12);
+  --color-semantic-red-dark: #a93226;
 
   /* STATUS (basic) */
   --color-status-green: #10B981;
+  --color-status-green-10: rgba(16, 185, 129, 0.12);
+  --color-status-green-25: rgba(16, 185, 129, 0.25);
+  --color-status-green-text: #065f46;
   --color-status-red: #E11D48;
   --color-status-yellow: #FFD600;
   --color-status-blue: #0055FF;

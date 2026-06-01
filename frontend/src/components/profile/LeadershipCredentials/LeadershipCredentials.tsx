@@ -1,4 +1,4 @@
-import { ShieldCheck, Clock } from "lucide-react";
+import { ShieldCheck, Clock, XCircle } from "lucide-react";
 import type { ClubItem, ApprovedClub, PendingClubItem } from "@/types/lead";
 import styles from "./LeadershipCredentials.module.css";
 
@@ -85,6 +85,50 @@ function PendingCard({ item }: { item: PendingClubItem }) {
   );
 }
 
+function RejectedCard({ item }: { item: PendingClubItem }) {
+  return (
+    <div className={`${styles.credentialCard} ${styles.rejectedCredentialCard}`}>
+      <div className={styles.clubRow}>
+        <div>
+          <p className={styles.clubName}>{item.name}</p>
+          <p className={styles.clubRole}>
+            {item.type === "community" ? "Community" : "Club"}
+            {item.category ? ` · ${item.category}` : ""}
+          </p>
+        </div>
+        <span className={styles.rejectedBadge}>
+          <XCircle size={12} />
+          Rejected
+        </span>
+      </div>
+
+      <div className={styles.divider} />
+
+      <div className={styles.statsRow}>
+        <div className={styles.stat}>
+          <p className={styles.statLabel}>SUBMITTED</p>
+          <p className={styles.statValue}>
+            {new Date(item.submittedAt).toLocaleDateString("en-MY", {
+              year: "numeric", month: "short", day: "numeric",
+            })}
+          </p>
+        </div>
+        <div className={styles.stat}>
+          <p className={styles.statLabel}>STATUS</p>
+          <p className={`${styles.statValue} ${styles.rejectedText}`}>Request Rejected</p>
+        </div>
+      </div>
+
+      {item.adminComment && (
+        <div className={styles.rejectionReasonBox}>
+          <p className={styles.rejectionReasonLabel}>Reason from admin</p>
+          <p className={styles.rejectionReasonText}>{item.adminComment}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function LeadershipCredentials({ clubs }: Props) {
   return (
     <div className={styles.card}>
@@ -94,11 +138,15 @@ export default function LeadershipCredentials({ clubs }: Props) {
       </div>
 
       <div className={styles.clubList}>
-        {clubs.map(item =>
-          item.status === "approved"
-            ? <ApprovedCard key={`club-${item.id}`} club={item} />
-            : <PendingCard key={`pending-${item.requestId}`} item={item} />
-        )}
+        {clubs.map(item => {
+          if (item.status === "approved") {
+            return <ApprovedCard key={`club-${item.id}`} club={item} />;
+          }
+          if (item.status === "rejected") {
+            return <RejectedCard key={`pending-${item.requestId}`} item={item} />;
+          }
+          return <PendingCard key={`pending-${item.requestId}`} item={item} />;
+        })}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, Fragment } from "react";
-import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, Clock, Inbox, Calendar } from "lucide-react";
+import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, Clock, Inbox, Calendar, XCircle } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
 import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubTab, ClubVolunteerApplication } from "@/types/lead";
@@ -232,18 +232,21 @@ export default function MyClubPage() {
           <div className={styles.selectorRow}>
             <div className={styles.selectorPills}>
               {clubs.map(item => {
-                const key = item.status === "approved" ? `club-${item.id}` : `pending-${item.requestId}`;
-                const isActive = key === selectedKey;
-                const isPending = item.status === "pending";
+                const key        = item.status === "approved" ? `club-${item.id}` : `pending-${item.requestId}`;
+                const isActive   = key === selectedKey;
+                const isPending  = item.status === "pending";
+                const isRejected = item.status === "rejected";
                 return (
                   <button
                     key={key}
-                    className={`${styles.selectorPill} ${isActive ? styles.selectorPillActive : ""} ${isPending ? styles.selectorPillPending : ""}`}
+                    className={`${styles.selectorPill} ${isActive ? styles.selectorPillActive : ""} ${isPending ? styles.selectorPillPending : ""} ${isRejected ? styles.selectorPillRejected : ""}`}
                     onClick={() => handleSelectItem(item)}
                   >
-                    {isPending && <Clock size={12} />}
+                    {isPending  && <Clock   size={12} />}
+                    {isRejected && <XCircle size={12} />}
                     {item.name}
-                    {isPending && <span className={styles.pendingBadge}>Pending</span>}
+                    {isPending  && <span className={styles.pendingBadge}>Pending</span>}
+                    {isRejected && <span className={styles.rejectedBadge}>Rejected</span>}
                   </button>
                 );
               })}
@@ -254,21 +257,27 @@ export default function MyClubPage() {
             </button>
           </div>
 
-          {/* ── Pending item view ──────────────────────────────────────────── */}
-          {selectedItem?.status === "pending" && (() => {
-            const p = selectedItem as PendingClubItem;
+          {/* ── Pending / Rejected item view ───────────────────────────────── */}
+          {(selectedItem?.status === "pending" || selectedItem?.status === "rejected") && (() => {
+            const p          = selectedItem as PendingClubItem;
+            const isRejected = p.status === "rejected";
             return (
-              <div className={styles.pendingCard}>
+              <div className={`${styles.pendingCard} ${isRejected ? styles.rejectedCard : ""}`}>
                 <div className={styles.pendingHeader}>
-                  <Clock size={22} className={styles.pendingIcon} />
+                  {isRejected
+                    ? <XCircle size={22} className={styles.rejectedIcon} />
+                    : <Clock   size={22} className={styles.pendingIcon}  />}
                   <div>
-                    <p className={styles.pendingStatus}>Pending Admin Review</p>
+                    <p className={isRejected ? styles.rejectedStatus : styles.pendingStatus}>
+                      {isRejected ? "Request Rejected" : "Pending Admin Review"}
+                    </p>
                     <h2 className={styles.pendingName}>{p.name}</h2>
                   </div>
                   <span className={styles.pendingTypeBadge}>
                     {p.type === "community" ? "Community" : "Club"}
                   </span>
                 </div>
+
                 {p.category && (
                   <p className={styles.pendingMeta}><strong>Category:</strong> {p.category}</p>
                 )}
@@ -279,9 +288,17 @@ export default function MyClubPage() {
                   })}
                 </p>
                 <p className={styles.pendingDescription}>{p.description}</p>
-                <p className={styles.pendingNote}>
-                  Your request is being reviewed by the admin. You will be notified via your dashboard once a decision has been made.
-                </p>
+
+                {isRejected && p.adminComment ? (
+                  <div className={styles.rejectionReasonBox}>
+                    <p className={styles.rejectionReasonLabel}>Reason from admin</p>
+                    <p className={styles.rejectionReasonText}>{p.adminComment}</p>
+                  </div>
+                ) : !isRejected && (
+                  <p className={styles.pendingNote}>
+                    Your request is being reviewed by the admin. You will be notified via your dashboard once a decision has been made.
+                  </p>
+                )}
               </div>
             );
           })()}
