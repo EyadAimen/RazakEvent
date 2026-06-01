@@ -26,7 +26,7 @@ export default function SharedEventDetailPage() {
   }, [eventId]);
 
   if (loading) {
-    return <Alert isOpen={true} onClose={() => {}} variant="loading" message="Loading event details..." />;
+    return <Alert isOpen={true} onClose={() => { }} variant="loading" message="Loading event details..." />;
   }
 
   if (error) {
@@ -134,7 +134,18 @@ export default function SharedEventDetailPage() {
                 </div>
               )}
               {event.volunteeringStatus === "open" && (
-                <button className={styles.applyBtn}>Apply to volunteer</button>
+                event.hasApplied ? (
+                  <button className={styles.applyBtn} disabled style={{ opacity: 0.6, cursor: "not-allowed" }}>
+                    Already applied
+                  </button>
+                ) : (
+                  <button 
+                    className={styles.applyBtn}
+                    onClick={() => router.push(`/events/${eventId}/volunteer`)}
+                  >
+                    Apply to volunteer
+                  </button>
+                )
               )}
             </div>
           )}
