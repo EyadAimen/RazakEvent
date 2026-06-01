@@ -5,6 +5,7 @@ import styles from "./manageRoles.module.css";
 import { UserRecord } from "./utils/interfaces/manage-roles.interface";
 import { fetchUserRoles, updateUserRole } from "./utils/services/manage-roles.service.ts";
 import { ApiError } from "@/lib/api";
+import Alert from "@/components/shared/alertComponent/alert";
 
 export default function ManageRolesPage() {
   const [users, setUsers] = useState<UserRecord[]>([]);
@@ -14,6 +15,8 @@ export default function ManageRolesPage() {
   const [selectedRoles, setSelectedRoles] = useState<{ [key: string]: string }>({});
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string>("");
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -57,7 +60,7 @@ export default function ManageRolesPage() {
     try {
       setUpdatingId(userId);
       setApiError("");
-      await updateUserRole(userId, roleValue);
+      const message = await updateUserRole(userId, roleValue);
 
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
@@ -65,12 +68,9 @@ export default function ManageRolesPage() {
         )
       );
       setEditingUserId(null);
+      setActionSuccess(message);
     } catch (err) {
-      if (err instanceof ApiError) {
-        setApiError(err.message);
-      } else {
-        setApiError("Failed to successfully transmit altered configuration choices.");
-      }
+      setActionError(err instanceof ApiError ? err.message : "Failed to update role.");
     } finally {
       setUpdatingId(null);
     }
@@ -101,6 +101,7 @@ export default function ManageRolesPage() {
   }
 
   return (
+    <>
     <div className={styles.pageContainer}>
       <div className={styles.headerArea}>
         <h1 className={styles.titleText}>Manage User Roles</h1>
@@ -108,8 +109,6 @@ export default function ManageRolesPage() {
           Promote students to Club Leads or assign Admin privileges.
         </p>
       </div>
-
-      {apiError && <p className={styles.apiError}>{apiError}</p>}
 
       <div className={styles.contentCard}>
         <div className={styles.searchRow}>
@@ -225,5 +224,10 @@ export default function ManageRolesPage() {
         </div>
       </div>
     </div>
+
+      <Alert variant="loading" isOpen={updatingId !== null} onClose={() => {}} message="Updating role…" />
+      <Alert variant="error" isOpen={actionError !== null} message={actionError ?? ""} onClose={() => setActionError(null)} />
+      <Alert variant="success" isOpen={actionSuccess !== null} message={actionSuccess ?? ""} onClose={() => setActionSuccess(null)} />
+    </>
   );
 }

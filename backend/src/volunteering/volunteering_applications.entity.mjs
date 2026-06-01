@@ -19,9 +19,14 @@ export const VolunteeringApplicationEntity = new EntitySchema({
             type: "int",
             nullable: false,
         },
+        eventId: {
+            name: "event_id",
+            type: "int",
+            nullable: false,
+        },
         status: {
             type: "enum",
-            enum: ["pending", "accepted", "rejected"],
+            enum: ["pending", "accepted", "rejected", "dropped"],
             default: "pending",
             nullable: false,
         },
@@ -36,11 +41,20 @@ export const VolunteeringApplicationEntity = new EntitySchema({
             type: "timestamptz",
             nullable: true,
         },
+        reason: {
+            type: "text",
+            nullable: true,
+        },
     },
     indices: [
         {
             name: "UQ_vol_applications_student_role",
             columns: ["studentId", "roleId"],
+            unique: true,
+        },
+        {
+            name: "UQ_vol_applications_student_event",
+            columns: ["studentId", "eventId"],
             unique: true,
         },
     ],

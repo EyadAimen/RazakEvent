@@ -1,14 +1,14 @@
-import { apiFetch } from "./api";
+import { apiFetch, apiFetchAuth } from "./api";
 
 export type UserRole = "student" | "member" | "lead" | "admin";
 
 export interface AuthUser {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
-  matricNumber: string;
+  staffOrMatricId: string;
   role: UserRole;
-  isApproved: boolean;
+  isEmailVerified: boolean;
   createdAt: string;
 }
 
@@ -88,10 +88,25 @@ export async function refreshAccessToken(refreshToken: string): Promise<{ access
   });
 }
 
-export async function logoutUser(accessToken: string): Promise<void> {
-  await apiFetch<void>("/auth/logout", {
+export async function logoutUser(): Promise<void> {
+  try {
+    await apiFetchAuth<void>("/auth/logout", { method: "POST" });
+  } finally {
+    clearSession();
+  }
+}
+
+export async function requestPasswordReset(email: string): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>("/auth/forgot-password", {
     method: "POST",
-    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resendVerificationEmail(email: string): Promise<void> {
+  await apiFetch<void>("/auth/resend-verification", {
+    method: "POST",
+    body: JSON.stringify({ email }),
   });
 }
 

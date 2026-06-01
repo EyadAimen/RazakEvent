@@ -5,87 +5,27 @@ import * as eventsController from "./events.controller.mjs";
 
 const router = Router();
 
-// ─Lead routes
-// GET /api/events/lead/dashboard  — dashboard summary (events + alert)
-router.get(
-    "/lead/dashboard",
-    authenticate,
-    requireRole("lead"),
-    eventsController.getDashboardHandler
-);
+// Shared events (from events table) – accessible by any authenticated user
+router.get("/shared", authenticate, eventsController.getStudentEventsHandler);
 
-// GET /api/events/lead  — all events for the lead (filterable by ?status=)
-router.get(
-    "/lead",
-    authenticate,
-    requireRole("lead"),
-    eventsController.getLeadEventsHandler
-);
+// Admin routes
+router.get("/", authenticate, requireRole("admin"), eventsController.getAllEventsHandler);
+router.post("/admin", authenticate, requireRole("admin"), eventsController.createApprovedEventByAdminHandler);
+router.patch("/admin/:eventId", authenticate, requireRole("admin"), eventsController.updateApprovedEventByAdminHandler);
+router.delete("/admin/:eventId", authenticate, requireRole("admin"), eventsController.deleteApprovedEventByAdminHandler);
+router.patch("/:eventId/decision", authenticate, requireRole("admin"), eventsController.decideProposalHandler);
 
-// POST /api/events  — create a new event (draft or submitted)
-router.post(
-    "/",
-    authenticate,
-    requireRole("lead"),
-    eventsController.createEventHandler
-);
+// Lead routes with :eventId after admin routes
+router.patch("/:eventId/volunteering", authenticate, requireRole("lead"), eventsController.toggleVolunteeringHandler);
+router.patch("/:eventId/volunteers/:applicationId/decision", authenticate, requireRole("lead"), eventsController.decideVolunteerApplicationHandler);
+router.get("/:eventId", authenticate, requireRole("lead", "admin"), eventsController.getEventHandler);
+router.patch("/:eventId", authenticate, requireRole("lead"), eventsController.updateEventHandler);
+router.delete("/:eventId", authenticate, requireRole("lead"), eventsController.deleteEventHandler);
+router.post("/:eventId/proposal-pdf", authenticate, requireRole("lead"), uploadProposalPdf, eventsController.uploadProposalPdfHandler);
+router.post("/:eventId/submit", authenticate, requireRole("lead"), eventsController.submitProposalHandler);
 
-// GET /api/events/:eventId  — single event detail (lead-owned)
-router.get(
-    "/:eventId",
-    authenticate,
-    requireRole("lead", "admin"),
-    eventsController.getEventHandler
-);
-
-// PATCH /api/events/:eventId  — update event fields
-router.patch(
-    "/:eventId",
-    authenticate,
-    requireRole("lead"),
-    eventsController.updateEventHandler
-);
-
-// DELETE /api/events/:eventId  — delete a draft proposal
-router.delete(
-    "/:eventId",
-    authenticate,
-    requireRole("lead"),
-    eventsController.deleteEventHandler
-);
-
-// POST /api/events/:eventId/proposal-pdf  — upload PDF for a draft/pending proposal
-router.post(
-    "/:eventId/proposal-pdf",
-    authenticate,
-    requireRole("lead"),
-    uploadProposalPdf,
-    eventsController.uploadProposalPdfHandler
-);
-
-// POST /api/events/:eventId/submit  — draft → submitted
-router.post(
-    "/:eventId/submit",
-    authenticate,
-    requireRole("lead"),
-    eventsController.submitProposalHandler
-);
-
-// Admin routes 
-// GET /api/events  — all events (admin overview)
-router.get(
-    "/",
-    authenticate,
-    requireRole("admin"),
-    eventsController.getAllEventsHandler
-);
-
-// PATCH /api/events/:eventId/decision  — approve or reject a proposal
-router.patch(
-    "/:eventId/decision",
-    authenticate,
-    requireRole("admin"),
-    eventsController.decideProposalHandler
-);
+// Student routes (public detail, list already at /shared)
+router.get("/student", authenticate, eventsController.getStudentEventsHandler);
+router.get("/student/:eventId", authenticate, eventsController.getStudentEventHandler);
 
 export default router;

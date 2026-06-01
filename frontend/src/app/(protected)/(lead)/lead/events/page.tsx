@@ -123,7 +123,7 @@ export default function LeadEventsPage() {
             </div>
           </div>
 
-          {/* Content */}
+          {/* Content — key forces clean remount on tab change */}
           {loading ? (
             <div className={styles.loadingState}>
               <Loader2 size={32} className={styles.spinner} />

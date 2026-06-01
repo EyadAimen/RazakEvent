@@ -1,0 +1,410 @@
+/* ── Page shell ──────────────────────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  background: var(--color-neutral-100);
+}
+
+.body {
+  padding: var(--space-md) var(--space-xl) var(--space-2xl);
+}
+
+.inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* ── Back link ───────────────────────────────────────────────────────────── */
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-primary-500);
+  text-decoration: none;
+  transition: color var(--transition-veryfast);
+}
+
+.backLink:hover {
+  color: var(--color-primary-800);
+}
+
+/* ── Event info card ─────────────────────────────────────────────────────── */
+.card {
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.clubTag {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-primary-500);
+  background: var(--color-primary-500-10);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+  margin-bottom: 8px;
+}
+
+.eventTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-h2-size);
+  line-height: var(--text-h2-height);
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+/* ── Meta row ────────────────────────────────────────────────────────────── */
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-600);
+}
+
+/* ── Admin comment ───────────────────────────────────────────────────────── */
+.adminComment {
+  background: var(--color-status-warning-bg);
+  color: var(--color-status-warning-text);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  line-height: 1.5;
+}
+
+/* ── Card action buttons ─────────────────────────────────────────────────── */
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.actionSecondary,
+.actionPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-veryfast);
+  border: none;
+}
+
+.actionSecondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-200);
+}
+
+.actionSecondary:hover {
+  background: var(--color-neutral-150);
+  border-color: var(--color-neutral-300);
+}
+
+.actionPrimary {
+  background: var(--color-primary-500);
+  color: var(--color-neutral-50);
+}
+
+.actionPrimary:hover {
+  background: var(--color-primary-800);
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+/* ── Volunteering card ───────────────────────────────────────────────────── */
+.volCard {
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.volToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.volToggleLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-800);
+  margin: 0 0 4px;
+}
+
+.volToggleDesc {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* Toggle button */
+.toggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 22px;
+  border-radius: var(--radius-pill);
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+  white-space: nowrap;
+}
+
+.toggleOpen {
+  background: var(--color-status-green);
+  color: #fff;
+}
+
+.toggleOpen:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.toggleClosed {
+  background: var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+.toggleClosed:hover:not(:disabled) {
+  background: var(--color-neutral-400);
+}
+
+.toggleFull {
+  background: var(--color-secondary-500);
+  color: var(--color-neutral-800);
+  cursor: not-allowed;
+}
+
+.toggleBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinnerSm {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Applications table ──────────────────────────────────────────────────── */
+.applicantsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border-top: 1px solid var(--color-neutral-200);
+  padding-top: var(--space-md);
+}
+
+.applicantsTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-body-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-200);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+}
+
+.table thead th {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+  font-weight: var(--weight-semibold);
+  text-align: left;
+  padding: 10px 14px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--color-neutral-200);
+  transition: background var(--transition-veryfast);
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: var(--color-neutral-100);
+}
+
+.table td {
+  padding: 10px 14px;
+  color: var(--color-neutral-700);
+  vertical-align: middle;
+}
+
+/* ── Row action buttons ──────────────────────────────────────────────────── */
+.appActions {
+  display: flex;
+  gap: 8px;
+}
+
+.acceptBtn,
+.rejectBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.acceptBtn {
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.acceptBtn:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.25);
+}
+
+.rejectBtn {
+  background: var(--color-semantic-red-10);
+  color: var(--color-semantic-red);
+}
+
+.rejectBtn:hover:not(:disabled) {
+  background: var(--color-semantic-red-15);
+}
+
+.acceptBtn:disabled,
+.rejectBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Empty / no applicants ───────────────────────────────────────────────── */
+.noApplicants {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  text-align: center;
+  padding: var(--space-md);
+  margin: 0;
+}
+
+/* ── Loading / error states ──────────────────────────────────────────────── */
+.loadingState,
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-3xl);
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  color: var(--color-neutral-500);
+  text-align: center;
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--color-neutral-200);
+}
+
+.errorState {
+  color: var(--color-semantic-red);
+  border-color: var(--color-semantic-red);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  color: var(--color-primary-500);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .body {
+    padding: var(--space-md);
+  }
+
+  .cardTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .eventTitle {
+    font-size: var(--text-h3-size);
+  }
+
+  .volToggleRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

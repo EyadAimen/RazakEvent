@@ -16,11 +16,12 @@ export async function fetchUserRoles(): Promise<UserRecord[]> {
   return result.data || (Array.isArray(result) ? result : []);
 }
 
-export async function updateUserRole(userId: string, roleValue: UserRole): Promise<void> {
+export async function updateUserRole(userId: string, roleValue: UserRole): Promise<string> {
   const token = getAccessToken();
-  await apiFetch<void>(`/users/${userId}/role`, {
+  const res = await apiFetch<{ message: string }>(`/users/${userId}/role`, {
     method: "PATCH",
     headers: token ? { "Authorization": `Bearer ${token}` } : {},
     body: JSON.stringify({ role: roleValue })
   });
+  return res.message;
 }

@@ -213,16 +213,32 @@
   font-size: var(--text-small-size);
 }
 
-.emptyCta:hover { color: var(--color-primary-800); }
+.emptyCta:hover {
+  color: var(--color-primary-800);
+}
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
-  .body { padding: var(--space-md); }
-  .pageHeader { flex-direction: column; align-items: flex-start; }
-  .proposeBtn { align-self: flex-end; }
-  .grid { grid-template-columns: 1fr; }
+  .body {
+    padding: var(--space-md);
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .proposeBtn {
+    align-self: flex-end;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -1,0 +1,76 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-neutral-100);
+}
+
+.body {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  padding: 32px 24px 48px;
+  box-sizing: border-box;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: var(--text-h2-size);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-bold);
+  color: var(--color-primary-800);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+.emptyCard {
+  background: var(--color-neutral-50);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 64px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.emptyIcon {
+  color: var(--color-neutral-300);
+}
+
+.emptyTitle {
+  font-size: var(--text-body-size);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-600);
+  margin: 0;
+}
+
+.emptyDesc {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-400);
+  margin: 0;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .body { padding: 24px 16px 40px; }
+}

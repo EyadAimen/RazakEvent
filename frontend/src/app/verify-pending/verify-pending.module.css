@@ -1,0 +1,112 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-primary-800);
+  color: var(--color-neutral-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.brand {
+  font-size: var(--text-h2-size);
+  font-weight: var(--weight-bold);
+  margin-bottom: var(--space-2xl);
+  color: var(--color-neutral-50);
+}
+
+.heading {
+  font-size: var(--text-h3-size);
+  font-weight: var(--weight-bold);
+  margin: 0;
+}
+
+.message {
+  color: var(--color-neutral-300);
+  font-size: var(--text-body-size);
+  margin: 0;
+  line-height: var(--text-body-height);
+}
+
+.message strong {
+  color: var(--color-neutral-50);
+  font-weight: var(--weight-semibold);
+}
+
+.input {
+  width: 100%;
+  height: var(--button-height-md);
+  padding: 0 var(--space-md);
+  background: var(--color-primary-500-15);
+  border: 1px solid var(--color-neutral-400);
+  border-radius: var(--radius-sm);
+  color: var(--color-neutral-50);
+  font-size: var(--text-body-size);
+  outline: none;
+  box-sizing: border-box;
+  margin-top: var(--space-md);
+}
+
+.input::placeholder {
+  color: var(--color-neutral-400);
+}
+
+.input:focus {
+  border-color: var(--color-secondary-500);
+}
+
+.button {
+  margin-top: var(--space-md);
+  height: var(--button-height-md);
+  padding: 0 var(--space-xl);
+  background: var(--color-secondary-500);
+  color: var(--color-ktr-ink);
+  font-size: var(--text-body-size);
+  font-weight: var(--weight-semibold);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-veryfast);
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-secondary-800);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.successText {
+  color: var(--color-status-green);
+  font-size: var(--text-small-size);
+  margin: var(--space-md) 0 0;
+}
+
+.errorText {
+  color: var(--color-semantic-red);
+  font-size: var(--text-small-size);
+  margin: 0;
+}
+
+.link {
+  margin-top: var(--space-md);
+  color: var(--color-secondary-500);
+  font-size: var(--text-small-size);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

@@ -13,7 +13,7 @@ const spaceMono = Space_Mono({
   variable: "--font-space-mono",
   weight: ["400", "700"],
   subsets: ["latin"],
-  weight: "400",
+  
 });
 
 export const metadata: Metadata = {
