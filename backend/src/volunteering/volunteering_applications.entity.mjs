@@ -45,6 +45,11 @@ export const VolunteeringApplicationEntity = new EntitySchema({
             type: "text",
             nullable: true,
         },
+        rejectionMessage: {
+            name: "rejection_message",
+            type: "text",
+            nullable: true,
+        },
     },
     indices: [
         {

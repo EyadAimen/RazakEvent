@@ -60,4 +60,20 @@ router.delete(
     volunteeringController.dropApplicationHandler,
 );
 
+// Lead — get all volunteer applications for their club
+router.get(
+    "/applications/club",
+    authenticate,
+    requireRole("lead"),
+    volunteeringController.getClubVolunteerApplicationsHandler,
+);
+
+// Lead — decide on an application (accept/reject)
+router.patch(
+    "/applications/:applicationId/decision",
+    authenticate,
+    requireRole("lead"),
+    volunteeringController.decideApplicationHandler,
+);
+
 export default router;
