@@ -22,6 +22,40 @@ export const createEventHandler = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+export const createApprovedEventByAdminHandler = async (req, res, next) => {
+  try {
+    const event = await eventsService.createApprovedEventByAdmin(req.body);
+    res.status(201).json({ event });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateApprovedEventByAdminHandler = async (req, res, next) => {
+  try {
+    const event = await eventsService.updateApprovedEventByAdmin(
+      req.params.eventId,
+      req.body
+    );
+
+    res.json({ event });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteApprovedEventByAdminHandler = async (req, res, next) => {
+  try {
+    const result = await eventsService.deleteApprovedEventByAdmin(
+      req.params.eventId
+    );
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getEventHandler = async (req, res, next) => {
   try {
     const event = await eventsService.getEventDetail(

@@ -1,7 +1,27 @@
 import {
-    listClubs, listClubRequests, getClubRequest, decideClubRequest,
-    getMyClub, getMyClubs, getMyClubMembers, getMembershipRequests, decideMembershipRequest, removeMember,
+    listClubs,
     createClubRequest,
+    listClubRequests,
+    getClubRequest,
+    decideClubRequest,
+
+    getMyClub,
+    getMyClubs,
+    getMyClubMembers,
+    getMembershipRequests,
+    decideMembershipRequest,
+    removeMember,
+
+    getClubMembersByClubId,
+    getClubEventsByClubId,
+
+    listUsersWithoutClub,
+    addClubMemberByAdmin,
+    removeClubMemberByAdmin,
+    changeClubLeadByAdmin,
+    updateClubDetailsByAdmin,
+
+    deleteClub,
 } from "./clubs.service.mjs";
 
 export const createClubRequestHandler = async (req, res, next) => {
@@ -52,6 +72,112 @@ export const decideClubRequestHandler = async (req, res, next) => {
             action,
             adminComment
         );
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const getClubMembersByClubIdHandler = async (
+    req,
+    res,
+    next
+) => {
+    try {
+        const members =
+            await getClubMembersByClubId(
+                req.params.clubId
+            );
+
+        res.json({ members });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const getClubEventsByClubIdHandler = async (req, res, next) => {
+    try {
+        const events = await getClubEventsByClubId(req.params.clubId);
+        res.json({ events });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const deleteClubHandler = async (req, res, next) => {
+    try {
+        const { deleteReason } = req.body;
+
+        const result = await deleteClub(
+            req.params.clubId,
+            req.user.userId,
+            deleteReason
+        );
+
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const listUsersWithoutClubHandler = async (req, res, next) => {
+    try {
+        const users = await listUsersWithoutClub({
+            search: req.query.search,
+        });
+
+        res.json({ users });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const addClubMemberByAdminHandler = async (req, res, next) => {
+    try {
+        const result = await addClubMemberByAdmin(
+            req.params.clubId,
+            req.body.userId
+        );
+
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const removeClubMemberByAdminHandler = async (req, res, next) => {
+    try {
+        const result = await removeClubMemberByAdmin(
+            req.params.clubId,
+            req.params.userId
+        );
+
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const changeClubLeadByAdminHandler = async (req, res, next) => {
+    try {
+        const result = await changeClubLeadByAdmin(
+            req.params.clubId,
+            req.body.newLeadId
+        );
+
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const updateClubDetailsByAdminHandler = async (req, res, next) => {
+    try {
+        const result = await updateClubDetailsByAdmin(
+            req.params.clubId,
+            req.body
+        );
+
         res.json(result);
     } catch (err) {
         next(err);
