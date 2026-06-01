@@ -69,10 +69,11 @@ export const getLeadDashboard = async (leadId) => {
         clubLabel: leadClub
             ? `${leadClub.name} ${leadClub.type === "community" ? "Community" : "Club"} Lead`
             : "Club Lead",
-        clubType: leadClub?.type ?? "club",
+        clubType:           leadClub?.type ?? "club",
         alert,
-        events: enriched.slice(0, 3),
-        totalEvents: enriched.length,
+        reportDueEventId:   reportDue.length > 0 ? reportDue[0].id : null,
+        events:             enriched.slice(0, 3),
+        totalEvents:        enriched.length,
     };
 };
 
