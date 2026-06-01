@@ -30,19 +30,19 @@ import styles from "./page.module.css";
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STATUS_MAP: Record<string, { variant: BadgeVariant; label: string }> = {
-  draft:      { variant: "draft",         label: "Draft"      },
-  submitted:  { variant: "pending-admin", label: "Submitted"  },
-  approved:   { variant: "approved",      label: "Approved"   },
-  ongoing:    { variant: "ongoing",       label: "Ongoing"    },
-  completed:  { variant: "completed",     label: "Completed"  },
-  report_due: { variant: "report-due",    label: "Report Due" },
-  rejected:   { variant: "rejected",      label: "Rejected"   },
+  draft: { variant: "draft", label: "Draft" },
+  submitted: { variant: "pending-admin", label: "Submitted" },
+  approved: { variant: "approved", label: "Approved" },
+  ongoing: { variant: "ongoing", label: "Ongoing" },
+  completed: { variant: "completed", label: "Completed" },
+  report_due: { variant: "report-due", label: "Report Due" },
+  rejected: { variant: "rejected", label: "Rejected" },
 };
 
 const LIVE_STATUSES = new Set(["approved", "ongoing", "completed", "report_due"]);
 
 const APP_BADGE: Record<VolunteerApplicant["status"], { variant: BadgeVariant; label: string }> = {
-  pending:  { variant: "pending",  label: "Pending"  },
+  pending: { variant: "pending", label: "Pending" },
   accepted: { variant: "approved", label: "Accepted" },
   rejected: { variant: "rejected", label: "Rejected" },
 };
@@ -58,28 +58,28 @@ const PREDEFINED_ROLES = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LeadEventDetailPage() {
-  const params  = useParams();
+  const params = useParams();
   const eventId = params.eventId as string;
 
-  const [event, setEvent]               = useState<EventDetail | null>(null);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState<string | null>(null);
-  const [togglingVol, setTogglingVol]   = useState(false);
-  const [decidingApp, setDecidingApp]   = useState<number | null>(null);
+  const [event, setEvent] = useState<EventDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [togglingVol, setTogglingVol] = useState(false);
+  const [decidingApp, setDecidingApp] = useState<number | null>(null);
   const [rejectingAppId, setRejectingAppId] = useState<number | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   // Role management state
-  const [showAddRole, setShowAddRole]   = useState(false);
-  const [newRole, setNewRole]           = useState({ roleName: "", description: "", slotsAvailable: 1 });
-  const [addingRole, setAddingRole]     = useState(false);
+  const [showAddRole, setShowAddRole] = useState(false);
+  const [newRole, setNewRole] = useState({ roleName: "", description: "", slotsAvailable: 1 });
+  const [addingRole, setAddingRole] = useState(false);
   const [deletingRoleId, setDeletingRoleId] = useState<number | null>(null);
   const [editingRoleId, setEditingRoleId] = useState<number | null>(null);
   const [editRoleSlots, setEditRoleSlots] = useState<number>(1);
-  const [editRoleDesc, setEditRoleDesc]   = useState<string>("");
+  const [editRoleDesc, setEditRoleDesc] = useState<string>("");
   const [updatingRole, setUpdatingRole] = useState(false);
-  const [roleError, setRoleError]       = useState<string | null>(null);
-  const [actionError, setActionError]   = useState<string | null>(null);
+  const [roleError, setRoleError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const toggleRow = (applicationId: number) => {
     setExpandedRows(prev => {
@@ -156,7 +156,7 @@ export default function LeadEventDetailPage() {
     if (updatingRole) return;
     const role = event?.volunteerRoles.find(r => r.roleId === roleId);
     if (!role) return;
-    
+
     if (editRoleSlots < role.slotsFilled) {
       setActionError("Cannot reduce slots below the number of currently filled slots.");
       return;
@@ -167,7 +167,7 @@ export default function LeadEventDetailPage() {
     try {
       const updated = await apiFetchAuth<VolunteerRole>(`/volunteering/roles/${roleId}`, {
         method: "PATCH",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           slotsAvailable: editRoleSlots,
           description: editRoleDesc.trim() || null
         })
@@ -252,18 +252,18 @@ export default function LeadEventDetailPage() {
   const { variant: statusVariant, label: statusLabel } =
     STATUS_MAP[event.status] ?? { variant: "draft" as BadgeVariant, label: event.status };
 
-  const isLive          = LIVE_STATUSES.has(event.status);
-  const showDeadline    = event.status === "report_due";
-  const showReportBtn   = event.status === "report_due" || event.status === "completed";
+  const isLive = LIVE_STATUSES.has(event.status);
+  const showDeadline = event.status === "report_due";
+  const showReportBtn = event.status === "report_due" || event.status === "completed";
 
   const formattedDate = event.eventDate
     ? new Date(event.eventDate).toLocaleDateString("en-MY", {
-        year: "numeric", month: "long", day: "numeric",
-      })
+      year: "numeric", month: "long", day: "numeric",
+    })
     : "TBD";
 
-  const volOpen   = event.volunteeringStatus === "open";
-  const volFull   = event.volunteeringStatus === "full";
+  const volOpen = event.volunteeringStatus === "open";
+  const volFull = event.volunteeringStatus === "full";
   const volClosed = event.volunteeringStatus === "closed";
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -312,8 +312,7 @@ export default function LeadEventDetailPage() {
                 </span>
               )}
               {event.budget !== null && (
-                <span className={styles.metaItem}>
-                  <Wallet size={14} />
+                <span className={styles.metaPrice}>
                   RM {event.budget.toLocaleString()}
                 </span>
               )}
@@ -348,31 +347,29 @@ export default function LeadEventDetailPage() {
 
           {isLive && (
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Volunteering Settings</h2>
-
               <div className={styles.volCard}>
-                {/* Toggle row */}
-                <div className={styles.volToggleRow}>
-                  <div>
-                    <p className={styles.volToggleLabel}>Volunteering Status</p>
-                    <p className={styles.volToggleDesc}>
-                      {volOpen  ? "Applications are currently open"    :
-                       volFull  ? "All volunteer slots are filled"      :
-                                  "Applications are currently closed"}
-                    </p>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M15 19V17C15 15.9391 14.5786 14.9217 13.8284 14.1716C13.0783 13.4214 12.0609 13 11 13H5C3.93913 13 2.92172 13.4214 2.17157 14.1716C1.42143 14.9217 1 15.9391 1 17V19M21 19V17C20.9993 16.1137 20.7044 15.2528 20.1614 14.5523C19.6184 13.8519 18.8581 13.3516 18 13.13M15 1.13C15.8604 1.3503 16.623 1.8507 17.1676 2.55231C17.7122 3.25392 18.0078 4.11683 18.0078 5.005C18.0078 5.89317 17.7122 6.75608 17.1676 7.45769C16.623 8.1593 15.8604 8.6597 15 8.88M12 5C12 7.20914 10.2091 9 8 9C5.79086 9 4 7.20914 4 5C4 2.79086 5.79086 1 8 1C10.2091 1 12 2.79086 12 5Z" stroke="#0055FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Volunteering Settings
+                  </h2>
+                  <div className={styles.volToggleWrap}>
+                    <button
+                      className={`${styles.toggleBtn} ${volOpen ? styles.toggleOpen :
+                          volFull ? styles.toggleFull :
+                            styles.toggleClosed
+                        }`}
+                      onClick={handleToggleVolunteering}
+                      disabled={togglingVol || volFull}
+                      title={volOpen ? "Close Applications" : "Open Applications"}
+                    >
+                    </button>
+                    <span className={styles.volToggleLabel}>
+                      {volOpen ? "Open" : volFull ? "Full" : "Closed"}
+                    </span>
                   </div>
-                  <button
-                    className={`${styles.toggleBtn} ${
-                      volOpen  ? styles.toggleOpen   :
-                      volFull  ? styles.toggleFull   :
-                                 styles.toggleClosed
-                    }`}
-                    onClick={handleToggleVolunteering}
-                    disabled={togglingVol || volFull}
-                  >
-                    {togglingVol ? <Loader2 size={13} className={styles.spinnerSm} /> : null}
-                    {volOpen ? "Open" : volFull ? "Full" : "Closed"}
-                  </button>
                 </div>
 
                 {/* ── Roles section ───────────────────────────────────────── */}
@@ -465,7 +462,7 @@ export default function LeadEventDetailPage() {
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span className={styles.slotsBadge}>
                                   {role.slotsFilled} /
-                                  <input 
+                                  <input
                                     type="number"
                                     min={role.slotsFilled}
                                     value={editRoleSlots}
@@ -473,15 +470,15 @@ export default function LeadEventDetailPage() {
                                     style={{ width: '40px', marginLeft: '4px', padding: '2px' }}
                                   />
                                 </span>
-                                <button 
-                                  onClick={() => handleUpdateRole(role.roleId)} 
+                                <button
+                                  onClick={() => handleUpdateRole(role.roleId)}
                                   disabled={updatingRole}
                                   className={styles.acceptBtn}
                                   style={{ padding: '4px 8px', fontSize: '11px' }}
                                 >
                                   {updatingRole ? <Loader2 size={12} className={styles.spinnerSm} /> : <Check size={12} />}
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => setEditingRoleId(null)}
                                   className={styles.rejectBtn}
                                   style={{ padding: '4px 8px', fontSize: '11px' }}
@@ -495,7 +492,7 @@ export default function LeadEventDetailPage() {
                               </span>
                             )}
                           </div>
-                          
+
                           {editingRoleId !== role.roleId && (
                             <div style={{ display: 'flex', gap: '4px' }}>
                               <button
@@ -613,7 +610,7 @@ export default function LeadEventDetailPage() {
 
         </div>
       </div>
-      
+
       {rejectingAppId !== null && (
         <RejectApplicationModal
           isOpen={true}

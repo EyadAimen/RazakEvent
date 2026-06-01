@@ -37,8 +37,9 @@
 .card {
   background: var(--color-neutral-50);
   border-radius: var(--radius-lg);
+  border: var(--border-thin) solid var(--color-neutral-200);
   box-shadow: var(--shadow-card);
-  padding: var(--space-lg);
+  padding: var(--space-xl) var(--space-2xl);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -68,7 +69,7 @@
   font-size: var(--text-h2-size);
   line-height: var(--text-h2-height);
   font-weight: var(--weight-bold);
-  color: var(--color-neutral-800);
+  color: var(--color-primary-800);
   margin: 0;
 }
 
@@ -88,6 +89,17 @@
   color: var(--color-neutral-600);
 }
 
+.metaPrice {
+  display: flex;
+  align-items: center;
+  background: var(--color-neutral-150);
+  color: var(--color-neutral-600);
+  border-radius: var(--radius-md);
+  padding: var(--space-xxs) var(--space-sm);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-small-size);
+}
+
 /* ── Admin comment ───────────────────────────────────────────────────────── */
 .adminComment {
   background: var(--color-status-warning-bg);
@@ -104,8 +116,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm);
-  padding-top: var(--space-xs);
-  border-top: 1px solid var(--color-neutral-200);
+  padding-top: var(--space-lg);
+  border-top: var(--border-thin) solid var(--color-neutral-200);
 }
 
 .actionSecondary,
@@ -114,10 +126,10 @@
   align-items: center;
   gap: 7px;
   padding: 9px 18px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-family: var(--font-body);
   font-size: var(--text-small-size);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   cursor: pointer;
   text-decoration: none;
   transition: all var(--transition-veryfast);
@@ -125,23 +137,21 @@
 }
 
 .actionSecondary {
-  background: var(--color-neutral-100);
-  color: var(--color-neutral-700);
-  border: 1px solid var(--color-neutral-200);
+  background: var(--color-role-clublead-bg);
+  color: var(--color-role-clublead-text);
 }
 
 .actionSecondary:hover {
-  background: var(--color-neutral-150);
-  border-color: var(--color-neutral-300);
+  filter: brightness(0.95);
 }
 
 .actionPrimary {
-  background: var(--color-primary-500);
-  color: var(--color-neutral-50);
+  background: var(--color-status-warning-bg);
+  color: var(--color-status-warning-text);
 }
 
 .actionPrimary:hover {
-  background: var(--color-primary-800);
+  filter: brightness(0.95);
 }
 
 /* ── Section ─────────────────────────────────────────────────────────────── */
@@ -155,62 +165,74 @@
   font-family: var(--font-heading);
   font-size: var(--text-h3-size);
   font-weight: var(--weight-semibold);
-  color: var(--color-neutral-800);
+  color: var(--color-primary-800);
   margin: 0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 /* ── Volunteering card ───────────────────────────────────────────────────── */
 .volCard {
   background: var(--color-neutral-50);
   border-radius: var(--radius-lg);
+  border: var(--border-thin) solid var(--color-neutral-200);
   box-shadow: var(--shadow-card);
-  padding: var(--space-lg);
+  padding: var(--space-xl) var(--space-2xl);
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-xl);
 }
 
-.volToggleRow {
+.volToggleWrap {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-md);
 }
 
 .volToggleLabel {
   font-family: var(--font-body);
   font-size: var(--text-body-size);
-  font-weight: var(--weight-semibold);
-  color: var(--color-neutral-800);
-  margin: 0 0 4px;
-}
-
-.volToggleDesc {
-  font-family: var(--font-body);
-  font-size: var(--text-small-size);
-  color: var(--color-neutral-500);
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-700);
   margin: 0;
 }
 
 /* Toggle button */
 .toggleBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 22px;
+  position: relative;
+  width: 56px;
+  height: 32px;
   border-radius: var(--radius-pill);
   border: none;
-  font-family: var(--font-body);
-  font-size: var(--text-small-size);
-  font-weight: var(--weight-semibold);
   cursor: pointer;
-  transition: all var(--transition-veryfast);
-  white-space: nowrap;
+  transition: background var(--transition-veryfast);
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.toggleBtn::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-pill);
+  transition: transform var(--transition-veryfast);
 }
 
 .toggleOpen {
   background: var(--color-status-green);
-  color: #fff;
+}
+
+.toggleOpen::after {
+  transform: translateX(24px);
 }
 
 .toggleOpen:hover:not(:disabled) {
@@ -219,7 +241,6 @@
 
 .toggleClosed {
   background: var(--color-neutral-300);
-  color: var(--color-neutral-700);
 }
 
 .toggleClosed:hover:not(:disabled) {
@@ -228,7 +249,6 @@
 
 .toggleFull {
   background: var(--color-secondary-500);
-  color: var(--color-neutral-800);
   cursor: not-allowed;
 }
 
@@ -245,9 +265,7 @@
 .applicantsSection {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  border-top: 1px solid var(--color-neutral-200);
-  padding-top: var(--space-md);
+  gap: var(--space-md);
 }
 
 .applicantsTitle {
@@ -272,17 +290,17 @@
 }
 
 .table thead th {
-  background: var(--color-neutral-100);
+  background: var(--color-neutral-50);
   color: var(--color-neutral-600);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   text-align: left;
-  padding: 10px 14px;
+  padding: 12px 14px;
   white-space: nowrap;
-  border-bottom: 1px solid var(--color-neutral-200);
+  border-bottom: var(--border-thin) solid var(--color-neutral-200);
 }
 
 .table tbody tr {
-  border-bottom: 1px solid var(--color-neutral-200);
+  border-bottom: var(--border-thin) solid var(--color-neutral-200);
   transition: background var(--transition-veryfast);
 }
 
@@ -295,7 +313,7 @@
 }
 
 .table td {
-  padding: 10px 14px;
+  padding: 12px 14px;
   color: var(--color-neutral-700);
   vertical-align: middle;
 }
@@ -327,7 +345,7 @@
 }
 
 .acceptBtn:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.25);
+  filter: brightness(0.95);
 }
 
 .rejectBtn {
@@ -336,7 +354,7 @@
 }
 
 .rejectBtn:hover:not(:disabled) {
-  background: var(--color-semantic-red-15);
+  filter: brightness(0.95);
 }
 
 .acceptBtn:disabled,
@@ -384,8 +402,13 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Expandable Row ──────────────────────────────────────────────────────── */
