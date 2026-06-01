@@ -17,8 +17,7 @@ export default function VolunteeringCard({ application }: VolunteeringCardProps)
         return "approved"; // Map accepted to approved badge style
       case "rejected":
         return "rejected";
-      case "dropped":
-        return "draft";
+
       default:
         return "pending";
     }
@@ -33,7 +32,7 @@ export default function VolunteeringCard({ application }: VolunteeringCardProps)
     : "TBD";
 
   return (
-    <Link href={`/events/${application.eventId}`} className={styles.row}>
+    <Link href={`/student/events/${application.eventId}`} className={styles.row}>
       <div className={styles.leftContent}>
         <div className={styles.titleRow}>
           <h3 className={styles.eventName}>{application.eventName}</h3>

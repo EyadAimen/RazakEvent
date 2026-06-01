@@ -9,13 +9,13 @@ import { VolunteeringRoleEntity } from "../volunteering/volunteering_roles.entit
 import { VolunteeringApplicationEntity } from "../volunteering/volunteering_applications.entity.mjs";
 import { NotFoundError, ForbiddenError, ValidationError } from "../shared/errors.mjs";
 
-const eventRepo = () => appDataSource.getRepository(EventEntity);
+const eventRepo    = () => appDataSource.getRepository(EventEntity);
 const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
-const clubRepo = () => appDataSource.getRepository(ClubEntity);
-const userRepo = () => appDataSource.getRepository(UserEntity);
-const venueRepo = () => appDataSource.getRepository(VenueEntity);
-const roleRepo = () => appDataSource.getRepository(VolunteeringRoleEntity);
-const appRepo = () => appDataSource.getRepository(VolunteeringApplicationEntity);
+const clubRepo     = () => appDataSource.getRepository(ClubEntity);
+const userRepo     = () => appDataSource.getRepository(UserEntity);
+const venueRepo    = () => appDataSource.getRepository(VenueEntity);
+const roleRepo     = () => appDataSource.getRepository(VolunteeringRoleEntity);
+const appRepo      = () => appDataSource.getRepository(VolunteeringApplicationEntity);
 
 async function resolveStatus(proposal) {
     if (proposal.status === "approved") {
@@ -36,10 +36,10 @@ async function enrichProposal(proposal) {
 
     // Always use proposal.id — event.id lives in a separate table and can collide numerically
     return {
-        id: String(proposal.id),
-        name: proposal.eventName,
-        clubName: club?.name ?? "Unknown Club",
-        clubType: club?.type ?? "club",
+        id:        String(proposal.id),
+        name:      proposal.eventName,
+        clubName:  club?.name ?? "Unknown Club",
+        clubType:  club?.type ?? "club",
         eventDate: proposal.proposedDate ?? null,
         attendees: 0,
         status,
@@ -61,17 +61,17 @@ export const getLeadDashboard = async (leadId) => {
         ? `Action Required: Event Report for "${reportDue[0].name}" is overdue!`
         : null;
 
-    const lead = await userRepo().findOne({ where: { id: leadId } });
+    const lead     = await userRepo().findOne({ where: { id: leadId } });
     const leadClub = await clubRepo().findOne({ where: { leadId } });
 
     return {
-        leadName: lead?.fullName ?? "Lead",
+        leadName:  lead?.fullName ?? "Lead",
         clubLabel: leadClub
             ? `${leadClub.name} ${leadClub.type === "community" ? "Community" : "Club"} Lead`
             : "Club Lead",
-        clubType: leadClub?.type ?? "club",
+        clubType:    leadClub?.type ?? "club",
         alert,
-        events: enriched.slice(0, 3),
+        events:      enriched.slice(0, 3),
         totalEvents: enriched.length,
     };
 };
@@ -97,7 +97,7 @@ export const createEvent = async (leadId, body) => {
 
     if (!name) throw new ValidationError("Event name is required");
 
-    const lead = await userRepo().findOne({ where: { id: leadId } });
+    const lead     = await userRepo().findOne({ where: { id: leadId } });
     if (!lead) throw new NotFoundError("Lead not found");
 
     const leadClub = await clubRepo().findOne({ where: { leadId } });
@@ -105,14 +105,14 @@ export const createEvent = async (leadId, body) => {
 
     const proposal = proposalRepo().create({
         leadId,
-        clubId: leadClub.id,
-        venueId: venueId ?? null,
-        eventName: name,
-        proposedDate: eventDate ?? null,
-        description: description ?? null,
+        clubId:          leadClub.id,
+        venueId:         venueId ?? null,
+        eventName:       name,
+        proposedDate:    eventDate ?? null,
+        description:     description ?? null,
         estimatedBudget: estimatedBudget ?? null,
-        status: status === "submitted" ? "pending" : "draft",
-        submittedAt: status === "submitted" ? new Date() : null,
+        status:          status === "submitted" ? "pending" : "draft",
+        submittedAt:     status === "submitted" ? new Date() : null,
     });
 
     const saved = await proposalRepo().save(proposal);
@@ -150,11 +150,11 @@ export const updateEvent = async (eventId, leadId, body) => {
 
     const { name, eventDate, venueId, description, estimatedBudget } = body;
     await proposalRepo().update(Number(eventId), {
-        ...(name !== undefined && { eventName: name }),
-        ...(eventDate !== undefined && { proposedDate: eventDate }),
-        ...(venueId !== undefined && { venueId }),
-        ...(description !== undefined && { description }),
-        ...(estimatedBudget !== undefined && { estimatedBudget }),
+        ...(name !== undefined             && { eventName: name }),
+        ...(eventDate !== undefined        && { proposedDate: eventDate }),
+        ...(venueId !== undefined          && { venueId }),
+        ...(description !== undefined      && { description }),
+        ...(estimatedBudget !== undefined  && { estimatedBudget }),
     });
 
     const updated = await proposalRepo().findOne({ where: { id: Number(eventId) } });
@@ -170,7 +170,7 @@ export const submitEventProposal = async (eventId, leadId) => {
     if (proposal.status !== "draft") throw new ValidationError("Only draft proposals can be submitted");
 
     await proposalRepo().update(Number(eventId), {
-        status: "pending",
+        status:      "pending",
         submittedAt: new Date(),
     });
 
@@ -200,28 +200,28 @@ export const decideProposal = async (eventId, decision, adminComment) => {
 
     // Validate before writing — prevents approved status with no event record
     if (decision === "approved") {
-        if (!proposal.venueId) throw new ValidationError("Proposal must have a venue before it can be approved");
+        if (!proposal.venueId)      throw new ValidationError("Proposal must have a venue before it can be approved");
         if (!proposal.proposedDate) throw new ValidationError("Proposal must have a date before it can be approved");
-        if (!proposal.description) throw new ValidationError("Proposal must have a description before it can be approved");
+        if (!proposal.description)  throw new ValidationError("Proposal must have a description before it can be approved");
     }
 
     await proposalRepo().update(Number(eventId), {
-        status: decision,
+        status:       decision,
         adminComment: adminComment ?? null,
-        reviewedAt: new Date(),
+        reviewedAt:   new Date(),
     });
 
     if (decision === "approved") {
         const existing = await eventRepo().findOne({ where: { proposalId: proposal.id } });
         if (!existing) {
             await eventRepo().save(eventRepo().create({
-                proposalId: proposal.id,
-                clubId: proposal.clubId,
-                venueId: proposal.venueId,
-                name: proposal.eventName,
+                proposalId:  proposal.id,
+                clubId:      proposal.clubId,
+                venueId:     proposal.venueId,
+                name:        proposal.eventName,
                 description: proposal.description,
-                eventDate: proposal.proposedDate,
-                status: "approved",
+                eventDate:   proposal.proposedDate,
+                status:      "approved",
             }));
         }
     }
@@ -263,263 +263,171 @@ export const getEventDetail = async (eventId, userId, userRole) => {
     }
     if (!proposal) throw new NotFoundError("Event not found");
 
-    // Allow admin to bypass ownership
-    if (userRole !== "admin" && proposal.leadId !== userId) {
-        throw new ForbiddenError("You do not own this event");
+  // Allow admin to bypass ownership
+  if (userRole !== "admin" && proposal.leadId !== userId) {
+    throw new ForbiddenError("You do not own this event");
+  }
+
+  const liveEvent = proposal.status === "approved"
+    ? await eventRepo().findOne({ where: { proposalId: proposal.id } })
+    : null;
+
+  const status = await resolveStatus(proposal);
+  const club = proposal.clubId
+    ? await clubRepo().findOne({ where: { id: proposal.clubId } })
+    : null;
+  const venue = proposal.venueId
+    ? await venueRepo().findOne({ where: { id: proposal.venueId } })
+    : null;
+
+  let volunteeringStatus = null;
+  let volunteers = [];
+  let volunteerRoles = [];
+
+  if (liveEvent) {
+    volunteeringStatus = liveEvent.volunteeringStatus;
+    const roles = await roleRepo().find({ where: { eventId: liveEvent.id } });
+    if (roles.length > 0) {
+      volunteerRoles = roles.map(role => ({
+        roleId: role.id,
+        roleName: role.roleName,
+        description: role.description,
+        slotsAvailable: role.slotsAvailable,
+        slotsFilled: role.slotsFilled,
+      }));
+      const roleIds = roles.map(r => r.id);
+      const applications = await appRepo().find({ where: { roleId: In(roleIds) } });
+      if (applications.length > 0) {
+        const studentIds = [...new Set(applications.map(a => a.studentId))];
+        const students = await userRepo().findBy({ id: In(studentIds) });
+        const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+        const roleMap = Object.fromEntries(roles.map(r => [r.id, r]));
+        volunteers = applications.map(app => ({
+          applicationId: app.id,
+          studentName: studentMap[app.studentId]?.fullName ?? "Unknown",
+          studentMatricId: studentMap[app.studentId]?.staffOrMatricId ?? null,
+          appliedAt: app.appliedAt,
+          status: app.status,
+          roleName: roleMap[app.roleId]?.roleName ?? "Volunteer",
+          reason: app.reason,
+          rejectionMessage: app.rejectionMessage,
+        }));
+      }
     }
+  }
 
-    const liveEvent = proposal.status === "approved"
-        ? await eventRepo().findOne({ where: { proposalId: proposal.id } })
-        : null;
-
-    const status = await resolveStatus(proposal);
-    const club = proposal.clubId
-        ? await clubRepo().findOne({ where: { id: proposal.clubId } })
-        : null;
-    const venue = proposal.venueId
-        ? await venueRepo().findOne({ where: { id: proposal.venueId } })
-        : null;
-
-    let volunteeringStatus = null;
-    let volunteers = [];
-
-    if (liveEvent) {
-        volunteeringStatus = liveEvent.volunteeringStatus;
-        const roles = await roleRepo().find({ where: { eventId: liveEvent.id } });
-        if (roles.length > 0) {
-            const roleIds = roles.map(r => r.id);
-            const applications = await appRepo().find({ where: { roleId: In(roleIds) } });
-            if (applications.length > 0) {
-                const studentIds = [...new Set(applications.map(a => a.studentId))];
-                const students = await userRepo().findBy({ id: In(studentIds) });
-                const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
-                const roleMap = Object.fromEntries(roles.map(r => [r.id, r]));
-                volunteers = applications.map(app => ({
-                    applicationId: app.id,
-                    studentName: studentMap[app.studentId]?.fullName ?? "Unknown",
-                    studentMatricId: studentMap[app.studentId]?.staffOrMatricId ?? null,
-                    appliedAt: app.appliedAt,
-                    status: app.status,
-                    roleName: roleMap[app.roleId]?.roleName ?? "Volunteer",
-                }));
-            }
-        }
-    }
-
-    return {
-        id: String(proposal.id),
-        name: proposal.eventName,
-        clubName: club?.name ?? "Unknown Club",
-        clubType: club?.type ?? "club",
-        eventDate: proposal.proposedDate ?? null,
-        status,
-        venueName: venue?.name ?? null,
-        budget: proposal.estimatedBudget ? Number(proposal.estimatedBudget) : null,
-        proposalPdfUrl: proposal.proposalPdfUrl ?? null,
-        adminComment: proposal.adminComment ?? null,
-        volunteeringStatus,
-        volunteers,
-    };
+  return {
+    id: String(proposal.id),
+    name: proposal.eventName,
+    clubName: club?.name ?? "Unknown Club",
+    clubType: club?.type ?? "club",
+    eventDate: proposal.proposedDate ?? null,
+    status,
+    venueName: venue?.name ?? null,
+    budget: proposal.estimatedBudget ? Number(proposal.estimatedBudget) : null,
+    proposalPdfUrl: proposal.proposalPdfUrl ?? null,
+    adminComment: proposal.adminComment ?? null,
+    volunteeringStatus,
+    volunteerRoles,
+    volunteers,
+  };
 };
 
 // Add this new function for student detail (no ownership check)
-export const getStudentEventDetail = async (eventId) => {
-    const id = Number(eventId);
-    // First, find the event in the events table
-    const liveEvent = await eventRepo().findOne({ where: { id } });
-    if (!liveEvent) throw new NotFoundError("Event not found");
+export const getStudentEventDetail = async (eventId, userId) => {
+  const id = Number(eventId);
+  // First, find the proposal using the id passed from the frontend
+  const proposal = await proposalRepo().findOne({ where: { id } });
+  if (!proposal) throw new NotFoundError("Event not found");
 
-    // Then get the associated proposal
-    const proposal = await proposalRepo().findOne({ where: { id: liveEvent.proposalId } });
-    if (!proposal) throw new NotFoundError("Associated proposal not found");
+  // Only approved proposals are visible to students, and they have an entry in the Event table
+  if (proposal.status !== "approved") throw new NotFoundError("Event not found or not approved");
+  const liveEvent = await eventRepo().findOne({ where: { proposalId: proposal.id } });
+  if (!liveEvent) throw new NotFoundError("Approved event record not found");
 
-    const club = proposal.clubId
-        ? await clubRepo().findOne({ where: { id: proposal.clubId } })
-        : null;
-    const venue = proposal.venueId
-        ? await venueRepo().findOne({ where: { id: proposal.venueId } })
-        : null;
+  const club = proposal.clubId
+    ? await clubRepo().findOne({ where: { id: proposal.clubId } })
+    : null;
+  const venue = proposal.venueId
+    ? await venueRepo().findOne({ where: { id: proposal.venueId } })
+    : null;
 
-    let volunteeringStatus = liveEvent.volunteeringStatus ?? null;
-    let volunteerRoles = [];
+  let volunteeringStatus = liveEvent.volunteeringStatus ?? null;
+  let volunteerRoles = [];
 
-    const roles = await roleRepo().find({
-        where: { eventId: liveEvent.id },
-        order: { roleName: "ASC" },
+  const roles = await roleRepo().find({
+    where: { eventId: liveEvent.id },
+    order: { roleName: "ASC" },
+  });
+  volunteerRoles = roles.map(role => ({
+    id: role.id,
+    name: role.roleName,
+    slotsAvailable: role.slotsAvailable,
+    slotsFilled: role.slotsFilled,
+    remainingSlots: role.slotsAvailable - role.slotsFilled,
+  }));
+
+  let hasApplied = false;
+  if (userId) {
+    const { VolunteeringApplicationEntity } = await import("../volunteering/volunteering_applications.entity.mjs");
+    const { In } = await import("typeorm");
+    const application = await appDataSource.getRepository(VolunteeringApplicationEntity).findOne({
+      where: {
+        eventId: liveEvent.id,
+        studentId: userId,
+        status: In(["pending", "accepted"])
+      }
     });
-    volunteerRoles = roles.map(role => ({
-        id: role.id,
-        name: role.roleName,
-        slotsAvailable: role.slotsAvailable,
-        slotsFilled: role.slotsFilled,
-        remainingSlots: role.slotsAvailable - role.slotsFilled,
-    }));
+    hasApplied = !!application;
+  }
 
-    return {
-        id: String(liveEvent.id),
-        name: liveEvent.name,
-        description: liveEvent.description,
-        clubName: club?.name ?? "Unknown Club",
-        clubType: club?.type ?? "club",
-        eventDate: liveEvent.eventDate,
-        status: liveEvent.status,
-        venueName: venue?.name ?? null,
-        budget: proposal.estimatedBudget ? Number(proposal.estimatedBudget) : null,
-        proposalPdfUrl: proposal.proposalPdfUrl ?? null,
-        adminComment: proposal.adminComment ?? null,
-        volunteeringStatus,
-        volunteerRoles,
-    };
+  return {
+    id: Number(proposal.id),
+    name: liveEvent.name,
+    description: liveEvent.description,
+    clubName: club?.name ?? "Unknown Club",
+    clubType: club?.type ?? "club",
+    eventDate: liveEvent.eventDate,
+    status: liveEvent.status,
+    venueName: venue?.name ?? null,
+    budget: proposal.estimatedBudget ? Number(proposal.estimatedBudget) : null,
+    proposalPdfUrl: proposal.proposalPdfUrl ?? null,
+    adminComment: proposal.adminComment ?? null,
+    volunteeringStatus,
+    volunteerRoles,
+    hasApplied,
+  };
 };
 // All other existing functions (getLeadDashboard, createEvent, getAllEvents, etc.) remain exactly as you had them.
 // ── Lead — Toggle volunteering open / closed ─────────────────────────────────
 
 export const toggleVolunteering = async (eventId, leadId, newStatus) => {
-    const id = Number(eventId);
-    const event = await eventRepo().findOne({ where: { id } });
-    if (!event) throw new NotFoundError("Event not found");
+    const proposalId = Number(eventId);
 
-    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
-    if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+    const proposal = await proposalRepo().findOne({ where: { id: proposalId } });
+    if (!proposal) throw new NotFoundError("Event not found");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+
+    const event = await eventRepo().findOne({ where: { proposalId } });
+    if (!event) throw new NotFoundError("Approved event record not found");
 
     if (!["open", "closed"].includes(newStatus)) throw new ValidationError("Status must be 'open' or 'closed'");
     if (event.volunteeringStatus === "full") throw new ValidationError("Cannot change status when all slots are full");
 
-    await eventRepo().update(id, { volunteeringStatus: newStatus });
+    await eventRepo().update(event.id, { volunteeringStatus: newStatus });
     return { volunteeringStatus: newStatus };
 };
 
-// ── Lead — Decide on a volunteer application ──────────────────────────────────
 
-export const decideVolunteerApplication = async (eventId, applicationId, leadId, decision) => {
-    const id = Number(eventId);
-    const aid = Number(applicationId);
-
-    const event = await eventRepo().findOne({ where: { id } });
-    if (!event) throw new NotFoundError("Event not found");
-
-    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
-    if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
-
-    const application = await appRepo().findOne({ where: { id: aid } });
-    if (!application) throw new NotFoundError("Application not found");
-
-    const role = await roleRepo().findOne({ where: { id: application.roleId } });
-    if (!role || role.eventId !== event.id) throw new ForbiddenError("Application does not belong to this event");
-
-    if (!["accepted", "rejected"].includes(decision)) throw new ValidationError("Decision must be 'accepted' or 'rejected'");
-    if (application.status !== "pending") throw new ValidationError("Only pending applications can be reviewed");
-
-    await appRepo().update(aid, { status: decision, reviewedAt: new Date() });
-
-    if (decision === "accepted") {
-        await roleRepo().update(application.roleId, { slotsFilled: () => "slots_filled + 1" });
-        const updatedRole = await roleRepo().findOne({ where: { id: application.roleId } });
-        if (updatedRole && updatedRole.slotsFilled >= updatedRole.slotsAvailable) {
-            const allRoles = await roleRepo().find({ where: { eventId: event.id } });
-            const allFull = allRoles.every(r => r.slotsFilled >= r.slotsAvailable);
-            if (allFull) await eventRepo().update(id, { volunteeringStatus: "full" });
-        }
-    }
-
-    return { applicationId: aid, status: decision };
-};
 
 // ── Admin — All events overview
 
 export const getAllEvents = async (statusFilter) => {
     const proposals = await proposalRepo().find({ order: { createdAt: "DESC" } });
-    const enriched = await Promise.all(proposals.map(enrichProposal));
+    const enriched  = await Promise.all(proposals.map(enrichProposal));
 
     if (!statusFilter || statusFilter === "all") return enriched;
     return enriched.filter(e => e.status === statusFilter);
-};
-
-export const createApprovedEventByAdmin = async (body) => {
-    const { clubId, venueId, name, description, eventDate, estimatedBudget } = body;
-
-    if (!clubId) throw new ValidationError("clubId is required");
-    if (!venueId) throw new ValidationError("venueId is required");
-    if (!name?.trim()) throw new ValidationError("Event name is required");
-    if (!description?.trim()) throw new ValidationError("Description is required");
-    if (!eventDate) throw new ValidationError("Event date is required");
-
-    const club = await clubRepo().findOne({
-        where: { id: Number(clubId), deletedAt: null },
-    });
-
-    if (!club) throw new NotFoundError("Club not found");
-    if (!club.leadId) throw new ValidationError("Club must have a lead before creating an event");
-
-    const venue = await venueRepo().findOne({
-        where: { id: Number(venueId) },
-    });
-
-    if (!venue) throw new NotFoundError("Venue not found");
-
-    const proposal = proposalRepo().create({
-        leadId: club.leadId,
-        clubId: club.id,
-        venueId: Number(venueId),
-        eventName: name.trim(),
-        proposedDate: eventDate,
-        description: description.trim(),
-        estimatedBudget: estimatedBudget ?? 0,
-        status: "approved",
-        submittedAt: new Date(),
-        reviewedAt: new Date(),
-        adminComment: "Created directly by admin from club details page.",
-    });
-
-    const savedProposal = await proposalRepo().save(proposal);
-
-    const event = eventRepo().create({
-        proposalId: savedProposal.id,
-        clubId: club.id,
-        venueId: Number(venueId),
-        name: name.trim(),
-        description: description.trim(),
-        eventDate,
-        status: "approved",
-        volunteeringStatus: "closed",
-    });
-
-    return await eventRepo().save(event);
-};
-
-export const updateApprovedEventByAdmin = async (eventId, body) => {
-    const event = await eventRepo().findOne({
-        where: { id: Number(eventId) },
-    });
-
-    if (!event) throw new NotFoundError("Event not found");
-
-    const updateData = {};
-
-    if (body.name?.trim()) updateData.name = body.name.trim();
-    if (body.description?.trim()) updateData.description = body.description.trim();
-    if (body.eventDate) updateData.eventDate = body.eventDate;
-    if (body.venueId) updateData.venueId = Number(body.venueId);
-
-    await eventRepo().update(Number(eventId), updateData);
-
-    const updated = await eventRepo().findOne({
-        where: { id: Number(eventId) },
-    });
-
-    return updated;
-};
-
-export const deleteApprovedEventByAdmin = async (eventId) => {
-    const event = await eventRepo().findOne({
-        where: { id: Number(eventId) },
-    });
-
-    if (!event) throw new NotFoundError("Event not found");
-
-    await eventRepo().delete(Number(eventId));
-
-    return { message: "Event deleted successfully" };
 };
 
 // ── Student — All approved events (no ownership check) ──────────────────────
@@ -533,7 +441,7 @@ export const getStudentEvents = async () => {
         const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
         const club = proposal ? await clubRepo().findOne({ where: { id: proposal.clubId } }) : null;
         return {
-            id: event.id,
+            id: String(event.proposalId),
             name: event.name,
             description: event.description,
             eventDate: event.eventDate,

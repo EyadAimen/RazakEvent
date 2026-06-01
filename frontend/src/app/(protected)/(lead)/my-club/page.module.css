@@ -93,7 +93,7 @@
   align-items: center;
   gap: 4px;
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: var(--text-caption-size);
   font-weight: var(--weight-semibold);
   color: var(--color-neutral-500);
   letter-spacing: 0.05em;
@@ -189,7 +189,7 @@
 }
 
 .selectorPillPending.selectorPillActive {
-  background: rgba(232, 160, 32, 0.1);
+  background: var(--color-status-warning-bg);
   border-color: var(--color-secondary-800);
   color: var(--color-secondary-800);
 }
@@ -209,7 +209,7 @@
   display: inline-block;
   background: var(--color-secondary-800);
   color: var(--color-neutral-50);
-  font-size: 10px;
+  font-size: var(--text-caption-size);
   font-weight: var(--weight-bold);
   padding: 1px 7px;
   border-radius: var(--radius-pill);
@@ -422,9 +422,9 @@
   align-items: center;
   justify-content: center;
   background: var(--color-status-red);
-  color: #fff;
+  color: var(--color-neutral-50);
   border-radius: var(--radius-pill);
-  font-size: 11px;
+  font-size: var(--text-caption-size);
   font-weight: var(--weight-bold);
   min-width: 18px;
   height: 18px;
@@ -465,7 +465,7 @@
   font-family: var(--font-body);
   font-size: var(--text-small-size);
   color: var(--color-neutral-800);
-  background: var(--color-neutral-100);
+  background: var(--color-neutral-50);
   outline: none;
   box-sizing: border-box;
   transition: border-color var(--transition-veryfast);
@@ -499,7 +499,7 @@
   white-space: nowrap;
   border-bottom: 1px solid var(--color-neutral-200);
   text-transform: uppercase;
-  font-size: 11px;
+  font-size: var(--text-caption-size);
   letter-spacing: 0.05em;
 }
 
@@ -544,9 +544,9 @@
 }
 
 .roleCommittee {
-  background: #fef9c3;
-  color: #854d0e;
-  border: 1px solid #fde047;
+  background: var(--color-status-pending-bg);
+  color: var(--color-status-pending-text);
+  border: 1px solid var(--color-status-yellow);
 }
 
 /* ── Action buttons ──────────────────────────────────────────────────────── */
@@ -572,10 +572,10 @@
 }
 
 .acceptBtn {
-  background: rgba(16, 185, 129, 0.12);
-  color: #065f46;
+  background: var(--color-neutral-100);
+  color: var(--color-status-green);
 }
-.acceptBtn:hover:not(:disabled) { background: rgba(16, 185, 129, 0.25); }
+.acceptBtn:hover:not(:disabled) { background: var(--color-neutral-200); }
 
 .rejectBtn {
   background: var(--color-semantic-red-10);
@@ -649,4 +649,143 @@
   .eventStatsRow {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* ── Volunteer Application Cards ─────────────────────────────────────────── */
+.volCardList {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-neutral-50);
+  border: var(--border-thin) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.pendingRequestsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  background: var(--color-neutral-50);
+  border-bottom: var(--border-thin) solid var(--color-neutral-200);
+  padding: var(--space-md) var(--space-lg);
+}
+
+.pendingRequestsTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.pendingRequestsTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-primary-800);
+  margin: 0;
+}
+
+.volAppCard {
+  display: flex;
+  flex-direction: column;
+  border-bottom: var(--border-thin) solid var(--color-neutral-200);
+  cursor: pointer;
+  transition: background var(--transition-veryfast);
+}
+
+.volAppCard:last-child {
+  border-bottom: none;
+}
+
+.volAppCard:hover {
+  background: var(--color-neutral-100);
+}
+
+.volAppCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-lg);
+}
+
+.volAppStudentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.volAppStudentNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.volAppStudentName {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.volAppStudentId {
+  background: var(--color-neutral-150);
+  color: var(--color-neutral-700);
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-caption-size);
+  font-weight: var(--weight-bold);
+}
+
+.volAppEventInfoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.volAppEventName {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary-500);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+}
+
+.volAppDate {
+  color: var(--color-neutral-500);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+}
+
+.volAppExpanded {
+  background: var(--color-primary-500-10);
+  border-top: var(--border-thin) solid var(--color-neutral-200);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.volAppSectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-primary-800);
+  margin: 0 0 8px 0;
+}
+
+.volAppMotivationBox {
+  background: var(--color-neutral-50);
+  border: var(--border-thin) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  color: var(--color-neutral-700);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  line-height: 1.6;
 }

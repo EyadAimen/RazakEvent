@@ -13,7 +13,7 @@ const QUICK_ACTIONS = [
     icon: <Ticket size={22} />,
     label: "Browse",
     sublabel: "Events",
-    href: "/events",
+    href: "/student/events",
   },
   {
     id: "volunteering",
@@ -95,7 +95,7 @@ export default function StudentDashboard() {
             </div>
             <div className={styles.emptyState}>
               <p>No upcoming events yet.</p>
-              <a href="/events" className={styles.emptyCta}>Browse available events →</a>
+              <a href="/student/events" className={styles.emptyCta}>Browse available events →</a>
             </div>
           </section>
         </div>

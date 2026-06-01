@@ -13,11 +13,13 @@ const eventRepo    = () => appDataSource.getRepository(EventEntity);
 const clubRepo     = () => appDataSource.getRepository(ClubEntity);
 const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
 
-async function assertLeadOwnsEvent(eventId, leadId) {
-    const event = await eventRepo().findOne({ where: { id: eventId } });
-    if (!event) throw new NotFoundError("Event not found");
-    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
-    if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+async function assertLeadOwnsEvent(proposalId, leadId) {
+    // The frontend uses proposal.id as the external event identifier
+    const proposal = await proposalRepo().findOne({ where: { id: proposalId } });
+    if (!proposal) throw new NotFoundError("Event not found");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+    const event = await eventRepo().findOne({ where: { proposalId } });
+    if (!event) throw new NotFoundError("Approved event record not found");
     return event;
 }
 
@@ -52,7 +54,7 @@ export const getOpenEvents = async () => {
 
     return {
         events: events.map(e => ({
-            eventId:   e.id,
+            eventId:   e.proposalId,
             eventName: e.name,
             eventDate: e.eventDate,
             clubName:  clubMap[e.clubId]?.name ?? "Unknown Club",
@@ -69,11 +71,11 @@ export const createRole = async (eventId, leadId, body) => {
     if (!roleName) throw new ValidationError("roleName is required");
     if (!slotsAvailable || slotsAvailable < 1) throw new ValidationError("slotsAvailable must be at least 1");
 
-    await assertLeadOwnsEvent(Number(eventId), leadId);
+    const event = await assertLeadOwnsEvent(Number(eventId), leadId);
 
     const role = await roleRepo().save(
         roleRepo().create({
-            eventId: Number(eventId),
+            eventId: event.id,   // use the real events table ID
             roleName,
             description: description ?? null,
             slotsAvailable,
@@ -98,7 +100,9 @@ export const updateRole = async (roleId, leadId, body) => {
     const role = await roleRepo().findOne({ where: { id: Number(roleId) } });
     if (!role) throw new NotFoundError("Role not found");
 
-    await assertLeadOwnsEvent(role.eventId, leadId);
+    const event = await eventRepo().findOne({ where: { id: role.eventId } });
+    if (!event) throw new NotFoundError("Event not found");
+    await assertLeadOwnsEvent(event.proposalId, leadId);
 
     if (slotsAvailable !== undefined && slotsAvailable < role.slotsFilled) {
         throw new ValidationError("slotsAvailable cannot be less than current slotsFilled");
@@ -127,7 +131,9 @@ export const deleteRole = async (roleId, leadId) => {
     const role = await roleRepo().findOne({ where: { id } });
     if (!role) throw new NotFoundError("Role not found");
 
-    await assertLeadOwnsEvent(role.eventId, leadId);
+    const event = await eventRepo().findOne({ where: { id: role.eventId } });
+    if (!event) throw new NotFoundError("Event not found");
+    await assertLeadOwnsEvent(event.proposalId, leadId);
 
     const queryRunner = appDataSource.createQueryRunner();
     await queryRunner.connect();
@@ -136,7 +142,7 @@ export const deleteRole = async (roleId, leadId) => {
         await queryRunner.manager.update(
             "VolunteeringApplication",
             { roleId: id, status: In(["pending", "accepted"]) },
-            { status: "dropped", reviewedAt: new Date() }
+            { status: "rejected", reviewedAt: new Date(), rejectionMessage: "Role was deleted" }
         );
         await queryRunner.manager.delete("VolunteeringRole", { id });
         await queryRunner.commitTransaction();
@@ -160,14 +166,29 @@ export const applyToRole = async (studentId, body) => {
     if (event.volunteeringStatus !== "open") throw new ConflictError("Volunteering for this event is not open");
     if (role.slotsFilled >= role.slotsAvailable) throw new ConflictError("This role is full");
 
-    const existing = await appRepo().findOne({
-        where: { studentId, eventId: role.eventId, status: In(["pending", "accepted"]) },
+    // Find any existing application for this event, regardless of role or status
+    let application = await appRepo().findOne({
+        where: { studentId, eventId: role.eventId }
     });
-    if (existing) throw new ConflictError("You have already applied to volunteer for this event");
 
-    const application = await appRepo().save(
-        appRepo().create({ studentId, roleId, eventId: role.eventId, status: "pending", reason })
-    );
+    if (application) {
+        if (["pending", "accepted"].includes(application.status)) {
+            throw new ConflictError("You have already applied to volunteer for this event");
+        }
+        
+        // Re-activate rejected application, updating the roleId if they chose a new one
+        application.roleId = roleId;
+        application.status = "pending";
+        application.reason = reason;
+        application.appliedAt = new Date();
+        application.reviewedAt = null;
+        application.rejectionMessage = null;
+        await appRepo().save(application);
+    } else {
+        application = await appRepo().save(
+            appRepo().create({ studentId, roleId, eventId: role.eventId, status: "pending", reason })
+        );
+    }
 
     return {
         applicationId: application.id,
@@ -199,7 +220,7 @@ export const getMyApplications = async (studentId) => {
     return {
         applications: applications.map(a => ({
             applicationId: a.id,
-            eventId:       a.eventId,
+            eventId:       eventMap[a.eventId]?.proposalId ?? a.eventId,
             eventName:     eventMap[a.eventId]?.name ?? "Unknown Event",
             eventDate:     eventMap[a.eventId]?.eventDate ?? null,
             roleId:        a.roleId,
@@ -211,58 +232,92 @@ export const getMyApplications = async (studentId) => {
     };
 };
 
-// ── Student + Lead — Drop an application ─────────────────────────────────────
 
-export const dropApplication = async (applicationId, userId, userRole) => {
-    const application = await appRepo().findOne({ where: { id: applicationId } });
+
+// ── Lead — Decide on a volunteer application ──────────────────────────────────
+
+export const decideVolunteerApplication = async (applicationId, leadId, decision, rejectionMessage) => {
+    const aid = Number(applicationId);
+
+    const application = await appRepo().findOne({ where: { id: aid } });
     if (!application) throw new NotFoundError("Application not found");
 
-    if (["dropped", "rejected"].includes(application.status)) {
-        throw new ConflictError("Application is already dropped or rejected");
-    }
+    const event = await eventRepo().findOne({ where: { id: application.eventId } });
+    if (!event) throw new NotFoundError("Event not found");
+    await assertLeadOwnsEvent(event.proposalId, leadId);
 
-    if (userRole === "student" || userRole === "member") {
-        if (application.studentId !== userId) {
-            throw new ForbiddenError("This application does not belong to you");
+    const role = await roleRepo().findOne({ where: { id: application.roleId } });
+    if (!role || role.eventId !== application.eventId) throw new ForbiddenError("Application does not belong to this event");
+
+    if (!["accepted", "rejected"].includes(decision)) throw new ValidationError("Decision must be 'accepted' or 'rejected'");
+    if (application.status !== "pending") throw new ValidationError("Only pending applications can be reviewed");
+
+    await appRepo().update(aid, { 
+        status: decision, 
+        reviewedAt: new Date(),
+        ...(decision === "rejected" && rejectionMessage ? { rejectionMessage } : {}),
+    });
+
+    if (decision === "accepted") {
+        await roleRepo().update(application.roleId, { slotsFilled: () => "slots_filled + 1" });
+        const updatedRole = await roleRepo().findOne({ where: { id: application.roleId } });
+        if (updatedRole && updatedRole.slotsFilled >= updatedRole.slotsAvailable) {
+            const allRoles = await roleRepo().find({ where: { eventId: application.eventId } });
+            const allFull  = allRoles.every(r => r.slotsFilled >= r.slotsAvailable);
+            if (allFull) await eventRepo().update(application.eventId, { volunteeringStatus: "full" });
         }
-    } else {
-        await assertLeadOwnsEvent(application.eventId, userId);
     }
 
-    const wasAccepted = application.status === "accepted";
+    return { applicationId: aid, status: decision };
+};
 
-    const queryRunner = appDataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-        await queryRunner.manager.update(
-            "VolunteeringApplication",
-            { id: applicationId },
-            { status: "dropped", reviewedAt: new Date() }
-        );
+// ── Lead — Get all volunteer applications for a club's events ─────────────────
 
-        if (wasAccepted) {
-            await queryRunner.manager.update(
-                "VolunteeringRole",
-                { id: application.roleId },
-                { slotsFilled: () => "slots_filled - 1" }
-            );
+export const getClubVolunteerApplications = async (clubId, leadId) => {
+    const cid = Number(clubId);
 
-            const event = await eventRepo().findOne({ where: { id: application.eventId } });
-            if (event?.volunteeringStatus === "full") {
-                await queryRunner.manager.update(
-                    "Event",
-                    { id: application.eventId },
-                    { volunteeringStatus: "open" }
-                );
-            }
-        }
+    // Verify lead owns this club
+    const club = await clubRepo().findOne({ where: { id: cid } });
+    if (!club) throw new NotFoundError("Club not found");
+    if (club.leadId !== leadId) throw new ForbiddenError("You do not own this club");
 
-        await queryRunner.commitTransaction();
-    } catch (err) {
-        await queryRunner.rollbackTransaction();
-        throw err;
-    } finally {
-        await queryRunner.release();
-    }
+    // Get all events for this club
+    const events = await eventRepo().find({ where: { clubId: cid } });
+    if (events.length === 0) return { applications: [] };
+
+    const eventIds  = events.map(e => e.id);
+    const eventMap  = Object.fromEntries(events.map(e => [e.id, e]));
+
+    // Get all roles for those events
+    const roles    = await roleRepo().find({ where: { eventId: In(eventIds) } });
+    const roleMap  = Object.fromEntries(roles.map(r => [r.id, r]));
+
+    // Get all applications for those events (pending first, then others)
+    const applications = await appRepo().find({
+        where: { eventId: In(eventIds) },
+        order: { appliedAt: "DESC" },
+    });
+    if (applications.length === 0) return { applications: [] };
+
+    // Lookup student details
+    const { UserEntity } = await import("../users/users.entity.mjs");
+    const userRepo = () => appDataSource.getRepository(UserEntity);
+    const studentIds = [...new Set(applications.map(a => a.studentId))];
+    const students   = await userRepo().findByIds(studentIds);
+    const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+
+    return {
+        applications: applications.map(app => ({
+            applicationId:   app.id,
+            studentName:     studentMap[app.studentId]?.fullName ?? "Unknown",
+            studentMatricId: studentMap[app.studentId]?.staffOrMatricId ?? null,
+            eventId:         app.eventId,
+            eventName:       eventMap[app.eventId]?.name ?? "Unknown Event",
+            roleName:        roleMap[app.roleId]?.roleName ?? "Volunteer",
+            status:          app.status,
+            appliedAt:       app.appliedAt,
+            reason:          app.reason ?? null,
+            rejectionMessage: app.rejectionMessage ?? null,
+        })),
+    };
 };
