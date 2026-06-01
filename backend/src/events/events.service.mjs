@@ -327,13 +327,14 @@ export const getEventDetail = async (eventId, userId, userRole) => {
 // Add this new function for student detail (no ownership check)
 export const getStudentEventDetail = async (eventId, userId) => {
   const id = Number(eventId);
-  // First, find the event in the events table
-  const liveEvent = await eventRepo().findOne({ where: { id } });
-  if (!liveEvent) throw new NotFoundError("Event not found");
+  // First, find the proposal using the id passed from the frontend
+  const proposal = await proposalRepo().findOne({ where: { id } });
+  if (!proposal) throw new NotFoundError("Event not found");
 
-  // Then get the associated proposal
-  const proposal = await proposalRepo().findOne({ where: { id: liveEvent.proposalId } });
-  if (!proposal) throw new NotFoundError("Associated proposal not found");
+  // Only approved proposals are visible to students, and they have an entry in the Event table
+  if (proposal.status !== "approved") throw new NotFoundError("Event not found or not approved");
+  const liveEvent = await eventRepo().findOne({ where: { proposalId: proposal.id } });
+  if (!liveEvent) throw new NotFoundError("Approved event record not found");
 
   const club = proposal.clubId
     ? await clubRepo().findOne({ where: { id: proposal.clubId } })
@@ -372,7 +373,7 @@ export const getStudentEventDetail = async (eventId, userId) => {
   }
 
   return {
-    id: String(liveEvent.id),
+    id: Number(proposal.id),
     name: liveEvent.name,
     description: liveEvent.description,
     clubName: club?.name ?? "Unknown Club",
@@ -431,7 +432,7 @@ export const getStudentEvents = async () => {
         const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
         const club = proposal ? await clubRepo().findOne({ where: { id: proposal.clubId } }) : null;
         return {
-            id: event.id,
+            id: String(event.proposalId),
             name: event.name,
             description: event.description,
             eventDate: event.eventDate,

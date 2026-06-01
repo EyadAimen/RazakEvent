@@ -17,7 +17,7 @@ async function assertLeadOwnsEvent(proposalId, leadId) {
     // The frontend uses proposal.id as the external event identifier
     const proposal = await proposalRepo().findOne({ where: { id: proposalId } });
     if (!proposal) throw new NotFoundError("Event not found");
-    if (proposal.leadId !== Number(leadId)) throw new ForbiddenError("You do not own this event");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
     const event = await eventRepo().findOne({ where: { proposalId } });
     if (!event) throw new NotFoundError("Approved event record not found");
     return event;
@@ -54,7 +54,7 @@ export const getOpenEvents = async () => {
 
     return {
         events: events.map(e => ({
-            eventId:   e.id,
+            eventId:   e.proposalId,
             eventName: e.name,
             eventDate: e.eventDate,
             clubName:  clubMap[e.clubId]?.name ?? "Unknown Club",
@@ -142,7 +142,7 @@ export const deleteRole = async (roleId, leadId) => {
         await queryRunner.manager.update(
             "VolunteeringApplication",
             { roleId: id, status: In(["pending", "accepted"]) },
-            { status: "dropped", reviewedAt: new Date() }
+            { status: "rejected", reviewedAt: new Date(), rejectionMessage: "Role was deleted" }
         );
         await queryRunner.manager.delete("VolunteeringRole", { id });
         await queryRunner.commitTransaction();
@@ -166,14 +166,29 @@ export const applyToRole = async (studentId, body) => {
     if (event.volunteeringStatus !== "open") throw new ConflictError("Volunteering for this event is not open");
     if (role.slotsFilled >= role.slotsAvailable) throw new ConflictError("This role is full");
 
-    const existing = await appRepo().findOne({
-        where: { studentId, eventId: role.eventId, status: In(["pending", "accepted"]) },
+    // Find any existing application for this event, regardless of role or status
+    let application = await appRepo().findOne({
+        where: { studentId, eventId: role.eventId }
     });
-    if (existing) throw new ConflictError("You have already applied to volunteer for this event");
 
-    const application = await appRepo().save(
-        appRepo().create({ studentId, roleId, eventId: role.eventId, status: "pending", reason })
-    );
+    if (application) {
+        if (["pending", "accepted"].includes(application.status)) {
+            throw new ConflictError("You have already applied to volunteer for this event");
+        }
+        
+        // Re-activate rejected application, updating the roleId if they chose a new one
+        application.roleId = roleId;
+        application.status = "pending";
+        application.reason = reason;
+        application.appliedAt = new Date();
+        application.reviewedAt = null;
+        application.rejectionMessage = null;
+        await appRepo().save(application);
+    } else {
+        application = await appRepo().save(
+            appRepo().create({ studentId, roleId, eventId: role.eventId, status: "pending", reason })
+        );
+    }
 
     return {
         applicationId: application.id,
@@ -217,63 +232,7 @@ export const getMyApplications = async (studentId) => {
     };
 };
 
-// ── Student + Lead — Drop an application ─────────────────────────────────────
 
-export const dropApplication = async (applicationId, userId, userRole) => {
-    const application = await appRepo().findOne({ where: { id: applicationId } });
-    if (!application) throw new NotFoundError("Application not found");
-
-    if (["dropped", "rejected"].includes(application.status)) {
-        throw new ConflictError("Application is already dropped or rejected");
-    }
-
-    if (userRole === "student" || userRole === "member") {
-        if (application.studentId !== userId) {
-            throw new ForbiddenError("This application does not belong to you");
-        }
-    } else {
-        const event = await eventRepo().findOne({ where: { id: application.eventId } });
-        if (!event) throw new NotFoundError("Event not found");
-        await assertLeadOwnsEvent(event.proposalId, userId);
-    }
-
-    const wasAccepted = application.status === "accepted";
-
-    const queryRunner = appDataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-        await queryRunner.manager.update(
-            "VolunteeringApplication",
-            { id: applicationId },
-            { status: "dropped", reviewedAt: new Date() }
-        );
-
-        if (wasAccepted) {
-            await queryRunner.manager.update(
-                "VolunteeringRole",
-                { id: application.roleId },
-                { slotsFilled: () => "slots_filled - 1" }
-            );
-
-            const event = await eventRepo().findOne({ where: { id: application.eventId } });
-            if (event?.volunteeringStatus === "full") {
-                await queryRunner.manager.update(
-                    "Event",
-                    { id: application.eventId },
-                    { volunteeringStatus: "open" }
-                );
-            }
-        }
-
-        await queryRunner.commitTransaction();
-    } catch (err) {
-        await queryRunner.rollbackTransaction();
-        throw err;
-    } finally {
-        await queryRunner.release();
-    }
-};
 
 // ── Lead — Decide on a volunteer application ──────────────────────────────────
 
