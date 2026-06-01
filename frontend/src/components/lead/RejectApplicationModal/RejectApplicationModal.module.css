@@ -39,7 +39,7 @@
   font-family: var(--font-body);
   font-size: var(--text-caption-size);
   font-weight: var(--weight-semibold);
-  color: #fca5a5;
+  color: var(--color-neutral-200);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0 0 6px;
@@ -57,12 +57,12 @@
 .headerSubtitle {
   font-family: var(--font-body);
   font-size: var(--text-small-size);
-  color: #fecaca;
+  color: var(--color-neutral-100);
   margin: 0;
 }
 
 .closeBtn {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
   border: none;
   border-radius: var(--radius-pill);
   width: 30px;
@@ -73,11 +73,11 @@
   color: var(--color-neutral-50);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background var(--transition-veryfast);
+  transition: opacity var(--transition-veryfast);
 }
 
 .closeBtn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  opacity: 0.8;
 }
 
 /* ── Form body ───────────────────────────────────────────────────────────── */
@@ -107,7 +107,7 @@
 
 .fieldLabel {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: var(--text-caption-size);
   font-weight: var(--weight-semibold);
   color: var(--color-neutral-600);
   text-transform: uppercase;
@@ -209,8 +209,9 @@
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: #a93226; /* darker red */
-  border-color: #a93226;
+  background: var(--color-semantic-red);
+  border-color: var(--color-semantic-red);
+  filter: brightness(0.9);
 }
 
 .cancelBtn:disabled,
