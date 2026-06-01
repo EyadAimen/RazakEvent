@@ -17,6 +17,16 @@ export interface ApiEvent {
   status: string;
 }
 
+export type EventsTab =
+  | "all"
+  | "draft"
+  | "submitted"
+  | "approved"
+  | "ongoing"
+  | "completed"
+  | "report_due"
+  | "rejected";
+
 export interface Venue {
   id: number;
   name: string;
@@ -30,4 +40,11 @@ export interface CreateEventPayload {
   description?: string;
   estimatedBudget?: number;
   status: "draft" | "submitted";
+}
+
+export interface BookedDate {
+  eventId: number;
+  name: string;
+  eventDate: string;
+  status: string;
 }
