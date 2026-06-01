@@ -2,6 +2,7 @@ import { In } from "typeorm";
 import appDataSource from "../../config/dbConfig.mjs";
 import { CertificateEntity } from "./certificates.entity.mjs";
 import { VolunteeringApplicationEntity } from "../volunteering/volunteering_applications.entity.mjs";
+import { VolunteeringRoleEntity } from "../volunteering/volunteering_roles.entity.mjs";
 import { EventEntity } from "../events/events.entity.mjs";
 import { EventProposalEntity } from "../proposals/proposals.entity.mjs";
 import { UserEntity } from "../users/users.entity.mjs";
@@ -9,6 +10,7 @@ import { NotFoundError, ForbiddenError, ConflictError, ValidationError } from ".
 
 const certRepo     = () => appDataSource.getRepository(CertificateEntity);
 const appRepo      = () => appDataSource.getRepository(VolunteeringApplicationEntity);
+const roleRepo     = () => appDataSource.getRepository(VolunteeringRoleEntity);
 const eventRepo    = () => appDataSource.getRepository(EventEntity);
 const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
 const userRepo     = () => appDataSource.getRepository(UserEntity);
@@ -33,18 +35,26 @@ export const getEventVolunteers = async (eventId, leadId) => {
     if (applications.length === 0) return { volunteers: [] };
 
     const studentIds = [...new Set(applications.map(a => a.studentId))];
-    const users      = await userRepo().findBy({ id: In(studentIds) });
-    const userMap    = Object.fromEntries(users.map(u => [u.id, u]));
+    const roleIds    = [...new Set(applications.map(a => a.roleId))];
 
-    const certs  = await certRepo().find({ where: { eventId: Number(eventId), type: "volunteer" } });
+    const [users, roles, certs] = await Promise.all([
+        userRepo().findBy({ id: In(studentIds) }),
+        roleRepo().findBy({ id: In(roleIds) }),
+        certRepo().find({ where: { eventId: Number(eventId), type: "volunteer" } }),
+    ]);
+
+    const userMap = Object.fromEntries(users.map(u => [u.id, u]));
+    const roleMap = Object.fromEntries(roles.map(r => [r.id, r]));
     const certSet = new Set(certs.map(c => c.userId));
 
     return {
         volunteers: applications.map(a => ({
-            applicationId:  a.id,
-            userId:         a.studentId,
-            name:           userMap[a.studentId]?.fullName ?? "Unknown",
-            hasCertificate: certSet.has(a.studentId),
+            applicationId:   a.id,
+            userId:          a.studentId,
+            name:            userMap[a.studentId]?.fullName ?? "Unknown",
+            studentMatricId: userMap[a.studentId]?.staffOrMatricId ?? null,
+            roleName:        roleMap[a.roleId]?.roleName ?? "Volunteer",
+            hasCertificate:  certSet.has(a.studentId),
         })),
     };
 };

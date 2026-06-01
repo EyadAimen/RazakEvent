@@ -215,11 +215,97 @@
   outline: none;
   cursor: pointer;
   appearance: none;
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237c7a7a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right var(--space-md) center;
 }
 .select:focus { border-color: var(--color-secondary-500); }
+
+.inputError { border-color: var(--color-semantic-red) !important; }
+
+.fieldError {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 0;
+  font-size: var(--text-small-size);
+  color: var(--color-semantic-red);
+}
+
+/* ── Booked dates panel ────────────────────────── */
+.bookedPanel {
+  background: var(--color-ktr-ice);
+  border: 1px solid var(--color-neutral-200);
+  border-left: 3px solid var(--color-primary-500);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.bookedPanelHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-primary-800);
+  margin-bottom: var(--space-xs);
+}
+
+.bookedEmpty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--text-small-size);
+  color: var(--color-status-green);
+  margin: 0;
+}
+
+.bookedLoading {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+.bookedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bookedItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 5px var(--space-sm);
+  background: var(--color-neutral-50);
+  border-radius: 4px;
+  border-left: 3px solid var(--color-semantic-red);
+}
+
+.bookedDate {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-800);
+  white-space: nowrap;
+}
+
+.bookedEventName {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .textarea {
   width: 100%;
