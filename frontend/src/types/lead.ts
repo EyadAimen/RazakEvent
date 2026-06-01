@@ -5,6 +5,7 @@ export interface DashboardData {
   clubLabel: string;
   clubType: "club" | "community";
   alert: string | null;
+  reportDueEventId: string | null;
   events: ApiEvent[];
   totalEvents: number;
 }

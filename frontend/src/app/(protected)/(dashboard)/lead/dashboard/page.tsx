@@ -152,7 +152,13 @@ export default function LeadDashboard() {
             <DeadlineAlert
               message={data.alert}
               ctaLabel="Submit Report Now"
-              onCta={() => {}}
+              onCta={() => {
+                if (data.reportDueEventId) {
+                  router.push(`/lead/events/${data.reportDueEventId}/reports`);
+                } else {
+                  router.push("/lead/events");
+                }
+              }}
             />
           )}
 
