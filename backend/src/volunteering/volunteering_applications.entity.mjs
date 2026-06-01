@@ -26,7 +26,7 @@ export const VolunteeringApplicationEntity = new EntitySchema({
         },
         status: {
             type: "enum",
-            enum: ["pending", "accepted", "rejected", "dropped"],
+            enum: ["pending", "accepted", "rejected"],
             default: "pending",
             nullable: false,
         },

@@ -5,7 +5,7 @@ export interface VolunteeringApplication {
   eventDate: string | null;
   roleId: number;
   roleName: string;
-  status: "pending" | "accepted" | "rejected" | "dropped";
+  status: "pending" | "accepted" | "rejected";
   appliedAt: string;
   reviewedAt: string | null;
 }

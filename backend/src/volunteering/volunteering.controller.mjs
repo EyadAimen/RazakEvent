@@ -42,17 +42,6 @@ export const getMyApplicationsHandler = async (req, res, next) => {
     } catch (err) { next(err); }
 };
 
-export const dropApplicationHandler = async (req, res, next) => {
-    try {
-        await volunteeringService.dropApplication(
-            Number(req.params.applicationId),
-            req.user.userId,
-            req.user.role,
-        );
-        res.status(200).json({ message: "Application dropped" });
-    } catch (err) { next(err); }
-};
-
 export const decideApplicationHandler = async (req, res, next) => {
     try {
         const result = await volunteeringService.decideVolunteerApplication(

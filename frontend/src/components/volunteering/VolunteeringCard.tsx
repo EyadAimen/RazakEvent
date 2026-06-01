@@ -17,8 +17,7 @@ export default function VolunteeringCard({ application }: VolunteeringCardProps)
         return "approved"; // Map accepted to approved badge style
       case "rejected":
         return "rejected";
-      case "dropped":
-        return "draft";
+
       default:
         return "pending";
     }

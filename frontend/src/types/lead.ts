@@ -38,7 +38,7 @@ export interface VolunteerApplicant {
   studentName: string;
   studentMatricId: string | null;
   appliedAt: string;
-  status: "pending" | "accepted" | "rejected" | "dropped";
+  status: "pending" | "accepted" | "rejected";
   roleName: string;
   reason?: string;
   rejectionMessage?: string;
@@ -146,7 +146,7 @@ export interface ClubVolunteerApplication {
   eventId: string;
   eventName: string;
   roleName: string;
-  status: "pending" | "accepted" | "rejected" | "dropped";
+  status: "pending" | "accepted" | "rejected";
   appliedAt: string;
   reason: string | null;
   rejectionMessage: string | null;

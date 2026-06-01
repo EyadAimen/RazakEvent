@@ -34,7 +34,6 @@ export default function MyClubPage() {
     pending:  { variant: "pending",  label: "Pending"  },
     accepted: { variant: "approved", label: "Accepted" },
     rejected: { variant: "rejected", label: "Rejected" },
-    dropped:  { variant: "draft",    label: "Dropped"  },
   };
 
   const toggleVolRow = (id: number) => {
