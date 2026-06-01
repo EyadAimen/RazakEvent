@@ -581,22 +581,34 @@
   color: var(--color-status-warning-text);
 }
 
-.deleteRoleBtn {
+.deleteRoleBtn,
+.editRoleBtn {
   background: transparent;
   border: none;
-  color: var(--color-neutral-400);
-  cursor: pointer;
-  padding: 6px;
-  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-veryfast);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.deleteRoleBtn {
+  color: var(--color-status-red);
+}
+
+.editRoleBtn {
+  color: var(--color-neutral-500);
 }
 
 .deleteRoleBtn:hover:not(:disabled) {
-  background: var(--color-semantic-red-10);
-  color: var(--color-semantic-red);
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.editRoleBtn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-neutral-800);
 }
 
 .deleteRoleBtn:disabled {

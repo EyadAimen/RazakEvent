@@ -6,16 +6,19 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Calendar,
-  MapPin,
-  Wallet,
+  Check,
+  ChevronDown,
+  ChevronRight,
   Download,
   FileText,
-  Check,
-  X,
   Loader2,
+  MapPin,
   Plus,
+  Pencil,
   Trash2,
   Users,
+  Wallet,
+  X
 } from "lucide-react";
 import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
 import DeadlineAlert from "@/components/shared/DeadlineAlert/DeadlineAlert";
@@ -42,7 +45,6 @@ const APP_BADGE: Record<VolunteerApplicant["status"], { variant: BadgeVariant; l
   pending:  { variant: "pending",  label: "Pending"  },
   accepted: { variant: "approved", label: "Accepted" },
   rejected: { variant: "rejected", label: "Rejected" },
-  dropped:  { variant: "draft",    label: "Dropped"  },
 };
 
 const PREDEFINED_ROLES = [
@@ -72,6 +74,10 @@ export default function LeadEventDetailPage() {
   const [newRole, setNewRole]           = useState({ roleName: "", description: "", slotsAvailable: 1 });
   const [addingRole, setAddingRole]     = useState(false);
   const [deletingRoleId, setDeletingRoleId] = useState<number | null>(null);
+  const [editingRoleId, setEditingRoleId] = useState<number | null>(null);
+  const [editRoleSlots, setEditRoleSlots] = useState<number>(1);
+  const [editRoleDesc, setEditRoleDesc]   = useState<string>("");
+  const [updatingRole, setUpdatingRole] = useState(false);
   const [roleError, setRoleError]       = useState<string | null>(null);
   const [actionError, setActionError]   = useState<string | null>(null);
 
@@ -145,6 +151,43 @@ export default function LeadEventDetailPage() {
       setDeletingRoleId(null);
     }
   };
+
+  const handleUpdateRole = async (roleId: number) => {
+    if (updatingRole) return;
+    const role = event?.volunteerRoles.find(r => r.roleId === roleId);
+    if (!role) return;
+    
+    if (editRoleSlots < role.slotsFilled) {
+      setActionError("Cannot reduce slots below the number of currently filled slots.");
+      return;
+    }
+
+    setUpdatingRole(true);
+    setActionError(null);
+    try {
+      const updated = await apiFetchAuth<VolunteerRole>(`/volunteering/roles/${roleId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ 
+          slotsAvailable: editRoleSlots,
+          description: editRoleDesc.trim() || null
+        })
+      });
+      setEvent(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          volunteerRoles: prev.volunteerRoles.map(r => r.roleId === roleId ? { ...r, slotsAvailable: updated.slotsAvailable, description: updated.description } : r)
+        };
+      });
+      setEditingRoleId(null);
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to update role.");
+    } finally {
+      setUpdatingRole(false);
+    }
+  };
+
+
 
   const handleDecideApplication = async (applicationId: number, decision: "accepted" | "rejected", rejectionMessage?: string) => {
     if (!event || decidingApp !== null) return;
@@ -405,21 +448,77 @@ export default function LeadEventDetailPage() {
                         <div key={role.roleId} className={styles.roleRow}>
                           <div className={styles.roleInfo}>
                             <span className={styles.roleName}>{role.roleName}</span>
-                            {role.description && <span className={styles.roleDesc}>{role.description}</span>}
+                            {editingRoleId === role.roleId ? (
+                              <input
+                                className={styles.fieldInput}
+                                style={{ padding: '4px', fontSize: '12px', marginTop: '4px', width: '100%' }}
+                                placeholder="Role description..."
+                                value={editRoleDesc}
+                                onChange={e => setEditRoleDesc(e.target.value)}
+                              />
+                            ) : (
+                              role.description && <span className={styles.roleDesc}>{role.description}</span>
+                            )}
                           </div>
                           <div className={styles.roleSlots}>
-                            <span className={`${styles.slotsBadge} ${role.slotsFilled >= role.slotsAvailable ? styles.slotsFull : ""}`}>
-                              {role.slotsFilled} / {role.slotsAvailable} filled
-                            </span>
+                            {editingRoleId === role.roleId ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span className={styles.slotsBadge}>
+                                  {role.slotsFilled} /
+                                  <input 
+                                    type="number"
+                                    min={role.slotsFilled}
+                                    value={editRoleSlots}
+                                    onChange={(e) => setEditRoleSlots(Number(e.target.value))}
+                                    style={{ width: '40px', marginLeft: '4px', padding: '2px' }}
+                                  />
+                                </span>
+                                <button 
+                                  onClick={() => handleUpdateRole(role.roleId)} 
+                                  disabled={updatingRole}
+                                  className={styles.acceptBtn}
+                                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                                >
+                                  {updatingRole ? <Loader2 size={12} className={styles.spinnerSm} /> : <Check size={12} />}
+                                </button>
+                                <button 
+                                  onClick={() => setEditingRoleId(null)}
+                                  className={styles.rejectBtn}
+                                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                                >
+                                  <X size={12} />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className={`${styles.slotsBadge} ${role.slotsFilled >= role.slotsAvailable ? styles.slotsFull : ""}`}>
+                                {role.slotsFilled} / {role.slotsAvailable} filled
+                              </span>
+                            )}
                           </div>
-                          <button
-                            className={styles.deleteRoleBtn}
-                            disabled={deletingRoleId === role.roleId || role.slotsFilled > 0}
-                            title={role.slotsFilled > 0 ? "Cannot delete a role with accepted volunteers" : "Delete role"}
-                            onClick={() => handleDeleteRole(role.roleId)}
-                          >
-                            {deletingRoleId === role.roleId ? <Loader2 size={13} className={styles.spinnerSm} /> : <Trash2 size={13} />}
-                          </button>
+                          
+                          {editingRoleId !== role.roleId && (
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              <button
+                                className={styles.editRoleBtn}
+                                title="Edit slots"
+                                onClick={() => {
+                                  setEditingRoleId(role.roleId);
+                                  setEditRoleSlots(role.slotsAvailable);
+                                  setEditRoleDesc(role.description || "");
+                                }}
+                              >
+                                <Pencil size={13} />
+                              </button>
+                              <button
+                                className={styles.deleteRoleBtn}
+                                disabled={deletingRoleId === role.roleId || role.slotsFilled > 0}
+                                title={role.slotsFilled > 0 ? "Cannot delete a role with accepted volunteers" : "Delete role"}
+                                onClick={() => handleDeleteRole(role.roleId)}
+                              >
+                                {deletingRoleId === role.roleId ? <Loader2 size={13} className={styles.spinnerSm} /> : <Trash2 size={13} />}
+                              </button>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -479,6 +578,7 @@ export default function LeadEventDetailPage() {
                                         </button>
                                       </div>
                                     )}
+
                                   </td>
                                 </tr>
                                 {isExpanded && (
@@ -522,6 +622,8 @@ export default function LeadEventDetailPage() {
           onSubmit={(msg) => handleDecideApplication(rejectingAppId, "rejected", msg)}
         />
       )}
+
+
     </div>
   );
 }

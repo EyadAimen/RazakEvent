@@ -134,7 +134,7 @@ export default function SharedEventDetailPage() {
                 </div>
               )}
               {event.volunteeringStatus === "open" && (
-                event.hasApplied ? (
+                event.hasApplied === true ? (
                   <button className={styles.applyBtn} disabled style={{ opacity: 0.6, cursor: "not-allowed" }}>
                     Already applied
                   </button>

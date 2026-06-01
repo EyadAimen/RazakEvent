@@ -19,5 +19,6 @@ export interface SharedEventDetail {
   proposalPdfUrl: string | null;
   adminComment: string | null;
   volunteeringStatus: "open" | "closed" | "full" | null;
+  hasApplied?: boolean;
   volunteerRoles: VolunteerRole[];
 }
