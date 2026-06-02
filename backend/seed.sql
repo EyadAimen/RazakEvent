@@ -20,7 +20,10 @@
 ALTER TABLE clubs
     ADD COLUMN IF NOT EXISTS category        VARCHAR(100),
     ADD COLUMN IF NOT EXISTS faculty_advisor VARCHAR,
-    ADD COLUMN IF NOT EXISTS objectives      TEXT;
+    ADD COLUMN IF NOT EXISTS objectives      TEXT,
+    ADD COLUMN IF NOT EXISTS deleted_at      TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS deleted_by      UUID,
+    ADD COLUMN IF NOT EXISTS delete_reason   TEXT;
 
 ALTER TABLE club_requests
     ADD COLUMN IF NOT EXISTS category              VARCHAR(100),
@@ -297,57 +300,37 @@ WHERE NOT EXISTS (SELECT 1 FROM event_proposals WHERE event_name = 'Volleyball T
 -- ── 7. Events (approved proposals only) ──────────────────────
 
 -- Tech Club events
-INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
-SELECT
-    (SELECT id FROM event_proposals WHERE event_name = 'Tech Symposium 2026'),
-    (SELECT id FROM clubs WHERE name = 'Tech Club'),
-    (SELECT id FROM venues WHERE name = 'Dewan Tun Hussein Onn, KTR'),
-    'Tech Symposium 2026',
-    'Annual technology symposium bringing together students and industry professionals.',
-    '2026-05-15 09:00:00', 'approved', NOW() - INTERVAL '25 days'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Tech Symposium 2026');
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, volunteering_status, created_at)
+SELECT p.id, p.club_id, p.venue_id, p.event_name, p.description, p.proposed_date, 'approved', 'open', NOW() - INTERVAL '25 days'
+FROM event_proposals p
+WHERE p.event_name = 'Tech Symposium 2026'
+AND NOT EXISTS (SELECT 1 FROM events WHERE name = 'Tech Symposium 2026');
 
-INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
-SELECT
-    (SELECT id FROM event_proposals WHERE event_name = 'AI Workshop'),
-    (SELECT id FROM clubs WHERE name = 'Tech Club'),
-    (SELECT id FROM venues WHERE name = 'Seminar Room A, KTR'),
-    'AI Workshop',
-    'Hands-on workshop covering machine learning fundamentals.',
-    '2026-04-10 09:00:00', 'report_due', NOW() - INTERVAL '45 days'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'AI Workshop');
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, volunteering_status, created_at)
+SELECT p.id, p.club_id, p.venue_id, p.event_name, p.description, p.proposed_date, 'report_due', 'closed', NOW() - INTERVAL '45 days'
+FROM event_proposals p
+WHERE p.event_name = 'AI Workshop'
+AND NOT EXISTS (SELECT 1 FROM events WHERE name = 'AI Workshop');
 
 -- Culture Club events
-INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
-SELECT
-    (SELECT id FROM event_proposals WHERE event_name = 'Cultural Night 2026'),
-    (SELECT id FROM clubs WHERE name = 'Culture Club'),
-    (SELECT id FROM venues WHERE name = 'Dewan Serbaguna, KTR'),
-    'Cultural Night 2026',
-    'Annual cultural showcase featuring traditional performances and food from across Malaysia.',
-    '2026-04-05 19:00:00', 'completed', NOW() - INTERVAL '55 days'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Cultural Night 2026');
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, volunteering_status, created_at)
+SELECT p.id, p.club_id, p.venue_id, p.event_name, p.description, p.proposed_date, 'completed', 'closed', NOW() - INTERVAL '55 days'
+FROM event_proposals p
+WHERE p.event_name = 'Cultural Night 2026'
+AND NOT EXISTS (SELECT 1 FROM events WHERE name = 'Cultural Night 2026');
 
 -- Sports Community events
-INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
-SELECT
-    (SELECT id FROM event_proposals WHERE event_name = 'Sports Carnival 2026'),
-    (SELECT id FROM clubs WHERE name = 'Sports Community'),
-    (SELECT id FROM venues WHERE name = 'Sports Field, KTR'),
-    'Sports Carnival 2026',
-    'Inter-college sports carnival with multiple sports categories.',
-    '2026-05-25 08:00:00', 'approved', NOW() - INTERVAL '15 days'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Sports Carnival 2026');
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, volunteering_status, created_at)
+SELECT p.id, p.club_id, p.venue_id, p.event_name, p.description, p.proposed_date, 'approved', 'open', NOW() - INTERVAL '15 days'
+FROM event_proposals p
+WHERE p.event_name = 'Sports Carnival 2026'
+AND NOT EXISTS (SELECT 1 FROM events WHERE name = 'Sports Carnival 2026');
 
-INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
-SELECT
-    (SELECT id FROM event_proposals WHERE event_name = 'Fun Run 5K'),
-    (SELECT id FROM clubs WHERE name = 'Sports Community'),
-    (SELECT id FROM venues WHERE name = 'Sports Field, KTR'),
-    'Fun Run 5K',
-    '5km fun run around the UTM campus open to all students.',
-    '2026-03-20 07:00:00', 'completed', NOW() - INTERVAL '65 days'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Fun Run 5K');
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, volunteering_status, created_at)
+SELECT p.id, p.club_id, p.venue_id, p.event_name, p.description, p.proposed_date, 'completed', 'closed', NOW() - INTERVAL '65 days'
+FROM event_proposals p
+WHERE p.event_name = 'Fun Run 5K'
+AND NOT EXISTS (SELECT 1 FROM events WHERE name = 'Fun Run 5K');
 
 -- ── 8. Update existing clubs with new metadata columns ───────
 
@@ -499,6 +482,7 @@ SELECT (SELECT id FROM users WHERE email = 'chen.wei@graduate.utm.my'),
 WHERE NOT EXISTS (
     SELECT 1 FROM club_members
     WHERE user_id = (SELECT id FROM users WHERE email = 'chen.wei@graduate.utm.my')
+    AND club_id = (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR')
 );
 
 INSERT INTO club_members (user_id, club_id, joined_at)
@@ -508,6 +492,7 @@ SELECT (SELECT id FROM users WHERE email = 'priya.nair@graduate.utm.my'),
 WHERE NOT EXISTS (
     SELECT 1 FROM club_members
     WHERE user_id = (SELECT id FROM users WHERE email = 'priya.nair@graduate.utm.my')
+    AND club_id = (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR')
 );
 
 INSERT INTO club_members (user_id, club_id, joined_at)
@@ -517,6 +502,7 @@ SELECT (SELECT id FROM users WHERE email = 'marcus.tan@graduate.utm.my'),
 WHERE NOT EXISTS (
     SELECT 1 FROM club_members
     WHERE user_id = (SELECT id FROM users WHERE email = 'marcus.tan@graduate.utm.my')
+    AND club_id = (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR')
 );
 
 -- Green Earth Initiative
@@ -527,6 +513,7 @@ SELECT (SELECT id FROM users WHERE email = 'liyana.zulkifli@graduate.utm.my'),
 WHERE NOT EXISTS (
     SELECT 1 FROM club_members
     WHERE user_id = (SELECT id FROM users WHERE email = 'liyana.zulkifli@graduate.utm.my')
+    AND club_id = (SELECT id FROM clubs WHERE name = 'Green Earth Initiative')
 );
 
 INSERT INTO club_members (user_id, club_id, joined_at)
@@ -536,6 +523,30 @@ SELECT (SELECT id FROM users WHERE email = 'kevin.wong@graduate.utm.my'),
 WHERE NOT EXISTS (
     SELECT 1 FROM club_members
     WHERE user_id = (SELECT id FROM users WHERE email = 'kevin.wong@graduate.utm.my')
+    AND club_id = (SELECT id FROM clubs WHERE name = 'Green Earth Initiative')
+);
+
+-- Multi-club membership examples (same user in multiple clubs)
+-- Ahmad Faiz: Tech Club (section 5) + Cybersecurity KTR
+INSERT INTO club_members (user_id, club_id, joined_at)
+SELECT (SELECT id FROM users WHERE email = 'ahmad.faiz@graduate.utm.my'),
+       (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
+       NOW() - INTERVAL '4 months'
+WHERE NOT EXISTS (
+    SELECT 1 FROM club_members
+    WHERE user_id = (SELECT id FROM users WHERE email = 'ahmad.faiz@graduate.utm.my')
+    AND club_id = (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR')
+);
+
+-- Chen Wei: Cybersecurity KTR (above) + Photography Society
+INSERT INTO club_members (user_id, club_id, joined_at)
+SELECT (SELECT id FROM users WHERE email = 'chen.wei@graduate.utm.my'),
+       (SELECT id FROM clubs WHERE name = 'Photography Society'),
+       NOW() - INTERVAL '3 months'
+WHERE NOT EXISTS (
+    SELECT 1 FROM club_members
+    WHERE user_id = (SELECT id FROM users WHERE email = 'chen.wei@graduate.utm.my')
+    AND club_id = (SELECT id FROM clubs WHERE name = 'Photography Society')
 );
 
 -- ── 13. Pending club requests (tests admin approval UI) ────────
@@ -595,25 +606,17 @@ SELECT
     NOW() - INTERVAL '20 days', NOW() - INTERVAL '16 days', NOW() - INTERVAL '20 days'
 WHERE NOT EXISTS (SELECT 1 FROM event_proposals WHERE event_name = 'Guest Lecture: Threat Intelligence in 2026');
 
-INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
-SELECT
-    (SELECT id FROM event_proposals WHERE event_name = 'KTR CTF 2026 Season Opener'),
-    (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
-    (SELECT id FROM venues WHERE name = 'Lab Block C, Room 204'),
-    'KTR CTF 2026 Season Opener',
-    'Capture-the-flag competition open to all KTR students.',
-    '2026-06-12 09:00:00', 'approved', NOW() - INTERVAL '30 days'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'KTR CTF 2026 Season Opener');
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, volunteering_status, created_at)
+SELECT p.id, p.club_id, p.venue_id, p.event_name, p.description, p.proposed_date, 'approved', 'open', NOW() - INTERVAL '30 days'
+FROM event_proposals p
+WHERE p.event_name = 'KTR CTF 2026 Season Opener'
+AND NOT EXISTS (SELECT 1 FROM events WHERE name = 'KTR CTF 2026 Season Opener');
 
-INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
-SELECT
-    (SELECT id FROM event_proposals WHERE event_name = 'Guest Lecture: Threat Intelligence in 2026'),
-    (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
-    (SELECT id FROM venues WHERE name = 'Auditorium B, KTR'),
-    'Guest Lecture: Threat Intelligence in 2026',
-    'Industry guest lecture on modern threat intelligence.',
-    '2026-06-28 14:00:00', 'approved', NOW() - INTERVAL '16 days'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Guest Lecture: Threat Intelligence in 2026');
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, volunteering_status, created_at)
+SELECT p.id, p.club_id, p.venue_id, p.event_name, p.description, p.proposed_date, 'approved', 'closed', NOW() - INTERVAL '16 days'
+FROM event_proposals p
+WHERE p.event_name = 'Guest Lecture: Threat Intelligence in 2026'
+AND NOT EXISTS (SELECT 1 FROM events WHERE name = 'Guest Lecture: Threat Intelligence in 2026');
 
 -- Green Earth Initiative: 1 approved proposal → 1 completed event + 1 pending proposal
 INSERT INTO event_proposals (lead_id, club_id, venue_id, event_name, proposed_date, description, estimated_budget, status, submitted_at, reviewed_at, created_at)
@@ -638,15 +641,11 @@ SELECT
     NOW() - INTERVAL '4 days', NOW() - INTERVAL '4 days'
 WHERE NOT EXISTS (SELECT 1 FROM event_proposals WHERE event_name = 'Zero Waste Workshop');
 
-INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, created_at)
-SELECT
-    (SELECT id FROM event_proposals WHERE event_name = 'Campus Clean-Up Drive'),
-    (SELECT id FROM clubs WHERE name = 'Green Earth Initiative'),
-    (SELECT id FROM venues WHERE name = 'Sports Field, KTR'),
-    'Campus Clean-Up Drive',
-    'Monthly campus clean-up and recycling awareness activity.',
-    '2026-05-10 08:00:00', 'completed', NOW() - INTERVAL '24 days'
-WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Campus Clean-Up Drive');
+INSERT INTO events (proposal_id, club_id, venue_id, name, description, event_date, status, volunteering_status, created_at)
+SELECT p.id, p.club_id, p.venue_id, p.event_name, p.description, p.proposed_date, 'completed', 'closed', NOW() - INTERVAL '24 days'
+FROM event_proposals p
+WHERE p.event_name = 'Campus Clean-Up Drive'
+AND NOT EXISTS (SELECT 1 FROM events WHERE name = 'Campus Clean-Up Drive');
 
 -- ── Done ─────────────────────────────────────────────────────
 -- All passwords: Password123!
@@ -662,10 +661,10 @@ WHERE NOT EXISTS (SELECT 1 FROM events WHERE name = 'Campus Clean-Up Drive');
 --   nadia.hassan@graduate.utm.my           → lead  (Green Earth Initiative)
 --
 -- MEMBERS
---   ahmad.faiz@graduate.utm.my             → member (Tech Club)
+--   ahmad.faiz@graduate.utm.my             → member (Tech Club + Cybersecurity KTR) ← multi-club
 --   siti.nurhaliza@graduate.utm.my         → member (Culture Club)
 --   khairul.aizat@graduate.utm.my          → member (Sports Community)
---   chen.wei@graduate.utm.my               → member (Cybersecurity KTR)
+--   chen.wei@graduate.utm.my               → member (Cybersecurity KTR + Photography Society) ← multi-club
 --   priya.nair@graduate.utm.my             → member (Cybersecurity KTR)
 --   marcus.tan@graduate.utm.my             → member (Cybersecurity KTR)
 --   liyana.zulkifli@graduate.utm.my        → member (Green Earth Initiative)
