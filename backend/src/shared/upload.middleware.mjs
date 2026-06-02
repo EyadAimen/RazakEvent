@@ -43,3 +43,23 @@ export const uploadClubLetter = multer({
     fileFilter,
     limits: { fileSize: 10 * 1024 * 1024 },
 }).single("supportingLetter");
+
+const REPORTS_DIR = "./uploads/reports";
+if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR, { recursive: true });
+
+const reportStorage = multer.diskStorage({
+    destination: REPORTS_DIR,
+    filename: (req, file, cb) => {
+        const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+        cb(null, `${unique}.pdf`);
+    },
+});
+
+export const uploadReportFiles = multer({
+    storage: reportStorage,
+    fileFilter,
+    limits: { fileSize: 10 * 1024 * 1024 },
+}).fields([
+    { name: "eventReport", maxCount: 1 },
+    { name: "moneyReport", maxCount: 1 },
+]);

@@ -1,14 +1,14 @@
 import { Router } from "express";
 import { authenticate, requireRole } from "../auth/auth.middleware.mjs";
+import { uploadReportFiles } from "../shared/upload.middleware.mjs";
+import { getReportStatusHandler, submitReportsHandler } from "./reports.controller.mjs";
 
 const router = Router();
 
-router.post("/", authenticate, requireRole("lead"), (req, res) => {
-    res.json({ message: "ok" });
-});
+// GET /api/reports/events/:eventId — current report status for an event
+router.get("/events/:eventId", authenticate, requireRole("lead"), getReportStatusHandler);
 
-router.get("/", authenticate, requireRole("admin", "lead"), (req, res) => {
-    res.json({ message: "ok" });
-});
+// POST /api/reports/events/:eventId — submit event + money report PDFs
+router.post("/events/:eventId", authenticate, requireRole("lead"), uploadReportFiles, submitReportsHandler);
 
 export default router;

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, Fragment } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -58,7 +58,8 @@ const PREDEFINED_ROLES = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LeadEventDetailPage() {
-  const params = useParams();
+  const params  = useParams();
+  const router  = useRouter();
   const eventId = params.eventId as string;
 
   const [event, setEvent] = useState<EventDetail | null>(null);
@@ -278,9 +279,7 @@ export default function LeadEventDetailPage() {
             <DeadlineAlert
               message="Post-Event Reports Due! Submit your event and money reports as soon as possible."
               ctaLabel="Submit Reports"
-              onCta={() => {
-                document.getElementById("report-section")?.scrollIntoView({ behavior: "smooth" });
-              }}
+              onCta={() => router.push(`/lead/events/${eventId}/reports`)}
             />
           )}
 
@@ -337,10 +336,10 @@ export default function LeadEventDetailPage() {
                 </a>
               )}
               {showReportBtn && (
-                <button id="report-section" className={styles.actionPrimary}>
+                <Link href={`/lead/events/${eventId}/reports`} className={styles.actionPrimary}>
                   <FileText size={14} />
                   Submit Report
-                </button>
+                </Link>
               )}
             </div>
           </div>

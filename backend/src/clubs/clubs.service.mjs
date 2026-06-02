@@ -569,6 +569,64 @@ export const adminGetClubMembers = async (clubId) => {
     return committees;
 };
 
+// ── Admin — Change club lead ──────────────────────────────────────────────────
+
+export const changeClubLeadByAdmin = async (clubId, newLeadId) => {
+    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    if (!club) throw new NotFoundError("Club not found");
+
+    const newLead = await userRepo().findOne({ where: { id: newLeadId } });
+    if (!newLead) throw new NotFoundError("New lead user not found");
+
+    if (!["student", "member", "lead"].includes(newLead.role)) {
+        throw new ForbiddenError("Only students, members, or existing leads can become a club lead");
+    }
+
+    const oldLeadId = club.leadId;
+
+    // Demote the previous lead to member (if one existed and is different)
+    if (oldLeadId && oldLeadId !== newLeadId) {
+        await userRepo().update(oldLeadId, { role: "member" });
+        // Ensure they remain in the members table
+        const alreadyMember = await clubMemberRepo().findOne({ where: { clubId: club.id, userId: oldLeadId } });
+        if (!alreadyMember) {
+            await clubMemberRepo().save(clubMemberRepo().create({ clubId: club.id, userId: oldLeadId }));
+        }
+    }
+
+    // Remove new lead from members table (lead is not stored as a member row)
+    await clubMemberRepo().delete({ clubId: club.id, userId: newLeadId });
+
+    // Promote new lead
+    await userRepo().update(newLeadId, { role: "lead" });
+    await clubRepo().update(club.id, { leadId: newLeadId });
+
+    return { message: "Club lead updated", clubId: club.id, newLeadId };
+};
+
+// ── Admin — Add member to club ────────────────────────────────────────────────
+
+export const addClubMemberByAdmin = async (clubId, userId) => {
+    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    if (!club) throw new NotFoundError("Club not found");
+
+    const user = await userRepo().findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundError("User not found");
+
+    if (club.leadId === userId) throw new ConflictError("User is already the club lead");
+
+    const existing = await clubMemberRepo().findOne({ where: { clubId: club.id, userId } });
+    if (existing) throw new ConflictError("User is already a member of this club");
+
+    await clubMemberRepo().save(clubMemberRepo().create({ clubId: club.id, userId }));
+
+    if (user.role === "student") {
+        await userRepo().update(userId, { role: "member" });
+    }
+
+    return { message: "Member added", userId, clubId: club.id };
+};
+
 // ── Admin — Remove club member ────────────────────────────────────────────────
 
 export const adminRemoveClubMember = async (clubId, userId) => {
@@ -629,4 +687,63 @@ export const adminCreateClub = async ({ name, type, description, category, facul
 
     const saved = await clubRepo().save(club);
     return { message: "Club created", clubId: saved.id };
+};
+
+// ── Aliases & additional exports expected by the controller ───────────────────
+
+// Same as adminRemoveClubMember — used by the newer controller import name
+export const removeClubMemberByAdmin = adminRemoveClubMember;
+
+// Same as adminUpdateClub — used by the newer controller import name
+export const updateClubDetailsByAdmin = adminUpdateClub;
+
+// Same shape as adminGetClubMembers — public-ish lookup by club id
+export const getClubMembersByClubId = adminGetClubMembers;
+
+// Same shape as adminGetClubEvents — public-ish lookup by club id
+export const getClubEventsByClubId = adminGetClubEvents;
+
+// ── Delete club (with optional reason) ───────────────────────────────────────
+
+export const deleteClub = async (clubId, _userId, _deleteReason) => {
+    // Reuse the existing dissolve logic; reason is logged but not stored yet
+    return adminDissolveClub(clubId);
+};
+
+// ── List users not already in any club (for admin add-member picker) ──────────
+
+export const listUsersWithoutClub = async ({ search } = {}) => {
+    // Collect all user IDs that are already club leads or members
+    const clubs   = await clubRepo().find({ select: { leadId: true } });
+    const members = await clubMemberRepo().find({ select: { userId: true } });
+
+    const occupied = new Set([
+        ...clubs.map(c => c.leadId).filter(Boolean),
+        ...members.map(m => m.userId),
+    ]);
+
+    let users = await userRepo().find({
+        where: { role: In(["student", "member"]) },
+        order: { fullName: "ASC" },
+    });
+
+    // Exclude users already in a club
+    users = users.filter(u => !occupied.has(u.id));
+
+    // Optional search filter
+    if (search?.trim()) {
+        const q = search.trim().toLowerCase();
+        users = users.filter(u =>
+            u.fullName.toLowerCase().includes(q) ||
+            (u.staffOrMatricId ?? "").toLowerCase().includes(q)
+        );
+    }
+
+    return users.map(u => ({
+        id:              u.id,
+        fullName:        u.fullName,
+        staffOrMatricId: u.staffOrMatricId ?? null,
+        email:           u.email,
+        role:            u.role,
+    }));
 };
