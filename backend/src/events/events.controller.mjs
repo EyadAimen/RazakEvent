@@ -78,6 +78,18 @@ export const toggleVolunteeringHandler = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+export const decideVolunteerApplicationHandler = async (req, res, next) => {
+  try {
+    const result = await eventsService.decideVolunteerApplication(
+      req.params.eventId,
+      req.params.applicationId,
+      req.user.userId,
+      req.body.decision
+    );
+    res.status(200).json(result);
+  } catch (err) { next(err); }
+};
+
 
 
 export const updateEventHandler = async (req, res, next) => {

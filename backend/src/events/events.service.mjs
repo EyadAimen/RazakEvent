@@ -419,7 +419,39 @@ export const toggleVolunteering = async (eventId, leadId, newStatus) => {
     return { volunteeringStatus: newStatus };
 };
 
+// ── Lead — Accept / reject a volunteer application ────────────────────────────
 
+export const decideVolunteerApplication = async (eventId, applicationId, leadId, decision) => {
+    if (!["accepted", "rejected"].includes(decision))
+        throw new ValidationError("Decision must be 'accepted' or 'rejected'");
+
+    const proposalId = Number(eventId);
+    const proposal = await proposalRepo().findOne({ where: { id: proposalId } });
+    if (!proposal) throw new NotFoundError("Event not found");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+
+    const event = await eventRepo().findOne({ where: { proposalId } });
+    if (!event) throw new NotFoundError("Approved event record not found");
+
+    const application = await appRepo().findOne({
+        where: { id: Number(applicationId), eventId: event.id },
+    });
+    if (!application) throw new NotFoundError("Volunteer application not found");
+    if (application.status !== "pending")
+        throw new ValidationError("Application has already been decided");
+
+    await appRepo().update(application.id, { status: decision, reviewedAt: new Date() });
+
+    if (decision === "accepted") {
+        await roleRepo().increment({ id: application.roleId }, "slotsFilled", 1);
+        const role = await roleRepo().findOne({ where: { id: application.roleId } });
+        if (role && role.slotsFilled >= role.slotsAvailable) {
+            await eventRepo().update(event.id, { volunteeringStatus: "full" });
+        }
+    }
+
+    return { applicationId: application.id, status: decision };
+};
 
 // ── Admin — All events overview
 
