@@ -36,7 +36,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { label: "Volunteering",  href: "/volunteering",       icon: HandHeart       },
     { label: "Certificates",  href: "/certificates",       icon: Award           },
     { label: "Profile",       href: "/student/profile",    icon: User            },
-    { label: "Become A Lead", href: "/become-lead",        icon: Star            },
+    { label: "Become A Member", href: "/become-member",     icon: Star            },
   ],
   member: [
     { label: "Dashboard",     href: "/student/dashboard", icon: LayoutDashboard },
@@ -45,6 +45,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { label: "Volunteering",  href: "/volunteering",       icon: HandHeart       },
     { label: "Certificates",  href: "/certificates",       icon: Award           },
     { label: "Profile",       href: "/student/profile",    icon: User            },
+    { label: "Become A Member", href: "/become-member",    icon: Star            },
   ],
   lead: [
     { label: "Dashboard",     href: "/lead/dashboard",   icon: LayoutDashboard },

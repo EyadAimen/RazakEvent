@@ -53,8 +53,8 @@ export async function addUserToClub(clubId: number, userId: string): Promise<str
 }
 
 export async function fetchLeadRoleRequests(): Promise<import("../interfaces/manage-roles.interface").LeadRoleRequest[]> {
-  const res = await apiFetchAuth<import("../interfaces/manage-roles.interface").LeadRoleRequest[]>("/requests/lead-role");
-  return Array.isArray(res) ? res : [];
+  const res = await apiFetchAuth<{ requests: import("../interfaces/manage-roles.interface").LeadRoleRequest[] }>("/requests/lead-role?status=pending_admin");
+  return res.requests ?? [];
 }
 
 export async function decideLeadRoleRequest(id: number, action: "approved" | "rejected", adminComment?: string): Promise<string> {
