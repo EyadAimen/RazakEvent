@@ -22,6 +22,8 @@ import {
     removeClubMemberByAdmin,
     changeClubLeadByAdmin,
     updateClubDetailsByAdmin,
+    getUserClubMemberships,
+    changeClubMemberRole,
 
     deleteClub,
 } from "./clubs.service.mjs";
@@ -268,4 +270,18 @@ export const adminCreateClubHandler = async (req, res, next) => {
         res.status(201).json(await adminCreateClub({ name, type, description, category, facultyAdvisor, objectives }));
     }
     catch (err) { next(err); }
+};
+
+export const getUserClubMembershipsHandler = async (req, res, next) => {
+    try {
+        const data = await getUserClubMemberships(req.params.userId);
+        res.json({ success: true, data });
+    } catch (err) { next(err); }
+};
+
+export const changeClubMemberRoleHandler = async (req, res, next) => {
+    try {
+        const result = await changeClubMemberRole(req.params.clubId, req.params.userId, req.body.role);
+        res.json(result);
+    } catch (err) { next(err); }
 };

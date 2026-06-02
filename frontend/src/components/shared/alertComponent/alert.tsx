@@ -24,7 +24,7 @@ type SuccessAlert = BaseProps & {
 type LoadingAlert = BaseProps & {
   variant: "loading";
   message?: string;
-  children?: never;
+  children?: never; 
 };
 
 type CustomAlert = BaseProps & {

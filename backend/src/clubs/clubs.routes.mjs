@@ -25,6 +25,8 @@ router.post("/requests", authenticate, uploadClubLetter, clubsController.createC
 // Admin — club management
 router.get("/admin",                              authenticate, requireRole("admin"), clubsController.adminListClubsHandler);
 router.post("/admin",                             authenticate, requireRole("admin"), clubsController.adminCreateClubHandler);
+router.get("/admin/users/:userId/memberships",    authenticate, requireRole("admin"), clubsController.getUserClubMembershipsHandler);
+router.patch("/admin/:clubId/members/:userId/role", authenticate, requireRole("admin"), clubsController.changeClubMemberRoleHandler);
 router.get("/admin/:clubId",                      authenticate, requireRole("admin"), clubsController.adminGetClubHandler);
 router.patch("/admin/:clubId",                    authenticate, requireRole("admin"), clubsController.adminUpdateClubHandler);
 router.delete("/admin/:clubId",                   authenticate, requireRole("admin"), clubsController.adminDissolveClubHandler);

@@ -643,6 +643,56 @@ export const adminRemoveClubMember = async (clubId, userId) => {
     return { message: "Member removed" };
 };
 
+// ── Admin — Get all club memberships for a user ──────────────────────────────
+
+export const getUserClubMemberships = async (userId) => {
+    const [memberRows, leadClubs] = await Promise.all([
+        clubMemberRepo().find({ where: { userId } }),
+        clubRepo().find({ where: { leadId: userId } }),
+    ]);
+
+    const memberClubIds = memberRows.map(r => r.clubId);
+    const memberClubs = memberClubIds.length
+        ? await clubRepo().findBy({ id: In(memberClubIds) })
+        : [];
+
+    return [
+        ...leadClubs.map(c => ({ clubId: c.id, clubName: c.name, clubType: c.type, role: "lead" })),
+        ...memberClubs.map(c => ({ clubId: c.id, clubName: c.name, clubType: c.type, role: "member" })),
+    ];
+};
+
+// ── Admin — Demote club lead to member ───────────────────────────────────────
+
+export const demoteLeadToMember = async (clubId, userId) => {
+    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    if (!club) throw new NotFoundError("Club not found");
+    if (club.leadId !== userId) throw new ValidationError("User is not the lead of this club");
+
+    await clubRepo().update(club.id, { leadId: null });
+
+    const existing = await clubMemberRepo().findOne({ where: { clubId: club.id, userId } });
+    if (!existing) {
+        await clubMemberRepo().save(clubMemberRepo().create({ clubId: club.id, userId }));
+    }
+
+    // Only downgrade global role if user is no longer lead of any club
+    const stillLead = await clubRepo().findOne({ where: { leadId: userId } });
+    if (!stillLead) {
+        await userRepo().update(userId, { role: "member" });
+    }
+
+    return { message: "Lead demoted to member" };
+};
+
+// ── Admin — Change per-club role (lead ↔ member) ─────────────────────────────
+
+export const changeClubMemberRole = async (clubId, userId, role) => {
+    if (role === "lead") return changeClubLeadByAdmin(clubId, userId);
+    if (role === "member") return demoteLeadToMember(clubId, userId);
+    throw new ValidationError("Role must be 'lead' or 'member'");
+};
+
 // ── Admin — Get club events ───────────────────────────────────────────────────
 
 export const adminGetClubEvents = async (clubId) => {

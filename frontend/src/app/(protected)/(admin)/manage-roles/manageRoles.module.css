@@ -1,9 +1,11 @@
 .pageContainer {
     max-width: var(--layout-container-max);
     margin: 0 auto;
-    padding: var(--space-xl) var(--space-lg);
-    background-color: transparent;
-    min-height: 100vh;
+    padding: var(--space-xl) var(--space-lg) var(--space-lg);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .loadingWrapper {
@@ -16,6 +18,7 @@
 }
 
 .headerArea {
+    flex-shrink: 0;
     margin-bottom: var(--space-xl);
 }
 
@@ -36,15 +39,97 @@
     font-weight: var(--weight-normal);
 }
 
+/* ── Two-column layout ──────────────────────────────────── */
+
+.bodyLayout {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: var(--space-lg);
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.leftCol {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ── Tabs ───────────────────────────────────────────────── */
+
+.tabs {
+    flex-shrink: 0;
+    display: flex;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-md);
+    border-bottom: var(--border-thin) solid var(--color-neutral-150);
+}
+
+.tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--text-small-size);
+    font-weight: var(--weight-semibold);
+    color: var(--color-neutral-500);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+    transition: color var(--transition-veryfast), border-color var(--transition-veryfast);
+}
+
+.tab:hover {
+    color: var(--color-neutral-800);
+}
+
+.tabActive {
+    color: var(--color-primary-500);
+    border-bottom-color: var(--color-primary-500);
+}
+
+.tabCount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 var(--space-xxs);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-caption-size);
+    font-weight: var(--weight-bold);
+    background-color: var(--color-neutral-150);
+    color: var(--color-neutral-600);
+}
+
+.tabActive .tabCount {
+    background-color: var(--color-primary-500-15);
+    color: var(--color-primary-500);
+}
+
+/* ── Content card ───────────────────────────────────────── */
+
 .contentCard {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     background-color: var(--color-neutral-50);
     border-radius: var(--radius-lg);
     border: var(--border-thin) solid var(--color-neutral-150);
     box-shadow: var(--shadow-card);
     padding: var(--space-lg);
+    overflow: hidden;
 }
 
 .searchRow {
+    flex-shrink: 0;
     margin-bottom: var(--space-lg);
 }
 
@@ -90,15 +175,25 @@
 }
 
 .tableResponsive {
-    width: 100%;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     overflow-x: auto;
 }
+
+/* ── Table ──────────────────────────────────────────────── */
 
 .userTable {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
+    table-layout: fixed;
 }
+
+.userTable th:nth-child(1) { width: 40%; }
+.userTable th:nth-child(2) { width: 22%; }
+.userTable th:nth-child(3) { width: 18%; }
+.userTable th:nth-child(4) { width: 20%; }
 
 .userTable th {
     padding: var(--space-sm) var(--space-md);
@@ -107,6 +202,10 @@
     color: var(--color-neutral-500);
     border-bottom: var(--border-thin) solid var(--color-neutral-150);
     letter-spacing: 0.01em;
+    position: sticky;
+    top: 0;
+    background: var(--color-neutral-50);
+    z-index: 1;
 }
 
 .userTable td {
@@ -129,18 +228,27 @@
     font-size: var(--text-body-size);
     font-weight: var(--weight-bold);
     color: var(--color-neutral-800);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .userEmailText {
     font-size: var(--text-small-size);
     color: var(--color-neutral-500);
     font-weight: var(--weight-normal);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .idColumnText {
     font-size: var(--text-body-size);
     font-weight: var(--weight-medium);
     color: var(--color-neutral-700);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .roleBadge {
@@ -150,18 +258,6 @@
     font-weight: var(--weight-bold);
     display: inline-block;
     text-align: center;
-}
-
-.roleSelectDropdown {
-    padding: var(--space-xxs) var(--space-sm);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-small-size);
-    font-weight: var(--weight-medium);
-    border: var(--border-thin) solid var(--color-neutral-300);
-    background-color: var(--color-neutral-50);
-    color: var(--color-neutral-800);
-    cursor: pointer;
-    outline: none;
 }
 
 .role_student {
@@ -206,41 +302,111 @@
     color: var(--color-neutral-800);
 }
 
-.actionSaveBtn {
-    background: var(--color-neutral-50);
-    border: var(--border-thin) solid var(--color-status-blue);
-    color: var(--color-status-blue);
-    padding: var(--space-xs) var(--space-md);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-small-size);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition: all var(--transition-veryfast) ease;
-}
-
-.actionSaveBtn:hover:not(:disabled) {
-    background-color: var(--color-ktr-ice);
-}
-
-.actionCancelBtn {
-    background: var(--color-neutral-50);
-    border: var(--border-thin) solid var(--color-status-red);
-    color: var(--color-status-red);
-    padding: var(--space-xs) var(--space-md);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-small-size);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition: all var(--transition-veryfast) ease;
-}
-
-.actionCancelBtn:hover:not(:disabled) {
-    background-color: var(--color-ktr-ice);
-}
-
 .emptyState {
     text-align: center;
     padding: var(--space-xl) 0;
     color: var(--color-neutral-400);
     font-size: var(--text-body-size);
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 950px) {
+    .pageContainer {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+        padding: var(--space-lg) var(--space-md);
+    }
+
+    .bodyLayout {
+        grid-template-columns: 1fr;
+        overflow: visible;
+        flex: none;
+    }
+
+    .leftCol {
+        overflow: visible;
+    }
+
+    .contentCard {
+        overflow: visible;
+        flex: none;
+    }
+
+    .tableResponsive {
+        overflow-x: auto;
+        overflow-y: visible;
+        flex: none;
+    }
+
+    .searchWrapper {
+        max-width: 100%;
+    }
+
+    .userTable thead {
+        display: none;
+    }
+
+    .userTable,
+    .userTable tbody,
+    .userTable tr,
+    .userTable td {
+        display: block;
+        width: 100%;
+    }
+
+    .userTable tr {
+        border: var(--border-thin) solid var(--color-neutral-150);
+        border-radius: var(--radius-sm);
+        margin-bottom: var(--space-sm);
+        padding: var(--space-xs) 0;
+        background-color: var(--color-neutral-50);
+    }
+
+    .userTable tr:last-child {
+        margin-bottom: 0;
+    }
+
+    .userTable td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-xs) var(--space-md);
+        border-bottom: var(--border-thin) solid var(--color-neutral-100);
+        gap: var(--space-sm);
+    }
+
+    .userTable td:last-child {
+        border-bottom: none;
+    }
+
+    .userTable td::before {
+        content: attr(data-label);
+        font-size: var(--text-caption-size);
+        font-weight: var(--weight-semibold);
+        color: var(--color-neutral-500);
+        flex-shrink: 0;
+        min-width: 72px;
+    }
+
+    .userTable td[data-label="User"] {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: var(--space-xxs);
+    }
+
+    .userTable td[data-label="User"]::before {
+        display: none;
+    }
+
+    .tabs {
+        overflow-x: auto;
+        gap: 0;
+    }
+
+    .tab {
+        flex-shrink: 0;
+        padding: var(--space-sm) var(--space-sm);
+    }
 }

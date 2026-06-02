@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authenticate, requireRole } from "../auth/auth.middleware.mjs";
 import { UserEntity } from "./users.entity.mjs";
+import { ClubEntity } from "../clubs/clubs.entity.mjs";
+import { ClubMemberEntity } from "../clubs/club_members.entity.mjs";
 import appDataSource from "../../config/dbConfig.mjs";
 
 const router = Router();
@@ -110,6 +112,17 @@ router.patch("/:id/role", authenticate, requireRole("admin"), async (req, res) =
                 success: false,
                 message: `Invalid role value. Must be one of: ${validRoles.join(", ")}`
             });
+        }
+
+        // When changing a member/lead to student or admin, remove them from all clubs
+        const leavingClubs = ["student", "admin"].includes(cleanRole) && ["member", "lead"].includes(user.role);
+        if (leavingClubs) {
+            const clubRepo = appDataSource.getRepository(ClubEntity);
+            const clubMemberRepo = appDataSource.getRepository(ClubMemberEntity);
+            await Promise.all([
+                clubMemberRepo.delete({ userId: id }),
+                clubRepo.update({ leadId: id }, { leadId: null }),
+            ]);
         }
 
         await userRepository.update(id, { role: cleanRole });
