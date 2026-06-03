@@ -84,10 +84,13 @@
 
 .footer {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: var(--space-xs);
   margin-top: var(--space-xs);
   padding-top: var(--space-xs);
   border-top: 1px solid var(--color-neutral-200);
+  flex-wrap: wrap;
 }
 
 .manageBtn {
@@ -107,4 +110,25 @@
   background: var(--color-primary-800);
   color: var(--color-neutral-50);
   border-color: var(--color-primary-800);
+}
+
+.completeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1.5px solid var(--color-status-green);
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+  font-size: var(--text-small-size);
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-status-green);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.completeBtn:hover {
+  background: var(--color-status-green);
+  color: var(--color-neutral-50);
 }

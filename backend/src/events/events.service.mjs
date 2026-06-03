@@ -7,6 +7,7 @@ import { UserEntity } from "../users/users.entity.mjs";
 import { VenueEntity } from "../venues/venues.entity.mjs";
 import { VolunteeringRoleEntity } from "../volunteering/volunteering_roles.entity.mjs";
 import { VolunteeringApplicationEntity } from "../volunteering/volunteering_applications.entity.mjs";
+import { CertificateEntity } from "../certificates/certificates.entity.mjs";
 import { NotFoundError, ForbiddenError, ValidationError } from "../shared/errors.mjs";
 
 const eventRepo    = () => appDataSource.getRepository(EventEntity);
@@ -461,6 +462,50 @@ export const getAllEvents = async (statusFilter) => {
 
     if (!statusFilter || statusFilter === "all") return enriched;
     return enriched.filter(e => e.status === statusFilter);
+};
+
+// ── Lead — Mark event as completed ───────────────────────────────────────────
+
+export const markEventCompleted = async (eventId, leadId, applicationIds = []) => {
+    const event = await eventRepo().findOne({ where: { id: parseInt(eventId) } });
+    if (!event) throw new NotFoundError("Event not found");
+
+    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
+    if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+
+    if (!["approved", "ongoing"].includes(event.status)) {
+        throw new ValidationError("Only approved or ongoing events can be marked as completed");
+    }
+
+    if (new Date(event.eventDate) > new Date()) {
+        throw new ValidationError("Event cannot be marked as completed before its date has passed");
+    }
+
+    await eventRepo().update(event.id, { status: "completed", volunteeringStatus: "closed" });
+
+    if (!Array.isArray(applicationIds) || applicationIds.length === 0) {
+        return { message: "Event marked as completed", certificates: { issued: [], skipped: [] } };
+    }
+
+    // Issue certificates for the provided accepted volunteer applications
+    const applications = await appRepo().findBy({ id: In(applicationIds.map(Number)) });
+    const validApps = applications.filter(a => a.eventId === event.id && a.status === "accepted");
+
+    const certRepo = () => appDataSource.getRepository(CertificateEntity);
+    const issued  = [];
+    const skipped = [];
+
+    for (const app of validApps) {
+        try {
+            await (certRepo()).insert({ userId: app.studentId, eventId: event.id, type: "volunteer" });
+            issued.push(app.studentId);
+        } catch (err) {
+            if (err.code === "23505") skipped.push(app.studentId);
+            else throw err;
+        }
+    }
+
+    return { message: "Event marked as completed", certificates: { issued, skipped } };
 };
 
 // ── Student — All approved events (no ownership check) ──────────────────────
