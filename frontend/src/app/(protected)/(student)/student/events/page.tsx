@@ -8,14 +8,11 @@ import { SharedEvent } from "./utils/interface/events.interface";
 import Alert from "@/components/shared/alertComponent/alert";
 import styles from "./events.module.css";
 
-type Tab = "all" | "approved" | "ongoing" | "completed" | "report_due";
+type Tab = "all" | "approved";
 
 const TABS: { label: string; value: Tab }[] = [
   { label: "All", value: "all" },
   { label: "Approved", value: "approved" },
-  { label: "Ongoing", value: "ongoing" },
-  { label: "Completed", value: "completed" },
-  { label: "Report Due", value: "report_due" },
 ];
 
 export default function SharedEventsPage() {
