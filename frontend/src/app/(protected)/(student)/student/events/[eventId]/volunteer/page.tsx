@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchAuth } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -21,15 +22,35 @@ export default function VolunteerApplicationPage() {
 
   useEffect(() => {
     // We fetch all open events and find the one that matches eventId
-    fetchOpenVolunteeringEvents()
-      .then(res => {
-        const found = res.events.find(e => e.eventId === eventId);
-        if (!found) {
-          setError("Event not found or volunteering is not open for this event.");
-        } else {
-          setEventData(found);
-        }
-      })
+    apiFetchAuth<{ event: any }>(`/events/student/${eventId}`)
+  .then((res) => {
+    const event = res.event;
+
+    if (
+      !event ||
+      event.volunteeringStatus !== "open" ||
+      !event.canVolunteer
+    ) {
+      setError("Event not found or volunteering is not open for this event.");
+      return;
+    }
+
+    const found = {
+      eventId: event.id,
+      eventName: event.name,
+      eventDate: event.eventDate,
+      clubName: event.clubName,
+      roles: event.volunteerRoles.map((role: any) => ({
+        roleId: role.id,
+        roleName: role.name,
+        description: role.description ?? null,
+        slotsAvailable: role.slotsAvailable,
+        slotsFilled: role.slotsFilled,
+      })),
+    };
+
+    setEventData(found);
+  })
       .catch(err => {
         setError(err.message ?? "Failed to load event data.");
       })

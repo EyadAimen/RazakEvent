@@ -15,10 +15,8 @@ export interface SharedEventDetail {
   eventDate: string | null;
   status: string;
   venueName: string | null;
-  budget: number | null;
-  proposalPdfUrl: string | null;
-  adminComment: string | null;
   volunteeringStatus: "open" | "closed" | "full" | null;
   hasApplied?: boolean;
+  canVolunteer?: boolean;
   volunteerRoles: VolunteerRole[];
 }

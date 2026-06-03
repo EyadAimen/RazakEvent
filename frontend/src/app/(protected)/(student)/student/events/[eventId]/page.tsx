@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Calendar, MapPin, Wallet, Download, Loader2, Users } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Loader2, Users } from "lucide-react";
 import { fetchSharedEventDetail } from "./utils/services/events.services";
 import { SharedEventDetail } from "./utils/interface/events.interface";
 import Alert from "@/components/shared/alertComponent/alert";
@@ -92,21 +92,7 @@ export default function SharedEventDetailPage() {
                 </span>
               </div>
             )}
-            {event.budget && (
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>BUDGET</span>
-                <span className={styles.infoValue}>
-                  <Wallet size={14} /> RM {event.budget.toLocaleString()}
-                </span>
-              </div>
-            )}
           </div>
-
-          {event.adminComment && (
-            <div className={styles.adminComment}>
-              <strong>Admin note:</strong> {event.adminComment}
-            </div>
-          )}
 
           <div className={styles.description}>
             <h3>Description</h3>
@@ -135,26 +121,22 @@ export default function SharedEventDetailPage() {
               )}
               {event.volunteeringStatus === "open" && (
                 event.hasApplied === true ? (
-                  <button className={styles.applyBtn} disabled style={{ opacity: 0.6, cursor: "not-allowed" }}>
+                  <button className={styles.applyBtn} disabled>
                     Already applied
                   </button>
-                ) : (
-                  <button 
+                ) : event.canVolunteer ? (
+                  <button
                     className={styles.applyBtn}
                     onClick={() => router.push(`/student/events/${eventId}/volunteer`)}
                   >
                     Apply to volunteer
                   </button>
+                ) : (
+                  <p className={styles.volunteerNotice}>
+                    Only members of this club can volunteer.
+                  </p>
                 )
               )}
-            </div>
-          )}
-
-          {event.proposalPdfUrl && (
-            <div className={styles.pdfLink}>
-              <a href={`http://localhost:5000${event.proposalPdfUrl}`} target="_blank" rel="noreferrer">
-                <Download size={14} /> View proposal PDF
-              </a>
             </div>
           )}
         </div>

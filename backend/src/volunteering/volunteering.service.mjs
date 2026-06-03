@@ -5,13 +5,15 @@ import { VolunteeringApplicationEntity } from "./volunteering_applications.entit
 import { EventEntity } from "../events/events.entity.mjs";
 import { ClubEntity } from "../clubs/clubs.entity.mjs";
 import { EventProposalEntity } from "../proposals/proposals.entity.mjs";
+import { ClubMemberEntity } from "../clubs/club_members.entity.mjs";
 import { NotFoundError, ForbiddenError, ValidationError, ConflictError } from "../shared/errors.mjs";
 
-const roleRepo     = () => appDataSource.getRepository(VolunteeringRoleEntity);
-const appRepo      = () => appDataSource.getRepository(VolunteeringApplicationEntity);
-const eventRepo    = () => appDataSource.getRepository(EventEntity);
-const clubRepo     = () => appDataSource.getRepository(ClubEntity);
+const roleRepo = () => appDataSource.getRepository(VolunteeringRoleEntity);
+const appRepo = () => appDataSource.getRepository(VolunteeringApplicationEntity);
+const eventRepo = () => appDataSource.getRepository(EventEntity);
+const clubRepo = () => appDataSource.getRepository(ClubEntity);
 const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
+const clubMemberRepo = () => appDataSource.getRepository(ClubMemberEntity);
 
 async function assertLeadOwnsEvent(proposalId, leadId) {
     // The frontend uses proposal.id as the external event identifier
@@ -34,31 +36,31 @@ export const getOpenEvents = async () => {
     if (events.length === 0) return { events: [] };
 
     const eventIds = events.map(e => e.id);
-    const roles    = await roleRepo().find({ where: { eventId: In(eventIds) } });
+    const roles = await roleRepo().find({ where: { eventId: In(eventIds) } });
 
     const clubIds = [...new Set(events.map(e => e.clubId))];
-    const clubs   = await clubRepo().findBy({ id: In(clubIds) });
+    const clubs = await clubRepo().findBy({ id: In(clubIds) });
     const clubMap = Object.fromEntries(clubs.map(c => [c.id, c]));
 
     const rolesByEvent = {};
     for (const role of roles) {
         if (!rolesByEvent[role.eventId]) rolesByEvent[role.eventId] = [];
         rolesByEvent[role.eventId].push({
-            roleId:         role.id,
-            roleName:       role.roleName,
-            description:    role.description ?? null,
+            roleId: role.id,
+            roleName: role.roleName,
+            description: role.description ?? null,
             slotsAvailable: role.slotsAvailable,
-            slotsFilled:    role.slotsFilled,
+            slotsFilled: role.slotsFilled,
         });
     }
 
     return {
         events: events.map(e => ({
-            eventId:   e.proposalId,
+            eventId: e.id,
             eventName: e.name,
             eventDate: e.eventDate,
-            clubName:  clubMap[e.clubId]?.name ?? "Unknown Club",
-            roles:     rolesByEvent[e.id] ?? [],
+            clubName: clubMap[e.clubId]?.name ?? "Unknown Club",
+            roles: rolesByEvent[e.id] ?? [],
         })),
     };
 };
@@ -84,11 +86,11 @@ export const createRole = async (eventId, leadId, body) => {
     );
 
     return {
-        roleId:         role.id,
-        roleName:       role.roleName,
-        description:    role.description,
+        roleId: role.id,
+        roleName: role.roleName,
+        description: role.description,
         slotsAvailable: role.slotsAvailable,
-        slotsFilled:    0,
+        slotsFilled: 0,
     };
 };
 
@@ -109,18 +111,18 @@ export const updateRole = async (roleId, leadId, body) => {
     }
 
     await roleRepo().update(Number(roleId), {
-        ...(roleName !== undefined      && { roleName }),
-        ...(description !== undefined   && { description }),
+        ...(roleName !== undefined && { roleName }),
+        ...(description !== undefined && { description }),
         ...(slotsAvailable !== undefined && { slotsAvailable }),
     });
 
     const updated = await roleRepo().findOne({ where: { id: Number(roleId) } });
     return {
-        roleId:         updated.id,
-        roleName:       updated.roleName,
-        description:    updated.description,
+        roleId: updated.id,
+        roleName: updated.roleName,
+        description: updated.description,
         slotsAvailable: updated.slotsAvailable,
-        slotsFilled:    updated.slotsFilled,
+        slotsFilled: updated.slotsFilled,
     };
 };
 
@@ -162,6 +164,28 @@ export const applyToRole = async (studentId, body) => {
     if (!role) throw new NotFoundError("Role not found");
 
     const event = await eventRepo().findOne({ where: { id: role.eventId } });
+    const club = await clubRepo().findOne({
+        where: { id: event.clubId }
+    });
+
+    if (!club) {
+        throw new NotFoundError("Club not found");
+    }
+
+    const isLead = club.leadId === studentId;
+
+    const isCommittee = await clubMemberRepo().findOne({
+        where: {
+            clubId: event.clubId,
+            userId: studentId,
+        },
+    });
+
+    if (!isLead && !isCommittee) {
+        throw new ForbiddenError(
+            "Only members of this club may volunteer for this event"
+        );
+    }
     if (!event) throw new NotFoundError("Event not found");
     if (event.volunteeringStatus !== "open") throw new ConflictError("Volunteering for this event is not open");
     if (role.slotsFilled >= role.slotsAvailable) throw new ConflictError("This role is full");
@@ -175,7 +199,7 @@ export const applyToRole = async (studentId, body) => {
         if (["pending", "accepted"].includes(application.status)) {
             throw new ConflictError("You have already applied to volunteer for this event");
         }
-        
+
         // Re-activate rejected application, updating the roleId if they chose a new one
         application.roleId = roleId;
         application.status = "pending";
@@ -208,26 +232,26 @@ export const getMyApplications = async (studentId) => {
 
     if (applications.length === 0) return { applications: [] };
 
-    const roleIds  = [...new Set(applications.map(a => a.roleId))];
+    const roleIds = [...new Set(applications.map(a => a.roleId))];
     const eventIds = [...new Set(applications.map(a => a.eventId))];
 
-    const roles  = await roleRepo().findBy({ id: In(roleIds) });
+    const roles = await roleRepo().findBy({ id: In(roleIds) });
     const events = await eventRepo().findBy({ id: In(eventIds) });
 
-    const roleMap  = Object.fromEntries(roles.map(r => [r.id, r]));
+    const roleMap = Object.fromEntries(roles.map(r => [r.id, r]));
     const eventMap = Object.fromEntries(events.map(e => [e.id, e]));
 
     return {
         applications: applications.map(a => ({
             applicationId: a.id,
-            eventId:       eventMap[a.eventId]?.proposalId ?? a.eventId,
-            eventName:     eventMap[a.eventId]?.name ?? "Unknown Event",
-            eventDate:     eventMap[a.eventId]?.eventDate ?? null,
-            roleId:        a.roleId,
-            roleName:      roleMap[a.roleId]?.roleName ?? "Unknown Role",
-            status:        a.status,
-            appliedAt:     a.appliedAt,
-            reviewedAt:    a.reviewedAt,
+            eventId: eventMap[a.eventId]?.proposalId ?? a.eventId,
+            eventName: eventMap[a.eventId]?.name ?? "Unknown Event",
+            eventDate: eventMap[a.eventId]?.eventDate ?? null,
+            roleId: a.roleId,
+            roleName: roleMap[a.roleId]?.roleName ?? "Unknown Role",
+            status: a.status,
+            appliedAt: a.appliedAt,
+            reviewedAt: a.reviewedAt,
         })),
     };
 };
@@ -252,8 +276,8 @@ export const decideVolunteerApplication = async (applicationId, leadId, decision
     if (!["accepted", "rejected"].includes(decision)) throw new ValidationError("Decision must be 'accepted' or 'rejected'");
     if (application.status !== "pending") throw new ValidationError("Only pending applications can be reviewed");
 
-    await appRepo().update(aid, { 
-        status: decision, 
+    await appRepo().update(aid, {
+        status: decision,
         reviewedAt: new Date(),
         ...(decision === "rejected" && rejectionMessage ? { rejectionMessage } : {}),
     });
@@ -263,7 +287,7 @@ export const decideVolunteerApplication = async (applicationId, leadId, decision
         const updatedRole = await roleRepo().findOne({ where: { id: application.roleId } });
         if (updatedRole && updatedRole.slotsFilled >= updatedRole.slotsAvailable) {
             const allRoles = await roleRepo().find({ where: { eventId: application.eventId } });
-            const allFull  = allRoles.every(r => r.slotsFilled >= r.slotsAvailable);
+            const allFull = allRoles.every(r => r.slotsFilled >= r.slotsAvailable);
             if (allFull) await eventRepo().update(application.eventId, { volunteeringStatus: "full" });
         }
     }
@@ -285,12 +309,12 @@ export const getClubVolunteerApplications = async (clubId, leadId) => {
     const events = await eventRepo().find({ where: { clubId: cid } });
     if (events.length === 0) return { applications: [] };
 
-    const eventIds  = events.map(e => e.id);
-    const eventMap  = Object.fromEntries(events.map(e => [e.id, e]));
+    const eventIds = events.map(e => e.id);
+    const eventMap = Object.fromEntries(events.map(e => [e.id, e]));
 
     // Get all roles for those events
-    const roles    = await roleRepo().find({ where: { eventId: In(eventIds) } });
-    const roleMap  = Object.fromEntries(roles.map(r => [r.id, r]));
+    const roles = await roleRepo().find({ where: { eventId: In(eventIds) } });
+    const roleMap = Object.fromEntries(roles.map(r => [r.id, r]));
 
     // Get all applications for those events (pending first, then others)
     const applications = await appRepo().find({
@@ -303,20 +327,20 @@ export const getClubVolunteerApplications = async (clubId, leadId) => {
     const { UserEntity } = await import("../users/users.entity.mjs");
     const userRepo = () => appDataSource.getRepository(UserEntity);
     const studentIds = [...new Set(applications.map(a => a.studentId))];
-    const students   = await userRepo().findByIds(studentIds);
+    const students = await userRepo().findByIds(studentIds);
     const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
 
     return {
         applications: applications.map(app => ({
-            applicationId:   app.id,
-            studentName:     studentMap[app.studentId]?.fullName ?? "Unknown",
+            applicationId: app.id,
+            studentName: studentMap[app.studentId]?.fullName ?? "Unknown",
             studentMatricId: studentMap[app.studentId]?.staffOrMatricId ?? null,
-            eventId:         app.eventId,
-            eventName:       eventMap[app.eventId]?.name ?? "Unknown Event",
-            roleName:        roleMap[app.roleId]?.roleName ?? "Volunteer",
-            status:          app.status,
-            appliedAt:       app.appliedAt,
-            reason:          app.reason ?? null,
+            eventId: app.eventId,
+            eventName: eventMap[app.eventId]?.name ?? "Unknown Event",
+            roleName: roleMap[app.roleId]?.roleName ?? "Volunteer",
+            status: app.status,
+            appliedAt: app.appliedAt,
+            reason: app.reason ?? null,
             rejectionMessage: app.rejectionMessage ?? null,
         })),
     };
