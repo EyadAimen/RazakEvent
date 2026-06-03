@@ -1,5 +1,6 @@
 import appDataSource from "../../config/dbConfig.mjs";
 import { EventProposalEntity } from "./proposals.entity.mjs";
+import { EventEntity } from "../events/events.entity.mjs";
 
 const getRepo = () => appDataSource.getRepository(EventProposalEntity);
 
@@ -122,6 +123,36 @@ export const reviewProposal = async (req, res) => {
     }
 
     const updatedProposal = await getRepo().save(proposal);
+
+    if (updatedProposal.status === "approved") {
+      const eventRepo = appDataSource.getRepository(EventEntity);
+
+      const existingEvent = await eventRepo.findOne({
+        where: { proposalId: updatedProposal.id },
+      });
+
+      if (!existingEvent) {
+        if (!updatedProposal.clubId || !updatedProposal.venueId || !updatedProposal.proposedDate) {
+          return res.status(400).json({
+            success: false,
+            message: "Approved proposal must have club, venue, and proposed date before creating an event.",
+          });
+        }
+
+        const event = eventRepo.create({
+          proposalId: updatedProposal.id,
+          clubId: updatedProposal.clubId,
+          venueId: updatedProposal.venueId,
+          name: updatedProposal.eventName,
+          description: updatedProposal.description || "No description provided.",
+          eventDate: updatedProposal.proposedDate,
+          status: "approved",
+          volunteeringStatus: "closed",
+        });
+
+        await eventRepo.save(event);
+      }
+    }
 
     return res.status(200).json({
       success: true,
