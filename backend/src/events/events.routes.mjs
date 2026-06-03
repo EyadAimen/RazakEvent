@@ -32,5 +32,6 @@ router.patch("/:eventId",                                 authenticate, requireR
 router.delete("/:eventId",                                authenticate, requireRole("lead"),          eventsController.deleteEventHandler);
 router.post("/:eventId/proposal-pdf",                     authenticate, requireRole("lead"),          uploadProposalPdf, eventsController.uploadProposalPdfHandler);
 router.post("/:eventId/submit",                           authenticate, requireRole("lead"),          eventsController.submitProposalHandler);
+router.patch("/:eventId/complete",                        authenticate, requireRole("lead"),          eventsController.markEventCompletedHandler);
 
 export default router;

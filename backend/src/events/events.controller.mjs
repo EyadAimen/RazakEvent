@@ -168,3 +168,15 @@ export const getStudentEventHandler = async (req, res, next) => {
     res.status(200).json({ event });
   } catch (err) { next(err); }
 };
+
+export const markEventCompletedHandler = async (req, res, next) => {
+  try {
+    const { applicationIds } = req.body;
+    const result = await eventsService.markEventCompleted(
+      req.params.eventId,
+      req.user.userId,
+      applicationIds ?? []
+    );
+    res.status(200).json(result);
+  } catch (err) { next(err); }
+};
