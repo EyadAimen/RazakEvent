@@ -48,7 +48,8 @@ export default function AdminProfile() {
     if (!user) return;
     setApiLoading(true);
     try {
-      await requestPasswordReset(user.email);
+      const result = await requestPasswordReset(user.email);
+      setActionSuccess(result.message);
     } catch (err) {
       setApiError(err instanceof Error ? err.message : "Failed to send reset email.");
     } finally {
@@ -152,6 +153,13 @@ export default function AdminProfile() {
         isOpen={apiError !== null}
         message={apiError ?? ""}
         onClose={() => setApiError(null)}
+      />
+
+      <Alert
+        variant="success"
+        isOpen={actionSuccess !== null}
+        message={actionSuccess ?? ""}
+        onClose={() => setActionSuccess(null)}
       />
     </>
   );

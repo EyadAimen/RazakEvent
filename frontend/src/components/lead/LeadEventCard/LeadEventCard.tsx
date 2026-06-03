@@ -1,4 +1,4 @@
-import { Calendar, Users } from "lucide-react";
+import { Calendar, Users, CheckCircle2 } from "lucide-react";
 import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
 import styles from "./LeadEventCard.module.css";
 
@@ -16,9 +16,10 @@ export type LeadEvent = {
 type Props = {
   event: LeadEvent;
   onManage?: (id: string) => void;
+  onComplete?: (id: string) => void;
 };
 
-export default function LeadEventCard({ event, onManage }: Props) {
+export default function LeadEventCard({ event, onManage, onComplete }: Props) {
   const borderClass =
     event.status === "approved"
       ? styles.borderApproved
@@ -59,6 +60,15 @@ export default function LeadEventCard({ event, onManage }: Props) {
         >
           Manage Event
         </button>
+        {onComplete && (
+          <button
+            className={styles.completeBtn}
+            onClick={() => onComplete(event.id)}
+          >
+            <CheckCircle2 size={14} />
+            Mark as Completed
+          </button>
+        )}
       </div>
     </article>
   );

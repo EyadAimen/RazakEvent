@@ -1,7 +1,7 @@
-"use  client";
+"use client";
 
 import { useState, useEffect } from "react";
-import { apiFetch, ApiError } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { Proposal } from "../interfaces/proposal.interface";
 
 function getAccessToken(): string | null {
@@ -11,6 +11,7 @@ function getAccessToken(): string | null {
 
 async function fetchDatabaseProposals(): Promise<Proposal[]> {
   const token = getAccessToken();
+
   const rawData = await apiFetch<any>("/proposals", {
     method: "GET",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -18,40 +19,48 @@ async function fetchDatabaseProposals(): Promise<Proposal[]> {
 
   const recordsArray = Array.isArray(rawData) ? rawData : rawData.data || [];
 
-  const testRequesters: Record<string, string> = {
-    lead_01: "Alice Johnson",
-    lead_02: "Bob Smith",
-    lead_05: "Nadia Hassan",
-    lead_06: "Kevin Wong",
-    lead_07: "Siti Aminah",
-    lead_08: "Marcus Vance",
-  };
-
   return recordsArray.map((item: any) => {
-    const generatedCategory = item.clubId % 2 === 0 ? "CLUB" : "COMMUNITY";
+    const category =
+      item.clubType === "community" ? "COMMUNITY" : "CLUB";
+
     return {
-      id: item.id,
+      id: Number(item.id),
+      leadId: item.leadId,
+      clubId: item.clubId,
+      adminId: item.adminId,
+      venueId: item.venueId,
       eventName: item.eventName || "Untitled Proposal",
       description: item.description || "No description provided.",
-      requesterName: testRequesters[item.leadId] || item.requesterName || "Adam Lee",
-      category: generatedCategory,
+      requesterName: item.requesterName || "Unknown Submitter",
+      category,
       status: (item.status || "pending").toLowerCase(),
       estimatedBudget: item.estimatedBudget || "0.00",
-      proposedDate: item.proposedDate ? new Date(item.proposedDate).toLocaleDateString() : "TBD",
-      docAttached: item.proposalPdfUrl || "proposal.pdf",
+      proposedDate: item.proposedDate
+        ? new Date(item.proposedDate).toLocaleDateString()
+        : "TBD",
+      docAttached: item.proposalPdfUrl ? "Open proposal PDF" : "No document attached",
+      proposalPdfUrl: item.proposalPdfUrl || "",
+      adminComment: item.adminComment || "",
+      clubName: item.clubName || "Unknown Club",
+      clubType: item.clubType || "club",
+      venueName: item.venueName || "No venue assigned",
     };
   });
 }
 
-
-async function patchProposalDecision(id: number, decisionStatus: "approved" | "rejected"): Promise<void> {
+async function patchProposalDecision(
+  id: number,
+  decisionStatus: "approved" | "rejected",
+  comment?: string
+): Promise<void> {
   const token = getAccessToken();
+
   await apiFetch<void>(`/proposals/${id}/decision`, {
     method: "PATCH",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: JSON.stringify({
       status: decisionStatus,
-      adminComment: `Proposal evaluation completed: ${decisionStatus}`,
+      adminComment: comment || `Proposal evaluation completed: ${decisionStatus}`,
     }),
   });
 }
@@ -66,36 +75,62 @@ export function useProposals() {
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [errorContext, setErrorContext] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        setErrorContext(null);
-        const data = await fetchDatabaseProposals();
-        setProposals(data);
-      } catch (err: any) {
-        console.error("Failed to load proposals:", err);
-        setErrorContext(err.message || "Could not synchronize database connection data stacks.");
-      } finally {
-        setLoading(false);
-      }
+  async function loadData() {
+    try {
+      setLoading(true);
+      setErrorContext(null);
+      const data = await fetchDatabaseProposals();
+      setProposals(data);
+    } catch (err: any) {
+      console.error("Failed to load proposals:", err);
+      setErrorContext(err.message || "Could not load proposals.");
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     loadData();
   }, []);
 
-  const handleDecisionUpdate = async (id: number, decisionStatus: "approved" | "rejected") => {
+  const handleDecisionUpdate = async (
+    id: number,
+    decisionStatus: "approved" | "rejected",
+    comment?: string
+  ) => {
     try {
       setActionLoading(true);
       setErrorContext(null);
-      await patchProposalDecision(id, decisionStatus);
+
+      await patchProposalDecision(id, decisionStatus, comment);
+
       setProposals((prev) =>
-        prev.map((prop) => (prop.id === id ? { ...prop, status: decisionStatus } : prop))
+        prev.map((prop) =>
+          prop.id === id
+            ? {
+                ...prop,
+                status: decisionStatus,
+                adminComment: comment || prop.adminComment,
+              }
+            : prop
+        )
       );
+
+      setSelectedProposal((prev) =>
+        prev && prev.id === id
+          ? {
+              ...prev,
+              status: decisionStatus,
+              adminComment: comment || prev.adminComment,
+            }
+          : prev
+      );
+
       setIsDrawerOpen(false);
       setSelectedProposal(null);
     } catch (err: any) {
-      console.error(`Failed to update decision for proposal ${id}:`, err);
-      setErrorContext(err.message || "The remote server rejected this status mutation choice.");
+      console.error(`Failed to update proposal ${id}:`, err);
+      setErrorContext(err.message || "Failed to update proposal status.");
     } finally {
       setActionLoading(false);
     }
@@ -115,9 +150,14 @@ export function useProposals() {
 
   const filteredProposals = proposals.filter((p: Proposal) => {
     const matchesFilter = activeFilter === "all" || p.status === activeFilter;
+
+    const search = searchQuery.toLowerCase();
+
     const matchesSearch =
-      p.eventName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.requesterName.toLowerCase().includes(searchQuery.toLowerCase());
+      p.eventName.toLowerCase().includes(search) ||
+      p.requesterName.toLowerCase().includes(search) ||
+      (p.clubName || "").toLowerCase().includes(search);
+
     return matchesFilter && matchesSearch;
   });
 

@@ -1,0 +1,124 @@
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  background-color: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-150);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color var(--transition-veryfast);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background-color: var(--color-neutral-100);
+}
+
+.leftContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eventName {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-body-size);
+  line-height: 28px;
+  color: var(--color-primary-800);
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-600);
+}
+
+.dateIcon {
+  color: var(--color-neutral-400);
+}
+
+.viewButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  font-size: var(--text-small-size);
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  transition: all var(--transition-veryfast);
+}
+
+.row:hover .viewButton {
+  border-color: var(--color-neutral-300);
+  background-color: #fff;
+}
+
+/* Skeleton */
+.skeleton {
+  pointer-events: none;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeletonBlock {
+  background-color: var(--color-neutral-200);
+  border-radius: 4px;
+}
+
+.skeletonTitle {
+  width: 200px;
+  height: 24px;
+}
+
+.skeletonBadge {
+  width: 70px;
+  height: 20px;
+  border-radius: 9999px;
+}
+
+.skeletonDetail {
+  width: 120px;
+  height: 16px;
+  margin-top: 4px;
+}
+
+.skeletonButton {
+  width: 120px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+  }
+  
+  .viewButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

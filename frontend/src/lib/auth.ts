@@ -96,8 +96,8 @@ export async function logoutUser(): Promise<void> {
   }
 }
 
-export async function requestPasswordReset(email: string): Promise<void> {
-  await apiFetch<void>("/auth/forgot-password", {
+export async function requestPasswordReset(email: string): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>("/auth/forgot-password", {
     method: "POST",
     body: JSON.stringify({ email }),
   });

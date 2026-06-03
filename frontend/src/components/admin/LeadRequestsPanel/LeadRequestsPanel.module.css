@@ -1,0 +1,297 @@
+.panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-neutral-50);
+    border: var(--border-thin) solid var(--color-neutral-150);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.panelHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: var(--border-thin) solid var(--color-neutral-150);
+    flex-shrink: 0;
+}
+
+.panelTitleRow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.panelTitle {
+    font-family: var(--font-heading);
+    font-size: var(--text-body-size);
+    font-weight: var(--weight-bold);
+    color: var(--color-neutral-800);
+}
+
+.pendingBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 var(--space-xxs);
+    border-radius: var(--radius-pill);
+    background: var(--color-ktr-crimson);
+    color: var(--color-neutral-50);
+    font-size: var(--text-caption-size);
+    font-weight: var(--weight-bold);
+}
+
+.refreshBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    color: var(--color-neutral-400);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-veryfast), color var(--transition-veryfast);
+}
+
+.refreshBtn:hover:not(:disabled) {
+    background: var(--color-neutral-150);
+    color: var(--color-neutral-700);
+}
+
+.refreshBtn:disabled {
+    cursor: not-allowed;
+}
+
+.spinning {
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── List ───────────────────────────────────────────────── */
+
+.list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+/* ── Request card ───────────────────────────────────────── */
+
+.card {
+    border: var(--border-thin) solid var(--color-neutral-150);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-neutral-100);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    transition: border-color var(--transition-veryfast);
+}
+
+.cardActive {
+    border-color: var(--color-primary-500-15);
+    background: var(--color-ktr-ice);
+}
+
+.cardTop {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-sm);
+}
+
+.cardInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.studentName {
+    font-size: var(--text-small-size);
+    font-weight: var(--weight-semibold);
+    color: var(--color-neutral-800);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.studentId {
+    font-size: var(--text-caption-size);
+    color: var(--color-neutral-500);
+}
+
+.clubName {
+    font-size: var(--text-caption-size);
+    color: var(--color-primary-500);
+    font-weight: var(--weight-medium);
+}
+
+.submittedAt {
+    font-size: var(--text-caption-size);
+    color: var(--color-neutral-400);
+}
+
+/* ── Status badges ──────────────────────────────────────── */
+
+.statusBadge {
+    flex-shrink: 0;
+    padding: 2px var(--space-xs);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-caption-size);
+    font-weight: var(--weight-bold);
+    white-space: nowrap;
+}
+
+.statusPendingLead {
+    background: var(--color-status-warning-bg);
+    color: var(--color-status-warning-text);
+}
+
+.statusPendingAdmin {
+    background: var(--color-status-pending-bg);
+    color: var(--color-status-pending-text);
+}
+
+.statusApproved {
+    background: var(--color-role-clublead-bg);
+    color: var(--color-role-clublead-text);
+}
+
+.statusRejected {
+    background: var(--color-status-rejected-bg);
+    color: var(--color-status-rejected-text);
+}
+
+/* ── Actions ────────────────────────────────────────────── */
+
+.actions {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.approveBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xxs);
+    height: 30px;
+    padding: 0 var(--space-sm);
+    border-radius: var(--radius-sm);
+    border: var(--border-thin) solid var(--color-status-green);
+    background: none;
+    color: var(--color-status-green);
+    font-size: var(--text-caption-size);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: background var(--transition-veryfast);
+}
+
+.approveBtn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-status-green) 10%, transparent);
+}
+
+.approveBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.rejectBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xxs);
+    height: 30px;
+    padding: 0 var(--space-sm);
+    border-radius: var(--radius-sm);
+    border: var(--border-thin) solid var(--color-status-red);
+    background: none;
+    color: var(--color-status-red);
+    font-size: var(--text-caption-size);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: background var(--transition-veryfast);
+}
+
+.rejectBtn:hover:not(:disabled) {
+    background: var(--color-semantic-red-10);
+}
+
+.rejectBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.cancelBtn {
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 var(--space-sm);
+    border-radius: var(--radius-sm);
+    border: var(--border-thin) solid var(--color-neutral-300);
+    background: none;
+    color: var(--color-neutral-600);
+    font-size: var(--text-caption-size);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: background var(--transition-veryfast);
+}
+
+.cancelBtn:hover:not(:disabled) {
+    background: var(--color-neutral-150);
+}
+
+/* ── Reject form ────────────────────────────────────────── */
+
+.rejectForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.commentInput {
+    width: 100%;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    border: var(--border-thin) solid var(--color-neutral-300);
+    background: var(--color-neutral-50);
+    color: var(--color-neutral-800);
+    font-size: var(--text-caption-size);
+    font-family: var(--font-body);
+    resize: none;
+    box-sizing: border-box;
+    transition: border-color var(--transition-veryfast);
+}
+
+.commentInput:focus {
+    outline: none;
+    border-color: var(--color-neutral-400);
+}
+
+/* ── Misc ───────────────────────────────────────────────── */
+
+.dimText {
+    font-size: var(--text-small-size);
+    color: var(--color-neutral-400);
+    text-align: center;
+    padding: var(--space-md) 0;
+}
+
+.errorText {
+    font-size: var(--text-caption-size);
+    color: var(--color-status-red);
+    font-weight: var(--weight-medium);
+}

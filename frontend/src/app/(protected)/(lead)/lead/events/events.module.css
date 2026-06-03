@@ -89,7 +89,7 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-neutral-400);
+  color: var(--color-neutral-500);
   pointer-events: none;
 }
 
@@ -126,7 +126,7 @@
   background: var(--color-neutral-100);
   font-family: var(--font-body);
   font-size: var(--text-small-size);
-  color: var(--color-neutral-600);
+  color: var(--color-neutral-500);
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition-veryfast);
@@ -191,9 +191,7 @@
   to   { transform: rotate(360deg); }
 }
 
-.emptyIcon {
-  color: var(--color-neutral-400);
-}
+.emptyIcon { color: var(--color-neutral-500); }
 
 .emptyTitle {
   font-family: var(--font-heading);

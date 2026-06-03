@@ -6,9 +6,12 @@ import { Search, Plus, FilePlus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Triangle from "@/components/shared/triangle/triangle";
 import LeadEventCard, { LeadEvent } from "@/components/lead/LeadEventCard/LeadEventCard";
+import Alert from "@/components/shared/alertComponent/alert";
 import { apiFetchAuth } from "@/lib/api";
 import type { ApiEvent, EventsTab } from "@/types/lead";
 import styles from "./events.module.css";
+
+type AlertState = { type: "none" | "loading" | "success" | "error"; message?: string };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -60,6 +63,7 @@ export default function LeadEventsPage() {
   const [error, setError]     = useState<string | null>(null);
   const [tab, setTab]         = useState<EventsTab>("all");
   const [search, setSearch]   = useState("");
+  const [alert, setAlert]     = useState<AlertState>({ type: "none" });
 
   useEffect(() => {
     apiFetchAuth<{ events: ApiEvent[] }>("/events/lead")
@@ -68,6 +72,25 @@ export default function LeadEventsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  function canComplete(e: ApiEvent): boolean {
+    return (e.status === "approved" || e.status === "ongoing") &&
+      !!e.eventDate && new Date(e.eventDate) <= new Date();
+  }
+
+  async function handleComplete(eventId: string) {
+    setAlert({ type: "loading" });
+    try {
+      const res = await apiFetchAuth<{ message: string }>(`/events/${eventId}/complete`, {
+        method: "PATCH",
+        body: JSON.stringify({ applicationIds: [] }),
+      });
+      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, status: "completed" } : e));
+      setAlert({ type: "success", message: res.message });
+    } catch (err) {
+      setAlert({ type: "error", message: err instanceof Error ? err.message : "Failed to mark event as completed." });
+    }
+  }
+
   const filtered = events.filter(e => {
     const matchTab    = tab === "all" ? e.status !== "rejected" : e.status === tab;
     const matchSearch = !search || e.name.toLowerCase().includes(search.toLowerCase());
@@ -75,6 +98,7 @@ export default function LeadEventsPage() {
   });
 
   return (
+    <>
     <div className={styles.page}>
       <div className={styles.body}>
 
@@ -157,6 +181,7 @@ export default function LeadEventsPage() {
                   key={e.id}
                   event={toLeadEvent(e)}
                   onManage={id => router.push(`/lead/events/${id}`)}
+                  onComplete={canComplete(e) ? handleComplete : undefined}
                 />
               ))}
             </div>
@@ -165,5 +190,10 @@ export default function LeadEventsPage() {
         </div>
       </div>
     </div>
+
+      <Alert variant="loading" isOpen={alert.type === "loading"} onClose={() => {}} />
+      <Alert variant="success" isOpen={alert.type === "success"} message={alert.message ?? ""} onClose={() => setAlert({ type: "none" })} />
+      <Alert variant="error"   isOpen={alert.type === "error"}   message={alert.message ?? ""} onClose={() => setAlert({ type: "none" })} />
+    </>
   );
 }

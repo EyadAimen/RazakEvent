@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import styles from "./reset-password.module.css";
 import InputField from "@/components/shared/input-field/input-field";
 import Alert from "@/components/shared/alertComponent/alert";
 import { apiFetch, ApiError } from "@/lib/api";
+import { clearSession } from "@/lib/auth";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get("token");
 
   const [newPassword, setNewPassword] = useState("");
@@ -40,7 +42,9 @@ export default function ResetPasswordPage() {
     setLoading(true);
     try {
       await apiFetch("/auth/reset-password", { method: "POST", body: JSON.stringify({ token, newPassword }) });
+      clearSession();
       setSuccess(true);
+      setTimeout(() => router.replace("/login"), 2000);
     } catch (err) {
       setAlertError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
     } finally {

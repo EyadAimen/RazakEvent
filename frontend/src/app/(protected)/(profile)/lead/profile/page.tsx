@@ -14,16 +14,16 @@ import DangerZone from "@/components/profile/DangerZone/DangerZone";
 import SignOutCard from "@/components/profile/SignOutCard/SignOutCard";
 import Alert from "@/components/shared/alertComponent/alert";
 import {
-  fetchLeadClub,
+  fetchLeadClubs,
   updateProfileName,
 } from "@/components/profile/utils/services/profile.service";
-import type { ClubOverview } from "@/types/lead";
+import type { ClubItem } from "@/types/lead";
 import styles from "./page.module.css";
 
 export default function LeadProfile() {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [club, setClub] = useState<ClubOverview | null>(null);
+  const [clubs, setClubs] = useState<ClubItem[]>([]);
   const [loadingClub, setLoadingClub] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,9 +34,9 @@ export default function LeadProfile() {
   useEffect(() => {
     setUser(getUser());
 
-    fetchLeadClub()
-      .then(setClub)
-      .catch(() => setClub(null))
+    fetchLeadClubs()
+      .then(setClubs)
+      .catch(() => setClubs([]))
       .finally(() => setLoadingClub(false));
   }, []);
 
@@ -60,7 +60,8 @@ export default function LeadProfile() {
     if (!user) return;
     setApiLoading(true);
     try {
-      await requestPasswordReset(user.email);
+      const result = await requestPasswordReset(user.email);
+      setActionSuccess(result.message);
     } catch (err) {
       setApiError(err instanceof Error ? err.message : "Failed to send reset email.");
     } finally {
@@ -153,8 +154,8 @@ export default function LeadProfile() {
                     <Loader2 size={24} className={styles.spinner} />
                     <p>Loading credentials…</p>
                   </div>
-                ) : club ? (
-                  <LeadershipCredentials club={club} />
+                ) : clubs.length > 0 ? (
+                  <LeadershipCredentials clubs={clubs} />
                 ) : (
                   <div className={styles.historyLoading}>
                     <p>No club associated with your account.</p>
@@ -181,6 +182,13 @@ export default function LeadProfile() {
         isOpen={apiError !== null}
         message={apiError ?? ""}
         onClose={() => setApiError(null)}
+      />
+
+      <Alert
+        variant="success"
+        isOpen={actionSuccess !== null}
+        message={actionSuccess ?? ""}
+        onClose={() => setActionSuccess(null)}
       />
     </>
   );

@@ -5,7 +5,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./verify-email.module.css";
 import { apiFetch, ApiError } from "@/lib/api";
-import { resendVerificationEmail, getRefreshToken } from "@/lib/auth";
+import { resendVerificationEmail, getRefreshToken, getUser } from "@/lib/auth";
+
+const ROLE_REDIRECTS: Record<string, string> = {
+    lead:    "/lead/dashboard",
+    admin:   "/admin/dashboard",
+    student: "/student/dashboard",
+    member:  "/student/dashboard",
+};
 
 type Status = "idle" | "loading" | "success" | "error";
 type ResendStatus = "idle" | "loading" | "sent" | "error";
@@ -22,7 +29,9 @@ export default function VerifyEmailPage() {
 
     useEffect(() => {
         if (getRefreshToken()) {
-            router.replace("/dashboard");
+            const user = getUser();
+            const destination = user ? (ROLE_REDIRECTS[user.role] ?? "/student/dashboard") : "/student/dashboard";
+            router.replace(destination);
             return;
         }
         if (!token) {

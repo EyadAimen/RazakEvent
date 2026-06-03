@@ -5,6 +5,7 @@ export interface DashboardData {
   clubLabel: string;
   clubType: "club" | "community";
   alert: string | null;
+  reportDueEventId: string | null;
   events: ApiEvent[];
   totalEvents: number;
 }
@@ -40,6 +41,16 @@ export interface VolunteerApplicant {
   appliedAt: string;
   status: "pending" | "accepted" | "rejected";
   roleName: string;
+  reason?: string;
+  rejectionMessage?: string;
+}
+
+export interface VolunteerRole {
+  roleId: number;
+  roleName: string;
+  description: string | null;
+  slotsAvailable: number;
+  slotsFilled: number;
 }
 
 export interface EventDetail {
@@ -54,6 +65,7 @@ export interface EventDetail {
   proposalPdfUrl: string | null;
   adminComment: string | null;
   volunteeringStatus: "open" | "closed" | "full" | null;
+  volunteerRoles: VolunteerRole[];
   volunteers: VolunteerApplicant[];
 }
 
@@ -74,6 +86,13 @@ export interface CreateEventPayload {
   status: "draft" | "submitted";
 }
 
+export interface BookedDate {
+  eventId: number;
+  name: string;
+  eventDate: string;
+  status: string;
+}
+
 // ── My Club ───────────────────────────────────────────────────────────────────
 
 export interface ClubOverview {
@@ -86,6 +105,30 @@ export interface ClubOverview {
   eventStats: { total: number; approved: number; rejected: number };
   pendingRequests: number;
 }
+
+export interface ApprovedClub {
+  status: "approved";
+  id: number;
+  name: string;
+  type: "club" | "community";
+  description: string;
+  memberCount: number;
+  eventStats: { total: number; approved: number; rejected: number };
+  pendingRequests: number;
+}
+
+export interface PendingClubItem {
+  status: "pending" | "rejected";
+  requestId: number;
+  name: string;
+  type: "club" | "community";
+  description: string;
+  category: string | null;
+  submittedAt: string;
+  adminComment: string | null;
+}
+
+export type ClubItem = ApprovedClub | PendingClubItem;
 
 export interface ClubMember {
   userId: string;
@@ -103,4 +146,18 @@ export interface MembershipRequest {
   status: "pending";
 }
 
-export type ClubTab = "members" | "requests";
+export type ClubTab = "members" | "requests" | "volunteers";
+
+export interface ClubVolunteerApplication {
+  applicationId: number;
+  studentName: string;
+  studentMatricId: string | null;
+  eventId: string;
+  eventName: string;
+  roleName: string;
+  status: "pending" | "accepted" | "rejected";
+  appliedAt: string;
+  reason: string | null;
+  rejectionMessage: string | null;
+}
+
