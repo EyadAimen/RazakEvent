@@ -102,7 +102,7 @@ export default function LeadEventDetailPage() {
   }, [eventId]);
 
   const handleToggleVolunteering = async () => {
-    if (!event || togglingVol || event.volunteeringStatus === "full") return;
+    if (!event || togglingVol) return;
     const newStatus = event.volunteeringStatus === "open" ? "closed" : "open";
     setTogglingVol(true);
     setActionError(null);
@@ -118,6 +118,7 @@ export default function LeadEventDetailPage() {
       setTogglingVol(false);
     }
   };
+
 
   const handleAddRole = async () => {
     if (!newRole.roleName.trim()) { setRoleError("Role name is required."); return; }
@@ -199,24 +200,17 @@ export default function LeadEventDetailPage() {
         method: "PATCH",
         body: JSON.stringify({ decision, rejectionMessage }),
       });
-      setEvent(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          volunteers: prev.volunteers.map(v =>
-            v.applicationId === applicationId ? { ...v, status: decision, rejectionMessage } : v
-          ),
-        };
-      });
-      if (decision === "rejected") {
-        setRejectingAppId(null);
-      }
+      if (decision === "rejected") setRejectingAppId(null);
+      // Re-fetch the full event so slotsFilled counts and volunteeringStatus are accurate
+      const refreshed = await apiFetchAuth<{ event: EventDetail }>(`/events/${eventId}`);
+      setEvent(refreshed.event);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to update application");
     } finally {
       setDecidingApp(null);
     }
   };
+
 
   // ── Loading ──────────────────────────────────────────────────────────────
 
@@ -264,8 +258,7 @@ export default function LeadEventDetailPage() {
     : "TBD";
 
   const volOpen = event.volunteeringStatus === "open";
-  const volFull = event.volunteeringStatus === "full";
-  const volClosed = event.volunteeringStatus === "closed";
+
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -356,17 +349,14 @@ export default function LeadEventDetailPage() {
                   </h2>
                   <div className={styles.volToggleWrap}>
                     <button
-                      className={`${styles.toggleBtn} ${volOpen ? styles.toggleOpen :
-                          volFull ? styles.toggleFull :
-                            styles.toggleClosed
-                        }`}
+                      className={`${styles.toggleBtn} ${volOpen ? styles.toggleOpen : styles.toggleClosed}`}
                       onClick={handleToggleVolunteering}
-                      disabled={togglingVol || volFull}
+                      disabled={togglingVol}
                       title={volOpen ? "Close Applications" : "Open Applications"}
                     >
                     </button>
                     <span className={styles.volToggleLabel}>
-                      {volOpen ? "Open" : volFull ? "Full" : "Closed"}
+                      {volOpen ? "Open" : "Closed"}
                     </span>
                   </div>
                 </div>
@@ -600,7 +590,7 @@ export default function LeadEventDetailPage() {
                   </div>
                 )}
 
-                {!volClosed && event.volunteers.length === 0 && (
+                {!volOpen && event.volunteers.length === 0 && (
                   <p className={styles.noApplicants}>No volunteer applications yet.</p>
                 )}
               </div>

@@ -380,22 +380,12 @@ export const getStudentEventDetail = async (eventId, userId) => {
         hasApplied = !!application;
     }
 
-    const { ClubMemberEntity } = await import("../clubs/club_members.entity.mjs");
-
+    // Leads organise the event — they may not apply as volunteers
     const isLead = club?.leadId === userId;
 
-    const isCommittee = userId
-        ? await appDataSource.getRepository(ClubMemberEntity).findOne({
-            where: {
-                clubId: liveEvent.clubId,
-                userId,
-            },
-        })
-        : null;
-
+    // All authenticated non-lead students may volunteer
     const canVolunteer =
         !!userId &&
-        !!isCommittee &&
         !isLead &&
         liveEvent.volunteeringStatus === "open" &&
         !hasApplied;
@@ -429,7 +419,6 @@ export const toggleVolunteering = async (eventId, leadId, newStatus) => {
     if (!event) throw new NotFoundError("Approved event record not found");
 
     if (!["open", "closed"].includes(newStatus)) throw new ValidationError("Status must be 'open' or 'closed'");
-    if (event.volunteeringStatus === "full") throw new ValidationError("Cannot change status when all slots are full");
 
     await eventRepo().update(event.id, { volunteeringStatus: newStatus });
     return { volunteeringStatus: newStatus };
@@ -460,9 +449,12 @@ export const decideVolunteerApplication = async (eventId, applicationId, leadId,
 
     if (decision === "accepted") {
         await roleRepo().increment({ id: application.roleId }, "slotsFilled", 1);
-        const role = await roleRepo().findOne({ where: { id: application.roleId } });
-        if (role && role.slotsFilled >= role.slotsAvailable) {
-            await eventRepo().update(event.id, { volunteeringStatus: "full" });
+        const updatedRole = await roleRepo().findOne({ where: { id: application.roleId } });
+        if (updatedRole && updatedRole.slotsFilled >= updatedRole.slotsAvailable) {
+            // Only mark the event full when every role is at capacity
+            const allRoles = await roleRepo().find({ where: { eventId: event.id } });
+            const allFull = allRoles.every(r => r.slotsFilled >= r.slotsAvailable);
+            if (allFull) await eventRepo().update(event.id, { volunteeringStatus: "full" });
         }
     }
 
