@@ -474,7 +474,9 @@ export const getAllEvents = async (statusFilter) => {
 // ── Lead — Mark event as completed ───────────────────────────────────────────
 
 export const markEventCompleted = async (eventId, leadId, applicationIds = []) => {
-    const event = await eventRepo().findOne({ where: { id: parseInt(eventId) } });
+    const parsedId = parseInt(eventId);
+    const event = await eventRepo().findOne({ where: { id: parsedId } })
+        ?? await eventRepo().findOne({ where: { proposalId: parsedId } });
     if (!event) throw new NotFoundError("Event not found");
 
     const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
