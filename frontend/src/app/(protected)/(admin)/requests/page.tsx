@@ -1,87 +1,28 @@
 "use client";
-
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import styles from "./requests.module.css";
-import { Proposal } from "./utils/interfaces/proposal.interface";
-import { fetchDatabaseProposals, patchProposalDecision } from "./utils/services/proposal.service";
-import Alert from "@/components/shared/alertComponent/alert";
+import { useProposals } from "./utils/services/proposal.service";
 
 export default function AdminRequestsPage() {
+  const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
   const router = useRouter();
-  const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("all");
-
-  const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [actionLoading, setActionLoading] = useState<boolean>(false);
-  const [errorContext, setErrorContext] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-
-  const [isRejectionModalOpen, setIsRejectionModalOpen] = useState<boolean>(false);
-  const [rejectionReason, setRejectionReason] = useState<string>("");
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        setErrorContext(null);
-        const data = await fetchDatabaseProposals();
-        setProposals(data);
-      } catch (err: any) {
-        console.error("Component catch layer caught initial initialization failures:", err);
-        setErrorContext(err.message || "Could not synchronize database connection data stacks.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
-
-  const handleDecisionUpdate = async (id: number, decisionStatus: "approved" | "rejected", commentString?: string) => {
-    const finalComment = commentString || `Proposal evaluation completed: ${decisionStatus}`;
-    
-    setActionLoading(true);
-    try {
-      await patchProposalDecision(id, decisionStatus, finalComment);
-      
-      setProposals((prev) =>
-        prev.map((prop) => (prop.id === id ? { ...prop, status: decisionStatus, adminComment: finalComment } : prop))
-      );
-      setIsDrawerOpen(false);
-      setIsRejectionModalOpen(false);
-      setRejectionReason("");
-      setSelectedProposal(null);
-    } catch (err: any) {
-      setActionError(err.message || "Failed to update proposal status.");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const openRejectionFlow = () => {
-    setIsRejectionModalOpen(true);
-  };
-
-  const submitRejectionFlow = () => {
-    if (!rejectionReason.trim()) {
-      alert("Please specify an evaluation reason detailing why this application is rejected.");
-      return;
-    }
-    if (selectedProposal) {
-      handleDecisionUpdate(selectedProposal.id, "rejected", rejectionReason);
-    }
-  };
-
-  const filteredProposals = proposals.filter((p: Proposal) => {
-    const matchesFilter = activeFilter === "all" || p.status === activeFilter;
-    const matchesSearch =
-      p.eventName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.requesterName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  const {
+    loading,
+    errorContext,
+    filteredProposals,
+    searchQuery,
+    activeFilter,
+    isDrawerOpen,
+    selectedProposal,
+    actionLoading,
+    setSearchQuery,
+    setActiveFilter,
+    handleDecisionUpdate,
+    openDrawer,
+    closeDrawer,
+  } = useProposals();
 
   if (loading) {
     return (
@@ -91,7 +32,7 @@ export default function AdminRequestsPage() {
     );
   }
 
-  if (errorContext && proposals.length === 0) {
+  if (errorContext && filteredProposals.length === 0) {
     return (
       <div className={`${styles.loadingContainer} ${styles.errorTextContainer}`}>
         <p>System Error Encountered: {errorContext}</p>
@@ -100,21 +41,21 @@ export default function AdminRequestsPage() {
   }
 
   return (
-    <>
     <div className={styles.containerWrapperRelative}>
       <div className={`${styles.mainPageWrapper} ${isDrawerOpen ? styles.faintBackgroundActive : ""}`}>
-
         <div className={styles.headerArea}>
           <h1 className={styles.text4xl}>Club Requests</h1>
-          <p className={styles.textMuted}>Manage and review new club and community proposals.</p>
+          <p className={styles.textMuted}>Manage and review submitted event proposals.</p>
         </div>
+
+        {errorContext && <p className={styles.apiError}>{errorContext}</p>}
 
         <div className={styles.controlsRow}>
           <div className={styles.pillsGroup}>
             {["all", "pending", "approved", "rejected", "draft"].map((filter) => (
               <button
                 key={filter}
-                onClick={() => { setActiveFilter(filter); setErrorContext(null); }}
+                onClick={() => setActiveFilter(filter)}
                 className={`${styles.filterPill} ${activeFilter === filter ? styles.filterPillActive : ""}`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -125,7 +66,7 @@ export default function AdminRequestsPage() {
           <div className={styles.searchWrapper}>
             <input
               type="text"
-              placeholder="Search requests by name or event..."
+              placeholder="Search by event, sender, or club..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}
@@ -138,7 +79,7 @@ export default function AdminRequestsPage() {
           {filteredProposals.length === 0 ? (
             <div className={styles.emptyState}>No requests match selection filters.</div>
           ) : (
-            filteredProposals.map((item: Proposal) => (
+            filteredProposals.map((item) => (
               <div key={item.id} className={styles.proposalCard}>
                 <div className={`${styles.categoryBlock} ${item.category === "COMMUNITY" ? styles.bgCommunity : styles.bgClub}`}>
                   <span className={styles.categoryText}>{item.category}</span>
@@ -148,16 +89,34 @@ export default function AdminRequestsPage() {
                   <div className={styles.bodyTexts}>
                     <h3 className={styles.eventTitle}>{item.eventName}</h3>
                     <p className={styles.descriptionText}>{item.description}</p>
+
                     <p className={styles.requesterRow}>
-                      Requester: <span className={styles.requesterNameHighlight}>{item.requesterName}</span>
+                      Sender: <span className={styles.requesterNameHighlight}>{item.requesterName}</span>
                     </p>
+
+                    <p className={styles.requesterRow}>
+                      Club: <span className={styles.requesterNameHighlight}>{item.clubName || "Unknown Club"}</span>
+                    </p>
+
+                    {item.status === "approved" && (
+                      <p className={styles.requesterRow}>
+                        ✅ Approved proposal for {item.clubName || "Unknown Club"}
+                      </p>
+                    )}
+
+                    {item.status === "rejected" && (
+                      <p className={styles.requesterRow}>
+                        ❌ Rejected proposal for {item.clubName || "Unknown Club"}
+                      </p>
+                    )}
                   </div>
 
                   <div className={styles.rightActionsArea}>
                     <span className={`${styles.statusBadge} ${styles[`status_${item.status}`]}`}>
                       {item.status}
                     </span>
-                    <button onClick={() => { setSelectedProposal(item); setIsDrawerOpen(true); setErrorContext(null); }} className={styles.reviewButton}>
+
+                    <button onClick={() => openDrawer(item)} className={styles.reviewButton}>
                       Review
                     </button>
                   </div>
@@ -168,30 +127,88 @@ export default function AdminRequestsPage() {
         </div>
       </div>
 
-      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={() => { if(!isRejectionModalOpen) { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); } }} />}
+      {isDrawerOpen && <div className={styles.drawerOverlayShield} onClick={closeDrawer} />}
 
       <div className={`${styles.sidebarDrawerContainer} ${isDrawerOpen ? styles.drawerOpenActive : ""}`}>
         {selectedProposal && (
           <div className={styles.drawerInnerFlexColumn}>
             <div className={styles.drawerHeaderContainer}>
               <div>
-                <span className={styles.drawerSubheadingSpan}>{selectedProposal.category} PROPOSAL</span>
+                <span className={styles.drawerSubheadingSpan}>
+                  {selectedProposal.category} PROPOSAL
+                </span>
                 <h2 className={styles.drawerMainHeadingTitle}>{selectedProposal.eventName}</h2>
               </div>
-              <button onClick={() => { setIsDrawerOpen(false); setSelectedProposal(null); setErrorContext(null); }} className={styles.closeDrawerButtonX}>✕</button>
+
+              <button onClick={closeDrawer} className={styles.closeDrawerButtonX}>
+                ✕
+              </button>
             </div>
 
             <div className={styles.drawerScrollableContentArea}>
+              {(selectedProposal.status === "approved" || selectedProposal.status === "rejected") && (
+                <div
+                  className={
+                    selectedProposal.status === "rejected"
+                      ? styles.rejectionInfoBlock
+                      : styles.detailMetaBlockSection
+                  }
+                >
+                  <h4
+                    className={
+                      selectedProposal.status === "rejected"
+                        ? styles.rejectionInfoTitle
+                        : styles.metaLabelHeaderTitle
+                    }
+                  >
+                    {selectedProposal.status === "approved"
+                      ? "✅ APPROVED PROPOSAL"
+                      : "❌ REJECTED PROPOSAL"}
+                  </h4>
+
+                  <p className={styles.metaDescriptionParagraphText}>
+                    This proposal was <strong>{selectedProposal.status}</strong>.
+                  </p>
+
+                  <p className={styles.metaDescriptionParagraphText}>
+                    <strong>Club:</strong> {selectedProposal.clubName || "Unknown Club"}
+                  </p>
+
+                  <p className={styles.metaDescriptionParagraphText}>
+                    <strong>Sender:</strong> {selectedProposal.requesterName}
+                  </p>
+
+                  <p className={styles.metaDescriptionParagraphText}>
+                    <strong>Event:</strong> {selectedProposal.eventName}
+                  </p>
+
+                  <p className={styles.metaDescriptionParagraphText}>
+                    <strong>Status:</strong> {selectedProposal.status}
+                  </p>
+
+                  {selectedProposal.adminComment && (
+                    <p className={styles.metaDescriptionParagraphText}>
+                      <strong>Admin Comment:</strong> {selectedProposal.adminComment}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className={styles.detailMetaBlockSection}>
                 <h4 className={styles.metaLabelHeaderTitle}>DESCRIPTION</h4>
-                <p className={styles.metaDescriptionParagraphText}>{selectedProposal.description}</p>
+                <p className={styles.metaDescriptionParagraphText}>
+                  {selectedProposal.description}
+                </p>
               </div>
 
               <div className={styles.gridMetaParametersRow}>
                 <div>
-                  <h4 className={styles.metaLabelHeaderTitle}>REQUESTER</h4>
-                  <p className={styles.metaValueHighlightText}>{selectedProposal.requesterName}</p>
+                  <h4 className={styles.metaLabelHeaderTitle}>SENDER</h4>
+                  <p className={styles.metaValueHighlightText}>
+                    {selectedProposal.requesterName}
+                  </p>
                 </div>
+
                 <div>
                   <h4 className={styles.metaLabelHeaderTitle}>STATUS</h4>
                   <span className={`${styles.statusBadge} ${styles[`status_${selectedProposal.status}`]}`}>
@@ -202,67 +219,151 @@ export default function AdminRequestsPage() {
 
               <div className={`${styles.gridMetaParametersRow} ${styles.metaRowSpacer}`}>
                 <div>
-                  <h4 className={styles.metaLabelHeaderTitle}>BUDGET ESTIMATE</h4>
-                  <p className={styles.metaValueHighlightText}>${selectedProposal.estimatedBudget}</p>
+                  <h4 className={styles.metaLabelHeaderTitle}>CLUB NAME</h4>
+                  <p className={styles.metaValueHighlightText}>
+                    {selectedProposal.clubName || "Unknown Club"}
+                  </p>
                 </div>
+
                 <div>
-                  <h4 className={styles.metaLabelHeaderTitle}>DOC ATTACHED</h4>
-                  <a href="#" className={styles.attachmentLinkText} onClick={(e) => e.preventDefault()}>
-                    {selectedProposal.docAttached}
-                  </a>
+                  <h4 className={styles.metaLabelHeaderTitle}>CLUB TYPE</h4>
+                  <p className={styles.metaValueHighlightText}>
+                    {selectedProposal.clubType || selectedProposal.category}
+                  </p>
                 </div>
               </div>
 
-              {selectedProposal.status === "rejected" && selectedProposal.adminComment && (
-                <div className={styles.rejectionInfoBlock}>
-                  <h4 className={styles.rejectionInfoTitle}>❌ REJECTION REASON</h4>
-                  <p className={styles.rejectionInfoText}>{selectedProposal.adminComment}</p>
+              <div className={`${styles.gridMetaParametersRow} ${styles.metaRowSpacer}`}>
+                <div>
+                  <h4 className={styles.metaLabelHeaderTitle}>PROPOSED DATE</h4>
+                  <p className={styles.metaValueHighlightText}>
+                    {selectedProposal.proposedDate}
+                  </p>
                 </div>
-              )}
+
+                <div>
+                  <h4 className={styles.metaLabelHeaderTitle}>VENUE</h4>
+                  <p className={styles.metaValueHighlightText}>
+                    {selectedProposal.venueName || "No venue assigned"}
+                  </p>
+                </div>
+              </div>
+
+              <div className={`${styles.gridMetaParametersRow} ${styles.metaRowSpacer}`}>
+                <div>
+                  <h4 className={styles.metaLabelHeaderTitle}>BUDGET ESTIMATE</h4>
+                  <p className={styles.metaValueHighlightText}>
+                    RM {selectedProposal.estimatedBudget}
+                  </p>
+                </div>
+
+                {selectedProposal.proposalPdfUrl ? (
+                  <a
+                    href={
+                      selectedProposal.proposalPdfUrl.startsWith("http")
+                        ? selectedProposal.proposalPdfUrl
+                        : `http://localhost:5000${selectedProposal.proposalPdfUrl}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.attachmentLinkText}
+                  >
+                    Open proposal PDF
+                  </a>
+                ) : (
+                  <p className={styles.metaValueHighlightText}>No document attached</p>
+                )}
+              </div>
+
               <div className={styles.fullDetailsButtonContainer}>
-                <button 
-                  onClick={() => router.push(`admin/events/${selectedProposal.id}`)} 
+                <button
+                  onClick={() => router.push(`/admin/events/${selectedProposal.id}`)}
                   className={styles.fullDetailsButton}
                 >
                   🖼️ View Full Details & Poster Page
                 </button>
               </div>
+
+              {selectedProposal.adminComment && (
+                <div className={styles.rejectionInfoBlock}>
+                  <h4 className={styles.rejectionInfoTitle}>ADMIN MESSAGE</h4>
+                  <p className={styles.rejectionInfoText}>
+                    {selectedProposal.adminComment}
+                  </p>
+                </div>
+              )}
             </div>
 
             {selectedProposal.status === "pending" && (
               <div className={styles.drawerStickyActionBarRow}>
-                <button disabled={actionLoading} onClick={() => handleDecisionUpdate(selectedProposal.id, "approved")} className={styles.approveActionLargeButton}>
+                <button
+                  disabled={actionLoading}
+                  onClick={() =>
+                    handleDecisionUpdate(
+                      selectedProposal.id,
+                      "approved",
+                      `Approved: ${selectedProposal.eventName} by ${selectedProposal.requesterName} for ${selectedProposal.clubName || "Unknown Club"}.`
+                    )
+                  }
+                  className={styles.approveActionLargeButton}
+                >
                   {actionLoading ? "Processing..." : "✓ Approve"}
                 </button>
-                <button disabled={actionLoading} onClick={openRejectionFlow} className={styles.rejectActionLargeButton}>
-                  ✕ Reject
+
+                <button
+                  disabled={actionLoading}
+                  onClick={() => setIsRejectionModalOpen(true)}
+                  className={styles.rejectActionLargeButton}
+                >
+                  {actionLoading ? "Processing..." : "✕ Reject"}
                 </button>
               </div>
             )}
+
           </div>
         )}
       </div>
 
-      {isRejectionModalOpen && (
+      {isRejectionModalOpen && selectedProposal && (
         <div className={styles.rejectionModalOverlay}>
-          <div className={styles.rejectionModalContent} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.rejectionModalContent}>
             <h3 className={styles.rejectionModalTitle}>Specify Rejection Reason</h3>
+
             <textarea
               className={styles.rejectionModalTextarea}
-              placeholder="Provide clean and detailed reasons explaining why this proposal request is rejected..."
+              placeholder="Write the reason why this proposal is rejected..."
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
             />
+
             <div className={styles.rejectionModalActions}>
-              <button 
+              <button
                 className={styles.rejectionModalCancelButton}
-                onClick={() => { setIsRejectionModalOpen(false); setRejectionReason(""); }}
+                onClick={() => {
+                  setIsRejectionModalOpen(false);
+                  setRejectionReason("");
+                }}
               >
                 Cancel
               </button>
-              <button 
+
+              <button
                 className={styles.rejectionModalSubmitButton}
-                onClick={submitRejectionFlow}
+                onClick={() => {
+                  if (!rejectionReason.trim()) {
+                    alert("Please write a rejection reason.");
+                    return;
+                  }
+
+                  handleDecisionUpdate(
+                    selectedProposal.id,
+                    "rejected",
+                    rejectionReason.trim()
+                  );
+
+                  setIsRejectionModalOpen(false);
+                  setRejectionReason("");
+                }}
               >
                 Submit Rejection
               </button>
@@ -271,9 +372,5 @@ export default function AdminRequestsPage() {
         </div>
       )}
     </div>
-
-      <Alert variant="loading" isOpen={actionLoading} onClose={() => {}} message="Processing decision…" />
-      <Alert variant="error" isOpen={actionError !== null} message={actionError ?? ""} onClose={() => setActionError(null)} />
-    </>
   );
 }

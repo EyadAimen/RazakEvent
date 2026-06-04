@@ -526,11 +526,16 @@ export const markEventCompleted = async (eventId, leadId, applicationIds = []) =
 // ── Student — All approved events (no ownership check) ──────────────────────
 export const getStudentEvents = async () => {
     const events = await eventRepo().find({
-        where: { status: In(["approved", "ongoing", "completed", "report_due"]) },
+        where: { status: "approved" },
         order: { eventDate: "ASC" },
     });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const enriched = await Promise.all(events.map(async (event) => {
+    const upcomingEvents = events.filter(
+        event => new Date(event.eventDate) >= today
+    );
+    const enriched = await Promise.all(upcomingEvents.map(async (event) => {
         const club = await clubRepo().findOne({
             where: { id: event.clubId }
         });
