@@ -1,6 +1,7 @@
 export interface VolunteerRole {
   id: number;
   name: string;
+  description?: string | null;
   slotsAvailable: number;
   slotsFilled: number;
   remainingSlots: number;

@@ -55,3 +55,6 @@ backend/migrate_drop_club_members_uq.mjs
 
 # Claude Code local settings
 .claude/
+
+# local files
+backend/uploads/
