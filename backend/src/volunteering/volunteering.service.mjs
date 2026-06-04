@@ -232,7 +232,7 @@ export const getMyApplications = async (studentId) => {
     return {
         applications: applications.map(a => ({
             applicationId: a.id,
-            eventId: eventMap[a.eventId]?.proposalId ?? a.eventId,
+            eventId: a.eventId,
             eventName: eventMap[a.eventId]?.name ?? "Unknown Event",
             eventDate: eventMap[a.eventId]?.eventDate ?? null,
             roleId: a.roleId,

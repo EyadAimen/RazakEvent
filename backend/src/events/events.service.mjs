@@ -361,6 +361,7 @@ export const getStudentEventDetail = async (eventId, userId) => {
     const volunteerRoles = roles.map((role) => ({
         id: role.id,
         name: role.roleName,
+        description: role.description ?? null,
         slotsAvailable: role.slotsAvailable,
         slotsFilled: role.slotsFilled,
         remainingSlots: role.slotsAvailable - role.slotsFilled,
