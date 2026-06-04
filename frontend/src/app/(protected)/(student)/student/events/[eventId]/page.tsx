@@ -113,7 +113,7 @@ export default function SharedEventDetailPage() {
                   <ul>
                     {event.volunteerRoles.map(role => (
                       <li key={role.id}>
-                        <strong>{role.name}</strong> – {role.remainingSlots} / {role.slotsAvailable} slots
+                        <strong>{role.name}</strong> – {role.slotsFilled} / {role.slotsAvailable}{role.remainingSlots === 0 ? " filled" : ""}
                       </li>
                     ))}
                   </ul>

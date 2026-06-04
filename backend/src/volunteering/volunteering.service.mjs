@@ -164,29 +164,17 @@ export const applyToRole = async (studentId, body) => {
     if (!role) throw new NotFoundError("Role not found");
 
     const event = await eventRepo().findOne({ where: { id: role.eventId } });
-    const club = await clubRepo().findOne({
-        where: { id: event.clubId }
-    });
-
-    if (!club) {
-        throw new NotFoundError("Club not found");
-    }
-
-    const isLead = club.leadId === studentId;
-
-    const isCommittee = await clubMemberRepo().findOne({
-        where: {
-            clubId: event.clubId,
-            userId: studentId,
-        },
-    });
-
-    if (!isLead && !isCommittee) {
-        throw new ForbiddenError(
-            "Only members of this club may volunteer for this event"
-        );
-    }
     if (!event) throw new NotFoundError("Event not found");
+
+    const club = await clubRepo().findOne({ where: { id: event.clubId } });
+    if (!club) throw new NotFoundError("Club not found");
+
+    // Leads organise the event — they may not apply as volunteers
+    const isLead = club.leadId === studentId;
+    if (isLead) {
+        throw new ForbiddenError("The club lead cannot volunteer for their own event");
+    }
+
     if (event.volunteeringStatus !== "open") throw new ConflictError("Volunteering for this event is not open");
     if (role.slotsFilled >= role.slotsAvailable) throw new ConflictError("This role is full");
 
