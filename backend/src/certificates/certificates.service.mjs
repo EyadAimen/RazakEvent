@@ -16,20 +16,23 @@ const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
 const userRepo     = () => appDataSource.getRepository(UserEntity);
 
 async function assertLeadOwnsEvent(eventId, leadId) {
-    const event = await eventRepo().findOne({ where: { id: eventId } });
-    if (!event) throw new NotFoundError("Event not found");
-    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
-    if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+    const proposal = await proposalRepo().findOne({ where: { id: eventId } });
+    if (!proposal) throw new NotFoundError("Event not found");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+    
+    const event = await eventRepo().findOne({ where: { proposalId: eventId } });
+    if (!event) throw new NotFoundError("Approved event record not found");
+    
     return event;
 }
 
 // ── Lead — Get accepted volunteers with certificate status ────────────────────
 
 export const getEventVolunteers = async (eventId, leadId) => {
-    await assertLeadOwnsEvent(Number(eventId), leadId);
+    const event = await assertLeadOwnsEvent(Number(eventId), leadId);
 
     const applications = await appRepo().find({
-        where: { eventId: Number(eventId), status: "accepted" },
+        where: { eventId: event.id, status: "accepted" },
     });
 
     if (applications.length === 0) return { volunteers: [] };
@@ -40,7 +43,7 @@ export const getEventVolunteers = async (eventId, leadId) => {
     const [users, roles, certs] = await Promise.all([
         userRepo().findBy({ id: In(studentIds) }),
         roleRepo().findBy({ id: In(roleIds) }),
-        certRepo().find({ where: { eventId: Number(eventId), type: "volunteer" } }),
+        certRepo().find({ where: { eventId: event.id, type: "volunteer" } }),
     ]);
 
     const userMap = Object.fromEntries(users.map(u => [u.id, u]));
@@ -71,7 +74,7 @@ export const issueCertificates = async (eventId, leadId, applicationIds) => {
 
     const applications = await appRepo().findBy({ id: In(applicationIds) });
     const validApps    = applications.filter(
-        a => a.eventId === Number(eventId) && a.status === "accepted"
+        a => a.eventId === event.id && a.status === "accepted"
     );
 
     if (validApps.length === 0) return { issued: [], skipped: [] };
@@ -85,7 +88,7 @@ export const issueCertificates = async (eventId, leadId, applicationIds) => {
 
     for (const app of validApps) {
         try {
-            await certRepo().insert({ userId: app.studentId, eventId: Number(eventId), type: "volunteer" });
+            await certRepo().insert({ userId: app.studentId, eventId: event.id, type: "volunteer" });
             issued.push({ userId: app.studentId, name: userMap[app.studentId]?.fullName ?? "Unknown" });
         } catch (err) {
             if (err.code === "23505") {
