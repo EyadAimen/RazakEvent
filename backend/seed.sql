@@ -29,6 +29,23 @@ ALTER TABLE club_requests
     ADD COLUMN IF NOT EXISTS category              VARCHAR(100),
     ADD COLUMN IF NOT EXISTS supporting_letter_path TEXT;
 
+-- Fix event dates that are now in the past for approved/ongoing events
+UPDATE events SET event_date = '2026-08-15 09:00:00' WHERE name = 'Tech Symposium 2026'    AND status IN ('approved', 'ongoing');
+UPDATE events SET event_date = '2026-08-25 08:00:00' WHERE name = 'Sports Carnival 2026'   AND status IN ('approved', 'ongoing');
+UPDATE events SET event_date = '2026-09-12 09:00:00' WHERE name = 'KTR CTF 2026 Season Opener' AND status IN ('approved', 'ongoing');
+UPDATE events SET event_date = '2026-09-28 14:00:00' WHERE name = 'Guest Lecture: Threat Intelligence in 2026' AND status IN ('approved', 'ongoing');
+
+-- Fix proposal dates to match
+UPDATE event_proposals SET proposed_date = '2026-08-15 09:00:00' WHERE event_name = 'Tech Symposium 2026';
+UPDATE event_proposals SET proposed_date = '2026-09-20 08:00:00' WHERE event_name = 'Hackathon Kickoff';
+UPDATE event_proposals SET proposed_date = '2026-09-10 10:00:00' WHERE event_name = 'Batik Workshop';
+UPDATE event_proposals SET proposed_date = '2026-08-25 08:00:00' WHERE event_name = 'Sports Carnival 2026';
+UPDATE event_proposals SET proposed_date = '2026-10-10 09:00:00' WHERE event_name = 'Volleyball Tournament';
+UPDATE event_proposals SET proposed_date = '2026-10-01 09:00:00' WHERE event_name = 'Art Exhibition 2026';
+UPDATE event_proposals SET proposed_date = '2026-09-12 09:00:00' WHERE event_name = 'KTR CTF 2026 Season Opener';
+UPDATE event_proposals SET proposed_date = '2026-09-28 14:00:00' WHERE event_name = 'Guest Lecture: Threat Intelligence in 2026';
+UPDATE event_proposals SET proposed_date = '2026-10-05 10:00:00' WHERE event_name = 'Zero Waste Workshop';
+
 -- ── 1. Venues ────────────────────────────────────────────────
 
 INSERT INTO venues (name, location)
@@ -199,7 +216,7 @@ SELECT
     (SELECT id FROM users WHERE email = 'sarah.lead@graduate.utm.my'),
     (SELECT id FROM clubs WHERE name = 'Tech Club'),
     (SELECT id FROM venues WHERE name = 'Dewan Tun Hussein Onn, KTR'),
-    'Tech Symposium 2026', '2026-05-15 09:00:00',
+    'Tech Symposium 2026', '2026-08-15 09:00:00',
     'Annual technology symposium bringing together students and industry professionals.',
     5000.00, 'approved',
     NOW() - INTERVAL '30 days', NOW() - INTERVAL '25 days', NOW() - INTERVAL '30 days'
@@ -210,7 +227,7 @@ SELECT
     (SELECT id FROM users WHERE email = 'sarah.lead@graduate.utm.my'),
     (SELECT id FROM clubs WHERE name = 'Tech Club'),
     (SELECT id FROM venues WHERE name = 'Computer Lab 1, KTR'),
-    'Hackathon Kickoff', '2026-06-20 08:00:00',
+    'Hackathon Kickoff', '2026-09-20 08:00:00',
     '24-hour hackathon open to all KTR students.',
     2000.00, 'pending',
     NOW() - INTERVAL '10 days', NOW() - INTERVAL '10 days'
@@ -245,7 +262,7 @@ SELECT
     (SELECT id FROM users WHERE email = 'haziq.lead@graduate.utm.my'),
     (SELECT id FROM clubs WHERE name = 'Culture Club'),
     (SELECT id FROM venues WHERE name = 'Seminar Room A, KTR'),
-    'Batik Workshop', '2026-06-10 10:00:00',
+    'Batik Workshop', '2026-09-10 10:00:00',
     'Traditional batik painting workshop for KTR students.',
     800.00, 'pending',
     NOW() - INTERVAL '5 days', NOW() - INTERVAL '5 days'
@@ -256,7 +273,7 @@ SELECT
     (SELECT id FROM users WHERE email = 'haziq.lead@graduate.utm.my'),
     (SELECT id FROM clubs WHERE name = 'Culture Club'),
     NULL,
-    'Art Exhibition 2026', '2026-07-01 09:00:00',
+    'Art Exhibition 2026', '2026-10-01 09:00:00',
     'Student art exhibition showcasing creative works from KTR residents.',
     1200.00, 'draft',
     NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'
@@ -269,7 +286,7 @@ SELECT
     (SELECT id FROM users WHERE email = 'nurul.lead@graduate.utm.my'),
     (SELECT id FROM clubs WHERE name = 'Sports Community'),
     (SELECT id FROM venues WHERE name = 'Sports Field, KTR'),
-    'Sports Carnival 2026', '2026-05-25 08:00:00',
+    'Sports Carnival 2026', '2026-08-25 08:00:00',
     'Inter-college sports carnival with multiple sports categories.',
     6000.00, 'approved',
     NOW() - INTERVAL '20 days', NOW() - INTERVAL '15 days', NOW() - INTERVAL '20 days'
@@ -291,7 +308,7 @@ SELECT
     (SELECT id FROM users WHERE email = 'nurul.lead@graduate.utm.my'),
     (SELECT id FROM clubs WHERE name = 'Sports Community'),
     (SELECT id FROM venues WHERE name = 'Dewan Serbaguna, KTR'),
-    'Volleyball Tournament', '2026-07-10 09:00:00',
+    'Volleyball Tournament', '2026-10-10 09:00:00',
     'KTR internal volleyball tournament for college residents.',
     900.00, 'pending',
     NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days'
@@ -589,7 +606,7 @@ SELECT
     (SELECT id FROM users WHERE email = 'adam.lee@graduate.utm.my'),
     (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
     (SELECT id FROM venues WHERE name = 'Lab Block C, Room 204'),
-    'KTR CTF 2026 Season Opener', '2026-06-12 09:00:00',
+    'KTR CTF 2026 Season Opener', '2026-09-12 09:00:00',
     'Capture-the-flag competition open to all KTR students to test their hacking and problem-solving skills.',
     1200.00, 'approved',
     NOW() - INTERVAL '35 days', NOW() - INTERVAL '30 days', NOW() - INTERVAL '35 days'
@@ -600,7 +617,7 @@ SELECT
     (SELECT id FROM users WHERE email = 'adam.lee@graduate.utm.my'),
     (SELECT id FROM clubs WHERE name = 'Cybersecurity KTR'),
     (SELECT id FROM venues WHERE name = 'Auditorium B, KTR'),
-    'Guest Lecture: Threat Intelligence in 2026', '2026-06-28 14:00:00',
+    'Guest Lecture: Threat Intelligence in 2026', '2026-09-28 14:00:00',
     'Industry guest lecture on modern threat intelligence and security operations for KTR students.',
     500.00, 'approved',
     NOW() - INTERVAL '20 days', NOW() - INTERVAL '16 days', NOW() - INTERVAL '20 days'
@@ -635,7 +652,7 @@ SELECT
     (SELECT id FROM users WHERE email = 'nadia.hassan@graduate.utm.my'),
     (SELECT id FROM clubs WHERE name = 'Green Earth Initiative'),
     (SELECT id FROM venues WHERE name = 'Seminar Room A, KTR'),
-    'Zero Waste Workshop', '2026-07-05 10:00:00',
+    'Zero Waste Workshop', '2026-10-05 10:00:00',
     'Workshop on sustainable living, composting and zero-waste practices for campus life.',
     400.00, 'pending',
     NOW() - INTERVAL '4 days', NOW() - INTERVAL '4 days'
@@ -646,6 +663,47 @@ SELECT p.id, p.club_id, p.venue_id, p.event_name, p.description, p.proposed_date
 FROM event_proposals p
 WHERE p.event_name = 'Campus Clean-Up Drive'
 AND NOT EXISTS (SELECT 1 FROM events WHERE name = 'Campus Clean-Up Drive');
+
+-- ── 15. Volunteering roles for open events ───────────────────
+-- Uses events.id (NOT proposal_id) as required by volunteering_roles.event_id
+
+-- Tech Symposium 2026 (approved, open)
+INSERT INTO volunteering_roles (event_id, role_name, description, slots_available, slots_filled, created_at)
+SELECT e.id, 'Registration Desk', 'Manage attendee check-in and badge distribution.', 4, 0, NOW()
+FROM events e WHERE e.name = 'Tech Symposium 2026'
+AND NOT EXISTS (SELECT 1 FROM volunteering_roles WHERE event_id = e.id AND role_name = 'Registration Desk');
+
+INSERT INTO volunteering_roles (event_id, role_name, description, slots_available, slots_filled, created_at)
+SELECT e.id, 'Tech Support', 'Assist with AV equipment and technical setup.', 2, 0, NOW()
+FROM events e WHERE e.name = 'Tech Symposium 2026'
+AND NOT EXISTS (SELECT 1 FROM volunteering_roles WHERE event_id = e.id AND role_name = 'Tech Support');
+
+INSERT INTO volunteering_roles (event_id, role_name, description, slots_available, slots_filled, created_at)
+SELECT e.id, 'Usher', 'Guide attendees to their seats and manage crowd flow.', 3, 0, NOW()
+FROM events e WHERE e.name = 'Tech Symposium 2026'
+AND NOT EXISTS (SELECT 1 FROM volunteering_roles WHERE event_id = e.id AND role_name = 'Usher');
+
+-- Sports Carnival 2026 (approved, open)
+INSERT INTO volunteering_roles (event_id, role_name, description, slots_available, slots_filled, created_at)
+SELECT e.id, 'Registration Desk', 'Handle participant sign-ins and distribute bibs.', 5, 0, NOW()
+FROM events e WHERE e.name = 'Sports Carnival 2026'
+AND NOT EXISTS (SELECT 1 FROM volunteering_roles WHERE event_id = e.id AND role_name = 'Registration Desk');
+
+INSERT INTO volunteering_roles (event_id, role_name, description, slots_available, slots_filled, created_at)
+SELECT e.id, 'Event Crew', 'Set up and dismantle equipment at each station.', 6, 0, NOW()
+FROM events e WHERE e.name = 'Sports Carnival 2026'
+AND NOT EXISTS (SELECT 1 FROM volunteering_roles WHERE event_id = e.id AND role_name = 'Event Crew');
+
+-- KTR CTF 2026 Season Opener (approved, open)
+INSERT INTO volunteering_roles (event_id, role_name, description, slots_available, slots_filled, created_at)
+SELECT e.id, 'Registration Desk', 'Check in participants and distribute challenge booklets.', 3, 0, NOW()
+FROM events e WHERE e.name = 'KTR CTF 2026 Season Opener'
+AND NOT EXISTS (SELECT 1 FROM volunteering_roles WHERE event_id = e.id AND role_name = 'Registration Desk');
+
+INSERT INTO volunteering_roles (event_id, role_name, description, slots_available, slots_filled, created_at)
+SELECT e.id, 'Tech Support', 'Monitor lab machines and assist participants with connectivity issues.', 2, 0, NOW()
+FROM events e WHERE e.name = 'KTR CTF 2026 Season Opener'
+AND NOT EXISTS (SELECT 1 FROM volunteering_roles WHERE event_id = e.id AND role_name = 'Tech Support');
 
 -- ── Done ─────────────────────────────────────────────────────
 -- All passwords: Password123!
