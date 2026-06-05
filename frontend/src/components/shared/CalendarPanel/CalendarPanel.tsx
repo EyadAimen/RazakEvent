@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { X } from "lucide-react";
-import type { SharedEvent } from "@/app/(protected)/(student)/student/events/utils/interface/events.interface";
+import type { SharedEvent } from "@/app/(protected)/(shared)/events/utils/interface/events.interface";
 import { MONTH_NAMES, formatTime } from "@/app/(protected)/(shared)/calendar/utils/calendar.helpers";
 import styles from "./CalendarPanel.module.css";
 
@@ -31,14 +32,14 @@ export default function CalendarPanel({ selectedDate, events, dismissing, onClos
         {events.length === 0 ? (
           <p className={styles.empty}>No events on this day.</p>
         ) : events.map(e => (
-          <div key={e.id} className={styles.eventCard}>
+          <Link key={e.id} href={`/events/${e.id}`} className={styles.eventCard}>
             <span className={styles.eventTime}>{formatTime(e.eventDate)}</span>
             <p className={styles.eventName}>{e.name}</p>
             <div className={styles.eventMeta}>
               <span className={styles.eventDot} />
               <span className={styles.eventClub}>{e.clubName}</span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

@@ -32,7 +32,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   student: [
     { label: "Dashboard",     href: "/student/dashboard", icon: LayoutDashboard },
     { label: "Calendar",      href: "/calendar",           icon: Calendar        },
-    { label: "Events",        href: "/student/events",     icon: Ticket          },
+    { label: "Events",        href: "/events",             icon: Ticket          },
     { label: "Volunteering",  href: "/volunteering",       icon: HandHeart       },
     { label: "Certificates",  href: "/certificates",       icon: Award           },
     { label: "Become A Member", href: "/become-member",     icon: Star            },
@@ -41,7 +41,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   member: [
     { label: "Dashboard",     href: "/student/dashboard", icon: LayoutDashboard },
     { label: "Calendar",      href: "/calendar",           icon: Calendar        },
-    { label: "Events",        href: "/student/events",     icon: Ticket          },
+    { label: "Events",        href: "/events",             icon: Ticket          },
     { label: "Volunteering",  href: "/volunteering",       icon: HandHeart       },
     { label: "Certificates",  href: "/certificates",       icon: Award           },
     { label: "Become A Member", href: "/become-member",    icon: Star            },

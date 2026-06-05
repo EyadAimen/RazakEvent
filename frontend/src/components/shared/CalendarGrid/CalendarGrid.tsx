@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { SharedEvent } from "@/app/(protected)/(student)/student/events/utils/interface/events.interface";
+import type { SharedEvent } from "@/app/(protected)/(shared)/events/utils/interface/events.interface";
 import { DAYS, MONTH_NAMES, toDateKey, buildCalendarCells } from "@/app/(protected)/(shared)/calendar/utils/calendar.helpers";
 import styles from "./CalendarGrid.module.css";
 
