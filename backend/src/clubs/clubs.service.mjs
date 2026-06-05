@@ -271,6 +271,43 @@ export const getMyClub = async (leadId) => {
     };
 };
 
+// ── Member — Get the club they belong to ─────────────────────────────────────
+
+export const getMemberClub = async (userId) => {
+    const membership = await clubMemberRepo().findOne({ where: { userId } });
+    if (!membership) return { club: null };
+
+    const club = await clubRepo().findOne({ where: { id: membership.clubId } });
+    if (!club) return { club: null };
+
+    const [memberCount, proposals] = await Promise.all([
+        clubMemberRepo().count({ where: { clubId: club.id } }),
+        proposalRepo().find({ where: { clubId: club.id } }),
+    ]);
+
+    const stats = proposals.reduce(
+        (acc, p) => {
+            acc.total++;
+            if (p.status === "approved") acc.approved++;
+            else if (p.status === "rejected") acc.rejected++;
+            return acc;
+        },
+        { total: 0, approved: 0, rejected: 0 },
+    );
+
+    return {
+        club: {
+            id: club.id,
+            name: club.name,
+            type: club.type,
+            description: club.description,
+            category: club.category ?? null,
+            memberCount: memberCount + (club.leadId ? 1 : 0),
+            eventStats: stats,
+        },
+    };
+};
+
 // ── Lead — Get all clubs + pending requests ───────────────────────────────────
 
 const buildClubStats = async (club) => {

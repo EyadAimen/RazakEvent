@@ -8,6 +8,9 @@ const router = Router();
 // Any authenticated user — used by signup and become-lead dropdowns
 router.get("/", authenticate, clubsController.listClubsHandler);
 
+// Member — get the club they belong to
+router.get("/member-club", authenticate, clubsController.getMemberClubHandler);
+
 // Lead — must be registered before /:param routes to avoid "mine" being matched as a param
 router.get("/mine", authenticate, requireRole("lead"), clubsController.getMyClubHandler);
 router.get("/mine/members", authenticate, requireRole("lead"), clubsController.getMyClubMembersHandler);
