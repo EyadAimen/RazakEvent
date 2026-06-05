@@ -156,6 +156,11 @@ export default function ProposeEventPage() {
   const handleSubmit = async (submitStatus: "draft" | "submitted") => {
     setApiError(null);
 
+    if (!pdfFile) {
+      setApiError("Please upload the completed proposal PDF before continuing.");
+      return;
+    }
+
     const errs = validate(submitStatus === "submitted");
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
@@ -384,9 +389,9 @@ export default function ProposeEventPage() {
 
             {/* ── Section 2: Proposal Form Upload ────────────────── */}
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Proposal Form Upload</h2>
+              <h2 className={styles.sectionTitle}>Proposal Form Upload *</h2>
               <p className={styles.sectionHint}>
-                Download the official event proposal template, fill it out, and upload the completed PDF below.
+                Download the official event proposal template, fill it out, and upload the completed PDF below. This is required before saving or submitting.
               </p>
 
               <a

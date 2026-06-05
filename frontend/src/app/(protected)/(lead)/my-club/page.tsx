@@ -1,10 +1,19 @@
 "use client";
 
-import { useEffect, useState, useCallback, Fragment } from "react";
-import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, Clock, Inbox, Calendar, XCircle } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, Clock, Calendar, XCircle, UserCog } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
-import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubTab, ClubVolunteerApplication } from "@/types/lead";
+import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubVolunteerApplication } from "@/types/lead";
+
+type ClubTab = "members" | "requests" | "volunteers" | "lead-applications";
+
+interface LeadApplication {
+  id: number;
+  status: string;
+  submittedAt: string;
+  student: { id: string; fullName: string; staffOrMatricId: string | null } | null;
+}
 import Alert from "@/components/shared/alertComponent/alert";
 import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
 import CreateClubModal from "@/components/lead/CreateClubModal/CreateClubModal";
@@ -23,6 +32,7 @@ export default function MyClubPage() {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<ClubTab>("members");
   const [search, setSearch] = useState("");
+  const [leadApps, setLeadApps] = useState<LeadApplication[]>([]);
   const [acting, setActing] = useState<string | number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -57,14 +67,16 @@ export default function MyClubPage() {
   // ── Load management data for an approved club ──────────────────────────────
 
   const loadClubData = useCallback(async (clubId: number) => {
-    const [membersData, requestsData, volData] = await Promise.all([
+    const [membersData, requestsData, volData, leadAppsData] = await Promise.all([
       apiFetchAuth<{ members: ClubMember[] }>(`/clubs/mine/members?clubId=${clubId}`),
       apiFetchAuth<{ requests: MembershipRequest[] }>(`/clubs/mine/membership-requests?clubId=${clubId}`),
       apiFetchAuth<{ applications: ClubVolunteerApplication[] }>(`/volunteering/applications/club?clubId=${clubId}`),
+      apiFetchAuth<{ requests: LeadApplication[] }>(`/requests/lead-role/incoming?status=all`).catch(() => ({ requests: [] })),
     ]);
     setMembers(membersData.members);
     setRequests(requestsData.requests);
     setVolApps(volData.applications);
+    setLeadApps(leadAppsData.requests);
   }, []);
 
   const fetchAllClubs = useCallback(async () => {
@@ -165,6 +177,24 @@ export default function MyClubPage() {
       ));
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to remove member.");
+    } finally {
+      setActing(null);
+    }
+  };
+
+  const handleDecideLeadApp = async (requestId: number, action: "approved" | "rejected", comment?: string) => {
+    if (acting !== null) return;
+    setActing(requestId);
+    try {
+      await apiFetchAuth(`/requests/lead-role/${requestId}/lead-decision`, {
+        method: "PATCH",
+        body: JSON.stringify({ action, comment: comment ?? "" }),
+      });
+      setLeadApps(prev => prev.map(r =>
+        r.id === requestId ? { ...r, status: action === "approved" ? "pending_admin" : "rejected" } : r
+      ));
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Action failed.");
     } finally {
       setActing(null);
     }
@@ -370,6 +400,16 @@ export default function MyClubPage() {
                       <span className={styles.badge}>{volApps.filter(a => a.status === "pending").length}</span>
                     )}
                   </button>
+                  <button
+                    className={`${styles.tabBtn} ${tab === "lead-applications" ? styles.tabActive : ""}`}
+                    onClick={() => { setTab("lead-applications"); setSearch(""); }}
+                  >
+                    <UserCog size={14} />
+                    Lead Applications
+                    {leadApps.filter(a => a.status === "pending_lead").length > 0 && (
+                      <span className={styles.badge}>{leadApps.filter(a => a.status === "pending_lead").length}</span>
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -474,6 +514,57 @@ export default function MyClubPage() {
                                     <X size={12} /> Reject
                                   </button>
                                 </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Lead Applications tab — informational only, admin decides */}
+              {tab === "lead-applications" && (
+                <div className={styles.tabPanel}>
+                  <p className={styles.pendingNote}>
+                    These applications are reviewed and decided by the admin. No action is required from you.
+                  </p>
+                  {leadApps.length === 0 ? (
+                    <div className={styles.stateBox}>
+                      <p>No lead role applications yet.</p>
+                    </div>
+                  ) : (
+                    <div className={styles.tableWrap}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Student ID</th>
+                            <th>Date Applied</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {leadApps.map(r => (
+                            <tr key={r.id}>
+                              <td>{r.student?.fullName ?? "—"}</td>
+                              <td>{r.student?.staffOrMatricId ?? "—"}</td>
+                              <td>
+                                {new Date(r.submittedAt).toLocaleDateString("en-MY", {
+                                  year: "numeric", month: "short", day: "numeric",
+                                })}
+                              </td>
+                              <td>
+                                <span className={`${styles.roleBadge} ${
+                                  r.status === "pending_admin" ? styles.roleCommittee :
+                                  r.status === "approved"      ? styles.roleLead      :
+                                                                  styles.roleCommittee
+                                }`}>
+                                  {r.status === "pending_admin" ? "Awaiting Admin"  :
+                                   r.status === "approved"      ? "Approved"        :
+                                                                   "Rejected"}
+                                </span>
                               </td>
                             </tr>
                           ))}
