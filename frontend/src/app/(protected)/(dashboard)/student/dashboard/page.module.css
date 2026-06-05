@@ -266,6 +266,70 @@
   gap: var(--space-md);
 }
 
+.eventCard {
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  text-decoration: none;
+  color: var(--color-neutral-800);
+  border-left: 4px solid var(--color-primary-500);
+  transition: transform var(--transition-veryfast), box-shadow var(--transition-veryfast);
+}
+
+.eventCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.eventCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clubTag {
+  font-family: var(--font-body);
+  font-size: var(--text-caption-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-primary-500);
+  background: var(--color-ktr-ice);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.eventName {
+  font-family: var(--font-heading);
+  font-size: var(--text-body-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-800);
+  line-height: var(--text-body-height);
+}
+
+.eventMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--text-caption-size);
+  color: var(--color-neutral-500);
+}
+
+.errorState {
+  color: var(--color-semantic-red);
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+}
+
 /* ── Responsive ──────────────────────────────── */
 @media (max-width: 768px) {
   .body {
