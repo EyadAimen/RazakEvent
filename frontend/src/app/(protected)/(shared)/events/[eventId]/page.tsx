@@ -132,7 +132,7 @@ export default function SharedEventDetailPage() {
                 ) : event.canVolunteer ? (
                   <button
                     className={styles.applyBtn}
-                    onClick={() => router.push(`/student/events/${eventId}/volunteer`)}
+                    onClick={() => router.push(`/events/${eventId}/volunteer`)}
                   >
                     Apply to volunteer
                   </button>

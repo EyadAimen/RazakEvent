@@ -16,7 +16,7 @@ const QUICK_ACTIONS = [
     icon: <Ticket size={22} />,
     label: "Browse",
     sublabel: "Events",
-    href: "/student/events",
+    href: "/events",
   },
   {
     id: "volunteering",
@@ -89,7 +89,7 @@ export default function StudentDashboard() {
             <section className={styles.eventsSection}>
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>Upcoming Events</h2>
-                <a href="/student/events" className={styles.viewAll}>View All →</a>
+                <a href="/events" className={styles.viewAll}>View All →</a>
               </div>
 
               {error ? (
@@ -97,14 +97,14 @@ export default function StudentDashboard() {
               ) : !loading && events.length === 0 ? (
                 <div className={styles.emptyState}>
                   <p>No upcoming events yet.</p>
-                  <a href="/student/events" className={styles.emptyCta}>Browse available events →</a>
+                  <a href="/events" className={styles.emptyCta}>Browse available events →</a>
                 </div>
               ) : (
                 <div className={styles.eventsGrid}>
                   {events.map(event => (
                     <a
                       key={event.id}
-                      href={`/student/events/${event.id}`}
+                      href={`/events/${event.id}`}
                       className={styles.eventCard}
                     >
                       <div className={styles.eventCardTop}>
