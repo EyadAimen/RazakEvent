@@ -13,7 +13,7 @@ const userRepo = () => appDataSource.getRepository(UserEntity);
 
 const VALID_STATUSES = ["pending_lead", "pending_admin", "approved", "rejected"];
 
-export const submitLeadRoleRequest = async (studentId, clubId) => {
+export const submitLeadRoleRequest = async (studentId, clubId, message, supportingDocUrl) => {
     const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
 
@@ -29,7 +29,9 @@ export const submitLeadRoleRequest = async (studentId, clubId) => {
         studentId,
         clubId,
         currentLeadId: club.leadId || null,
-        status: club.leadId ? "pending_lead" : "pending_admin",
+        status: "pending_admin",
+        studentMessage: message?.trim() || null,
+        supportingDocUrl: supportingDocUrl || null,
     });
     const saved = await requestRepo().save(request);
 
@@ -62,10 +64,9 @@ export const getIncomingRequests = async (leadId, statusFilter) => {
     if (!club) throw new NotFoundError("No club found for this lead");
 
     const where = { clubId: club.id };
-    if (!statusFilter || statusFilter === "pending_lead") {
-        where.status = "pending_lead";
-    } else if (statusFilter !== "all") {
-        throw new ValidationError("status must be 'pending_lead' or 'all'");
+    if (statusFilter && statusFilter !== "all") {
+        if (!VALID_STATUSES.includes(statusFilter)) throw new ValidationError("Invalid status filter");
+        where.status = statusFilter;
     }
 
     const requests = await requestRepo().find({ where, order: { submittedAt: "DESC" } });

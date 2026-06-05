@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { authenticate, requireRole } from "../auth/auth.middleware.mjs";
+import { uploadLeadRoleDoc } from "../shared/upload.middleware.mjs";
 import * as leadRoleController from "./lead_role_requests.controller.mjs";
 
 const router = Router();
 
 // Member: submit a request
-router.post("/", authenticate, requireRole("member"), leadRoleController.submitLeadRoleRequestHandler);
+router.post("/", authenticate, requireRole("member"), uploadLeadRoleDoc, leadRoleController.submitLeadRoleRequestHandler);
 
 // IMPORTANT: /mine and /incoming must be registered BEFORE /:id to avoid being captured as a param
 router.get("/mine", authenticate, requireRole("member"), leadRoleController.getMyRequestHandler);

@@ -10,7 +10,13 @@ import {
 
 export const submitLeadRoleRequestHandler = async (req, res, next) => {
     try {
-        const result = await submitLeadRoleRequest(req.user.userId, req.body.clubId);
+        const supportingDocUrl = req.file ? `/uploads/lead-docs/${req.file.filename}` : null;
+        const result = await submitLeadRoleRequest(
+            req.user.userId,
+            req.body.clubId,
+            req.body.message,
+            supportingDocUrl,
+        );
         res.status(201).json({ message: "Lead role request submitted", ...result });
     } catch (err) {
         next(err);

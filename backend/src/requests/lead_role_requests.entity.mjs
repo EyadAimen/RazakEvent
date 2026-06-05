@@ -33,6 +33,16 @@ export const LeadRoleRequestEntity = new EntitySchema({
             enum: ["pending_lead", "pending_admin", "approved", "rejected"],
             nullable: false,
         },
+        studentMessage: {
+            name: "student_message",
+            type: "text",
+            nullable: true,
+        },
+        supportingDocUrl: {
+            name: "supporting_doc_url",
+            type: "varchar",
+            nullable: true,
+        },
         leadComment: {
             type: "text",
             nullable: true,
