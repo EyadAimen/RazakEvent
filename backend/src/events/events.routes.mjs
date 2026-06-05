@@ -6,7 +6,8 @@ import * as eventsController from "./events.controller.mjs";
 const router = Router();
 
 // ── Shared (any authenticated user) ──────────────────────────────────────────
-router.get("/shared", authenticate, eventsController.getStudentEventsHandler);
+router.get("/shared",          authenticate, eventsController.getStudentEventsHandler);
+router.get("/shared/:eventId", authenticate, eventsController.getStudentEventHandler);
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
 router.get("/",              authenticate, requireRole("admin"), eventsController.getAllEventsHandler);
