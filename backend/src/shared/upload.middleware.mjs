@@ -44,6 +44,23 @@ export const uploadClubLetter = multer({
     limits: { fileSize: 10 * 1024 * 1024 },
 }).single("supportingLetter");
 
+const LEAD_DOCS_DIR = "./uploads/lead-docs";
+if (!fs.existsSync(LEAD_DOCS_DIR)) fs.mkdirSync(LEAD_DOCS_DIR, { recursive: true });
+
+const leadDocStorage = multer.diskStorage({
+    destination: LEAD_DOCS_DIR,
+    filename: (req, file, cb) => {
+        const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+        cb(null, `${unique}.pdf`);
+    },
+});
+
+export const uploadLeadRoleDoc = multer({
+    storage: leadDocStorage,
+    fileFilter,
+    limits: { fileSize: 10 * 1024 * 1024 },
+}).single("supportingDoc");
+
 const REPORTS_DIR = "./uploads/reports";
 if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR, { recursive: true });
 
