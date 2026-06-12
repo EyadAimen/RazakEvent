@@ -49,6 +49,16 @@ export const EventEntity = new EntitySchema({
             default: "closed",
             nullable: false,
         },
+        completedAt: {
+            name: "completed_at",
+            type: "timestamptz",
+            nullable: true,
+        },
+        reportDueAt: {
+            name: "report_due_at",
+            type: "timestamptz",
+            nullable: true,
+        },
         createdAt: {
             name: "created_at",
             type: "timestamptz",
