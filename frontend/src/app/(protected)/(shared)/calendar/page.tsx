@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Triangle from "@/components/shared/triangle/triangle";
 import CalendarGrid from "@/components/shared/CalendarGrid/CalendarGrid";
 import CalendarPanel from "@/components/shared/CalendarPanel/CalendarPanel";
-import { fetchSharedEvents } from "@/app/(protected)/(student)/student/events/utils/services/events.services";
-import type { SharedEvent } from "@/app/(protected)/(student)/student/events/utils/interface/events.interface";
+import { fetchSharedEvents } from "@/app/(protected)/(shared)/events/utils/services/events.services";
+import type { SharedEvent } from "@/app/(protected)/(shared)/events/utils/interface/events.interface";
 import { toDateKey } from "./utils/calendar.helpers";
 import styles from "./page.module.css";
 

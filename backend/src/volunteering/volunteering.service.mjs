@@ -165,21 +165,15 @@ export const applyToRole = async (studentId, body) => {
     if (!role) throw new NotFoundError("Role not found");
 
     const event = await eventRepo().findOne({ where: { id: role.eventId } });
-    if (!event) throw new NotFoundError("Event not found");
-
     const club = await clubRepo().findOne({
         where: { id: event.clubId }
     });
 
-    if (!club) {
-        throw new NotFoundError("Club not found");
-    }
+    const club = await clubRepo().findOne({ where: { id: event.clubId } });
+    if (!club) throw new NotFoundError("Club not found");
 
+    // Leads organise the event — they may not apply as volunteers
     const isLead = club.leadId === studentId;
-
-    if (isLead) {
-        throw new ForbiddenError("Club leads cannot volunteer for their own event");
-    }
 
     const isCommittee = await clubMemberRepo().findOne({
         where: {
@@ -188,18 +182,16 @@ export const applyToRole = async (studentId, body) => {
         },
     });
 
-    if (!isCommittee) {
-        throw new ForbiddenError("Only members of this club may volunteer for this event");
+    if (!isLead && !isCommittee) {
+        throw new ForbiddenError(
+            "Only members of this club may volunteer for this event"
+        );
     }
+    if (!event) throw new NotFoundError("Event not found");
+    if (event.volunteeringStatus !== "open") throw new ConflictError("Volunteering for this event is not open");
+    if (role.slotsFilled >= role.slotsAvailable) throw new ConflictError("This role is full");
 
-    if (event.volunteeringStatus !== "open") {
-        throw new ConflictError("Volunteering for this event is not open");
-    }
-
-    if (role.slotsFilled >= role.slotsAvailable) {
-        throw new ConflictError("This role is full");
-    }
-
+    // Find any existing application for this event, regardless of role or status
     let application = await appRepo().findOne({
         where: { studentId, eventId: role.eventId }
     });
@@ -259,7 +251,7 @@ export const getMyApplications = async (studentId) => {
     return {
         applications: applications.map(a => ({
             applicationId: a.id,
-            eventId: eventMap[a.eventId]?.proposalId ?? a.eventId,
+            eventId: a.eventId,
             eventName: eventMap[a.eventId]?.name ?? "Unknown Event",
             eventDate: eventMap[a.eventId]?.eventDate ?? null,
             roleId: a.roleId,

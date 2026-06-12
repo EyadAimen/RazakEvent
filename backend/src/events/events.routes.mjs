@@ -6,7 +6,8 @@ import * as eventsController from "./events.controller.mjs";
 const router = Router();
 
 // ── Shared (any authenticated user) ──────────────────────────────────────────
-router.get("/shared", authenticate, eventsController.getStudentEventsHandler);
+router.get("/shared",          authenticate, eventsController.getStudentEventsHandler);
+router.get("/shared/:eventId", authenticate, eventsController.getStudentEventHandler);
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
 router.get("/",              authenticate, requireRole("admin"), eventsController.getAllEventsHandler);
@@ -21,8 +22,8 @@ router.get("/lead",           authenticate, requireRole("lead"), eventsControlle
 router.post("/",              authenticate, requireRole("lead"), eventsController.createEventHandler);
 
 // ── Student — fixed-path routes (must come BEFORE /:eventId wildcard) ─────────
-router.get("/student",           authenticate, eventsController.getStudentEventsHandler);
-router.get("/student/:eventId",  authenticate, eventsController.getStudentEventHandler);
+router.get("/student", authenticate, requireRole("student"), eventsController.getStudentEventsHandler);
+router.get("/student/:eventId", authenticate, requireRole("student"), eventsController.getStudentEventHandler);
 
 // ── Lead — param routes ───────────────────────────────────────────────────────
 router.patch("/:eventId/volunteering",                    authenticate, requireRole("lead"),         eventsController.toggleVolunteeringHandler);

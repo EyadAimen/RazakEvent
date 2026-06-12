@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Calendar, MapPin, Loader2, Users } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users } from "lucide-react";
 import { fetchSharedEventDetail } from "./utils/services/events.services";
 import { SharedEventDetail } from "./utils/interface/events.interface";
 import Alert from "@/components/shared/alertComponent/alert";
+import { getUser } from "@/lib/auth";
 import styles from "./events.module.css";
 
 export default function SharedEventDetailPage() {
   const params = useParams();
   const router = useRouter();
   const eventId = params.eventId as string;
+  const role = getUser()?.role;
 
   const [event, setEvent] = useState<SharedEventDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +40,7 @@ export default function SharedEventDetailPage() {
   }
 
   const statusClass = styles[event.status] || styles.defaultStatus;
+  const showBadge = false;
 
   const getVolunteeringStatusClass = () => {
     switch (event.volunteeringStatus) {
@@ -70,9 +73,11 @@ export default function SharedEventDetailPage() {
               <span className={styles.clubTag}>{event.clubName}</span>
               <h1>{event.name}</h1>
             </div>
-            <span className={`${styles.statusBadge} ${statusClass}`}>
-              {event.status.replace("_", " ")}
-            </span>
+            {showBadge && (
+              <span className={`${styles.statusBadge} ${statusClass}`}>
+                {event.status.replace("_", " ")}
+              </span>
+            )}
           </div>
 
           <div className={styles.infoGrid}>
@@ -100,7 +105,7 @@ export default function SharedEventDetailPage() {
           </div>
 
           {/* Volunteering section */}
-          {event.volunteeringStatus && (
+          {role === "student" && event.volunteeringStatus && (
             <div className={styles.volunteering}>
               <h3>Volunteering</h3>
               <div className={`${styles.volStatus} ${getVolunteeringStatusClass()}`}>
@@ -113,7 +118,7 @@ export default function SharedEventDetailPage() {
                   <ul>
                     {event.volunteerRoles.map(role => (
                       <li key={role.id}>
-                        <strong>{role.name}</strong> – {role.remainingSlots} / {role.slotsAvailable} slots
+                        <strong>{role.name}</strong> – {role.slotsFilled} / {role.slotsAvailable}{role.remainingSlots === 0 ? " filled" : ""}
                       </li>
                     ))}
                   </ul>
@@ -127,7 +132,7 @@ export default function SharedEventDetailPage() {
                 ) : event.canVolunteer ? (
                   <button
                     className={styles.applyBtn}
-                    onClick={() => router.push(`/student/events/${eventId}/volunteer`)}
+                    onClick={() => router.push(`/events/${eventId}/volunteer`)}
                   >
                     Apply to volunteer
                   </button>

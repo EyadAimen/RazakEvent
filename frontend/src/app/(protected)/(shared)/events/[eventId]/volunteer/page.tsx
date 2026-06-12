@@ -3,12 +3,10 @@
 import { apiFetchAuth } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Alert from "@/components/shared/alertComponent/alert";
 import ApplyForm from "./ApplyForm";
 import styles from "./page.module.css";
-import { fetchOpenVolunteeringEvents } from "./utils/services/volunteer.service";
 import { EventData } from "./utils/interfaces/volunteer.interface";
 
 export default function VolunteerApplicationPage() {
@@ -22,7 +20,7 @@ export default function VolunteerApplicationPage() {
 
   useEffect(() => {
     // We fetch all open events and find the one that matches eventId
-    apiFetchAuth<{ event: any }>(`/events/student/${eventId}`)
+    apiFetchAuth<{ event: any }>(`/events/shared/${eventId}`)
   .then((res) => {
     const event = res.event;
 

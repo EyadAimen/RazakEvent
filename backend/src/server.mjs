@@ -14,6 +14,7 @@ import reportsRoutes from "./reports/reports.routes.mjs"
 import leadRoleRequestsRoutes from "./requests/lead_role_requests.routes.mjs"
 import membershipRequestsRoutes from "./requests/membership_requests.routes.mjs"
 import venuesRoutes from "./venues/venues.routes.mjs"
+import dashboardRoutes from "./dashboard/dashboard.routes.mjs"
 
 const app = express();
 const PORT = envVars.port || 5000;
@@ -37,6 +38,7 @@ app.use("/api/reports",            reportsRoutes)
 app.use("/api/venues",             venuesRoutes)
 app.use("/api/requests/lead-role",   leadRoleRequestsRoutes)
 app.use("/api/requests/membership", membershipRequestsRoutes)
+app.use("/api/dashboard",          dashboardRoutes)
 
 // ── Global error handler ──────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
