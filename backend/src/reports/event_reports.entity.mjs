@@ -37,7 +37,7 @@ export const EventReportEntity = new EntitySchema({
         },
         status: {
             type: "enum",
-            enum: ["submitted", "reviewed"],
+            enum: ["submitted", "accepted", "rejected"],
             default: "submitted",
             nullable: false,
         },

@@ -42,7 +42,7 @@ export const MoneyReportEntity = new EntitySchema({
         },
         status: {
             type: "enum",
-            enum: ["submitted", "reviewed"],
+            enum: ["submitted", "accepted", "rejected"],
             default: "submitted",
             nullable: false,
         },
