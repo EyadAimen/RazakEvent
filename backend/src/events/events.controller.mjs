@@ -180,3 +180,46 @@ export const markEventCompletedHandler = async (req, res, next) => {
     res.status(200).json(result);
   } catch (err) { next(err); }
 };
+
+export const getAdminPostEventsHandler = async (req, res, next) => {
+  try {
+    const events = await eventsService.getAdminPostEvents();
+    res.status(200).json({ events });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const uploadCompletionReportPdfHandler = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No PDF file uploaded" });
+    }
+
+    const fileUrl = `/uploads/reports/${req.file.filename}`;
+    const event = await eventsService.uploadCompletionReportPdf(
+      req.params.eventId,
+      req.user.userId,
+      fileUrl
+    );
+
+    res.status(200).json({ event });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const decideCompletionReportHandler = async (req, res, next) => {
+  try {
+    const { decision, adminComment } = req.body;
+    const event = await eventsService.decideCompletionReport(
+      req.params.eventId,
+      decision,
+      adminComment
+    );
+
+    res.status(200).json({ event });
+  } catch (err) {
+    next(err);
+  }
+};
