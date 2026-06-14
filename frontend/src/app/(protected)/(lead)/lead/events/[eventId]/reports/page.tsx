@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 import styles from "./reports.module.css";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -116,8 +117,14 @@ function UploadZone({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PostEventReportsPage() {
+  const router  = useRouter();
   const params  = useParams();
   const eventId = params.eventId as string;
+
+  useEffect(() => {
+    const user = getUser();
+    if (!user || user.role !== "lead") router.replace("/unauthorized");
+  }, [router]);
 
   const [info,    setInfo]    = useState<ReportStatus | null>(null);
   const [loading, setLoading] = useState(true);

@@ -12,7 +12,7 @@ export default function LeadLayout({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     const user = getUser();
-    if (!user || user.role !== "lead") {
+    if (!user || (user.role !== "lead" && user.role !== "member")) {
       router.replace("/unauthorized");
     } else {
       setAllowed(true);

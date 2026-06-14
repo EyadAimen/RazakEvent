@@ -247,6 +247,29 @@
   background: var(--color-primary-800);
 }
 
+.joinClubLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: none;
+  color: var(--color-primary-500);
+  border: var(--border-thin) solid var(--color-primary-500);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background var(--transition-veryfast);
+}
+
+.joinClubLink:hover {
+  background: var(--color-primary-500-10);
+}
+
 /* ── Pending / Rejected club info card ───────────────────────────────────── */
 .pendingCard {
   background: var(--color-neutral-50);

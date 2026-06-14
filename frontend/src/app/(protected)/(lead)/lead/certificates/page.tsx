@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Calendar, Award, Loader2, CheckCircle2 } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 import type { ApiEvent } from "@/types/lead";
 import styles from "./certificates.module.css";
 
@@ -30,6 +32,8 @@ function formatDate(iso: string | null) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LeadCertificatesPage() {
+  const router = useRouter();
+
   const [events,         setEvents]         = useState<ApiEvent[]>([]);
   const [loadingEvents,  setLoadingEvents]  = useState(true);
 
@@ -41,6 +45,13 @@ export default function LeadCertificatesPage() {
   const [issuing,        setIssuing]        = useState(false);
   const [issueSuccess,   setIssueSuccess]   = useState<string | null>(null);
   const [issueError,     setIssueError]     = useState<string | null>(null);
+
+  // ── Guard: lead only ────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const user = getUser();
+    if (!user || user.role !== "lead") router.replace("/unauthorized");
+  }, [router]);
 
   // ── Fetch completed events ──────────────────────────────────────────────
 

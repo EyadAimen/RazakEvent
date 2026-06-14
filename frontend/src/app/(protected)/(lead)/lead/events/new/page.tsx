@@ -21,6 +21,7 @@ import Triangle from "@/components/shared/triangle/triangle";
 import InputField from "@/components/shared/input-field/input-field";
 import Button from "@/components/shared/button/button";
 import { apiFetchAuth } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 import type { Venue, DashboardData, BookedDate } from "@/types/lead";
 import styles from "./page.module.css";
 
@@ -43,6 +44,11 @@ interface FormErrors {
 export default function ProposeEventPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const user = getUser();
+    if (!user || user.role !== "lead") router.replace("/unauthorized");
+  }, [router]);
 
   // Club context
   const [clubType, setClubType] = useState<"club" | "community">("club");

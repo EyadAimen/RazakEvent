@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback, Fragment } from "react";
-import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, Clock, Inbox, Calendar, XCircle } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, UserPlus, Clock, Calendar, XCircle } from "lucide-react";
+import Link from "next/link";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubTab, ClubVolunteerApplication } from "@/types/lead";
 import Alert from "@/components/shared/alertComponent/alert";
 import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
@@ -14,6 +16,9 @@ import styles from "./page.module.css";
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function MyClubPage() {
+  const currentUser = getUser();
+  const isUserLead = currentUser?.role === "lead";
+
   const [clubs, setClubs] = useState<ClubItem[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [members, setMembers] = useState<ClubMember[]>([]);
@@ -54,17 +59,24 @@ export default function MyClubPage() {
 
   const selectedClub = selectedItem?.status === "approved" ? selectedItem as ApprovedClub : null;
 
-  // ── Load management data for an approved club ──────────────────────────────
+  // ── Load club data — full management for leads, read-only for members ─────
 
-  const loadClubData = useCallback(async (clubId: number) => {
-    const [membersData, requestsData, volData] = await Promise.all([
-      apiFetchAuth<{ members: ClubMember[] }>(`/clubs/mine/members?clubId=${clubId}`),
-      apiFetchAuth<{ requests: MembershipRequest[] }>(`/clubs/mine/membership-requests?clubId=${clubId}`),
-      apiFetchAuth<{ applications: ClubVolunteerApplication[] }>(`/volunteering/applications/club?clubId=${clubId}`),
-    ]);
-    setMembers(membersData.members);
-    setRequests(requestsData.requests);
-    setVolApps(volData.applications);
+  const loadClubData = useCallback(async (club: ApprovedClub) => {
+    if (club.userRole === "lead") {
+      const [membersData, requestsData, volData] = await Promise.all([
+        apiFetchAuth<{ members: ClubMember[] }>(`/clubs/mine/members?clubId=${club.id}`),
+        apiFetchAuth<{ requests: MembershipRequest[] }>(`/clubs/mine/membership-requests?clubId=${club.id}`),
+        apiFetchAuth<{ applications: ClubVolunteerApplication[] }>(`/volunteering/applications/club?clubId=${club.id}`),
+      ]);
+      setMembers(membersData.members);
+      setRequests(requestsData.requests);
+      setVolApps(volData.applications);
+    } else {
+      const membersData = await apiFetchAuth<{ members: ClubMember[] }>(`/clubs/${club.id}/members`);
+      setMembers(membersData.members);
+      setRequests([]);
+      setVolApps([]);
+    }
   }, []);
 
   const fetchAllClubs = useCallback(async () => {
@@ -78,9 +90,9 @@ export default function MyClubPage() {
       .then(async (data) => {
         const first = data.find(c => c.status === "approved") ?? data[0] ?? null;
         if (!first) return;
-        const key = first.status === "approved" ? `club-${first.id}` : `pending-${first.requestId}`;
+        const key = first.status === "approved" ? `club-${first.id}` : `pending-${(first as PendingClubItem).requestId}`;
         setSelectedKey(key);
-        if (first.status === "approved") await loadClubData(first.id);
+        if (first.status === "approved") await loadClubData(first as ApprovedClub);
       })
       .catch(err => setError(err.message ?? "Failed to load clubs"))
       .finally(() => setLoading(false));
@@ -89,13 +101,13 @@ export default function MyClubPage() {
   // ── Club switcher ──────────────────────────────────────────────────────────
 
   const handleSelectItem = async (item: ClubItem) => {
-    const key = item.status === "approved" ? `club-${item.id}` : `pending-${item.requestId}`;
+    const key = item.status === "approved" ? `club-${item.id}` : `pending-${(item as PendingClubItem).requestId}`;
     setSelectedKey(key);
     setSearch("");
     setTab("members");
     setExpandedVolRows(new Set());
     if (item.status === "approved") {
-      await loadClubData(item.id).catch(() => { });
+      await loadClubData(item as ApprovedClub).catch(() => { });
     } else {
       setMembers([]);
       setRequests([]);
@@ -144,7 +156,7 @@ export default function MyClubPage() {
           }
           : c
       ));
-      if (decision === "approved") loadClubData(selectedClub.id).catch(() => { });
+      if (decision === "approved") loadClubData(selectedClub).catch(() => { });
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Action failed.");
     } finally {
@@ -232,10 +244,11 @@ export default function MyClubPage() {
           <div className={styles.selectorRow}>
             <div className={styles.selectorPills}>
               {clubs.map(item => {
-                const key        = item.status === "approved" ? `club-${item.id}` : `pending-${item.requestId}`;
+                const key        = item.status === "approved" ? `club-${item.id}` : `pending-${(item as PendingClubItem).requestId}`;
                 const isActive   = key === selectedKey;
                 const isPending  = item.status === "pending";
                 const isRejected = item.status === "rejected";
+                const isMemberClub = item.status === "approved" && (item as ApprovedClub).userRole === "member";
                 return (
                   <button
                     key={key}
@@ -245,16 +258,25 @@ export default function MyClubPage() {
                     {isPending  && <Clock   size={12} />}
                     {isRejected && <XCircle size={12} />}
                     {item.name}
-                    {isPending  && <span className={styles.pendingBadge}>Pending</span>}
-                    {isRejected && <span className={styles.rejectedBadge}>Rejected</span>}
+                    {isPending    && <span className={styles.pendingBadge}>Pending</span>}
+                    {isRejected   && <span className={styles.rejectedBadge}>Rejected</span>}
+                    {isMemberClub && <span className={styles.pendingBadge}>Member</span>}
                   </button>
                 );
               })}
             </div>
-            <button className={styles.createClubBtn} onClick={() => setShowCreateModal(true)}>
-              <Plus size={14} />
-              Create New Club / Community
-            </button>
+            {isUserLead && (
+              <>
+                <Link href="/lead/join-clubs" className={styles.joinClubLink}>
+                  <UserPlus size={14} />
+                  Join a Club
+                </Link>
+                <button className={styles.createClubBtn} onClick={() => setShowCreateModal(true)}>
+                  <Plus size={14} />
+                  Create New Club / Community
+                </button>
+              </>
+            )}
           </div>
 
           {/* ── Pending / Rejected item view ───────────────────────────────── */}
@@ -350,26 +372,30 @@ export default function MyClubPage() {
                     className={`${styles.tabBtn} ${tab === "members" ? styles.tabActive : ""}`}
                     onClick={() => { setTab("members"); setSearch(""); }}
                   >
-                    Manage Members
+                    {selectedClub.userRole === "lead" ? "Manage Members" : "Members"}
                   </button>
-                  <button
-                    className={`${styles.tabBtn} ${tab === "requests" ? styles.tabActive : ""}`}
-                    onClick={() => setTab("requests")}
-                  >
-                    Membership Requests
-                    {requests.length > 0 && (
-                      <span className={styles.badge}>{requests.length}</span>
-                    )}
-                  </button>
-                  <button
-                    className={`${styles.tabBtn} ${tab === "volunteers" ? styles.tabActive : ""}`}
-                    onClick={() => { setTab("volunteers"); setSearch(""); }}
-                  >
-                    Volunteer Applications
-                    {volApps.filter(a => a.status === "pending").length > 0 && (
-                      <span className={styles.badge}>{volApps.filter(a => a.status === "pending").length}</span>
-                    )}
-                  </button>
+                  {selectedClub.userRole === "lead" && (
+                    <>
+                      <button
+                        className={`${styles.tabBtn} ${tab === "requests" ? styles.tabActive : ""}`}
+                        onClick={() => setTab("requests")}
+                      >
+                        Membership Requests
+                        {requests.length > 0 && (
+                          <span className={styles.badge}>{requests.length}</span>
+                        )}
+                      </button>
+                      <button
+                        className={`${styles.tabBtn} ${tab === "volunteers" ? styles.tabActive : ""}`}
+                        onClick={() => { setTab("volunteers"); setSearch(""); }}
+                      >
+                        Volunteer Applications
+                        {volApps.filter(a => a.status === "pending").length > 0 && (
+                          <span className={styles.badge}>{volApps.filter(a => a.status === "pending").length}</span>
+                        )}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -392,13 +418,13 @@ export default function MyClubPage() {
                           <th>Name</th>
                           <th>Student ID</th>
                           <th>Role</th>
-                          <th>Actions</th>
+                          {selectedClub.userRole === "lead" && <th>Actions</th>}
                         </tr>
                       </thead>
                       <tbody>
                         {filteredMembers.length === 0 ? (
                           <tr>
-                            <td colSpan={4} className={styles.emptyRow}>No members found.</td>
+                            <td colSpan={selectedClub.userRole === "lead" ? 4 : 3} className={styles.emptyRow}>No members found.</td>
                           </tr>
                         ) : filteredMembers.map(m => (
                           <tr key={m.userId}>
@@ -409,18 +435,20 @@ export default function MyClubPage() {
                                 {m.role === "lead" ? "Lead" : "Committee"}
                               </span>
                             </td>
-                            <td>
-                              {m.role !== "lead" && (
-                                <button
-                                  className={styles.removeBtn}
-                                  onClick={() => handleRemoveMember(m.userId)}
-                                  disabled={acting === m.userId}
-                                  title="Remove member"
-                                >
-                                  <Trash2 size={13} /> Remove
-                                </button>
-                              )}
-                            </td>
+                            {selectedClub.userRole === "lead" && (
+                              <td>
+                                {m.role !== "lead" && (
+                                  <button
+                                    className={styles.removeBtn}
+                                    onClick={() => handleRemoveMember(m.userId)}
+                                    disabled={acting === m.userId}
+                                    title="Remove member"
+                                  >
+                                    <Trash2 size={13} /> Remove
+                                  </button>
+                                )}
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>

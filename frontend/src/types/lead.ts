@@ -20,6 +20,7 @@ export interface ApiEvent {
   eventDate: string | null;
   attendees: number;
   status: string;
+  userRole?: "lead" | "member";
 }
 
 export type EventsTab =
@@ -112,9 +113,11 @@ export interface ApprovedClub {
   name: string;
   type: "club" | "community";
   description: string;
+  leadId: string | null;
   memberCount: number;
   eventStats: { total: number; approved: number; rejected: number };
   pendingRequests: number;
+  userRole: "lead" | "member";
 }
 
 export interface PendingClubItem {
