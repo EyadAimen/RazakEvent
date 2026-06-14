@@ -157,7 +157,9 @@ export interface ClubVolunteerApplication {
   studentMatricId: string | null;
   eventId: string;
   eventName: string;
+  roleId: number;
   roleName: string;
+  slotsAvailable: number;
   status: "pending" | "accepted" | "rejected";
   appliedAt: string;
   reason: string | null;

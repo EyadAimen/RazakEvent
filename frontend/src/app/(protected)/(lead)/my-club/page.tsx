@@ -30,6 +30,7 @@ export default function MyClubPage() {
   const [search, setSearch] = useState("");
   const [acting, setActing] = useState<string | number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [volSuccess, setVolSuccess] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createSuccess, setCreateSuccess] = useState(false);
   const [rejectingAppId, setRejectingAppId] = useState<number | null>(null);
@@ -116,6 +117,9 @@ export default function MyClubPage() {
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
+  const isRoleFull = (roleId: number, slotsAvailable: number): boolean =>
+    volApps.filter(a => a.roleId === roleId && a.status === "accepted").length >= slotsAvailable;
+
   const handleDecideVolApp = async (applicationId: number, decision: "accepted" | "rejected", rejectionMessage?: string) => {
     if (acting !== null) return;
     setActing(applicationId);
@@ -130,6 +134,7 @@ export default function MyClubPage() {
           : a
       ));
       if (decision === "rejected") setRejectingAppId(null);
+      setVolSuccess(decision === "accepted" ? "Volunteer accepted successfully." : "Application rejected.");
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Action failed.");
       throw err;
@@ -566,10 +571,12 @@ export default function MyClubPage() {
                                     <div className={styles.appActions}>
                                       <button
                                         className={styles.acceptBtn}
-                                        disabled={acting === app.applicationId}
+                                        disabled={acting === app.applicationId || isRoleFull(app.roleId, app.slotsAvailable)}
+                                        title={isRoleFull(app.roleId, app.slotsAvailable) ? "All slots for this role are filled" : undefined}
                                         onClick={() => handleDecideVolApp(app.applicationId, "accepted")}
                                       >
-                                        <Check size={14} /> Accept
+                                        <Check size={14} />
+                                        {isRoleFull(app.roleId, app.slotsAvailable) ? "Role Full" : "Accept"}
                                       </button>
                                       <button
                                         className={styles.rejectBtn}
@@ -617,6 +624,7 @@ export default function MyClubPage() {
       </div>
 
       <Alert variant="loading" isOpen={acting !== null} onClose={() => { }} message="Processing…" />
+      <Alert variant="success" isOpen={volSuccess !== null} message={volSuccess ?? ""} onClose={() => setVolSuccess(null)} />
       <Alert variant="error" isOpen={actionError !== null} message={actionError ?? ""} onClose={() => setActionError(null)} />
 
       <CreateClubModal
