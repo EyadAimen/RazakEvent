@@ -3,6 +3,7 @@ import appDataSource from "../../config/dbConfig.mjs";
 import { EventEntity } from "./events.entity.mjs";
 import { EventProposalEntity } from "../proposals/proposals.entity.mjs";
 import { ClubEntity } from "../clubs/clubs.entity.mjs";
+import { ClubMemberEntity } from "../clubs/club_members.entity.mjs";
 import { UserEntity } from "../users/users.entity.mjs";
 import { VenueEntity } from "../venues/venues.entity.mjs";
 import { VolunteeringRoleEntity } from "../volunteering/volunteering_roles.entity.mjs";
@@ -13,6 +14,7 @@ import { NotFoundError, ForbiddenError, ValidationError } from "../shared/errors
 const eventRepo = () => appDataSource.getRepository(EventEntity);
 const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
 const clubRepo = () => appDataSource.getRepository(ClubEntity);
+const clubMemberRepo = () => appDataSource.getRepository(ClubMemberEntity);
 const userRepo = () => appDataSource.getRepository(UserEntity);
 const venueRepo = () => appDataSource.getRepository(VenueEntity);
 const roleRepo = () => appDataSource.getRepository(VolunteeringRoleEntity);
@@ -560,4 +562,45 @@ export const getStudentEvents = async () => {
         };
     }));
     return enriched;
+};
+
+// ── My clubs events (lead + member) ──────────────────────────────────────────
+
+export const getMyClubEvents = async (userId) => {
+    // Events from clubs the user leads (proposals, all statuses)
+    const leadProposals = await proposalRepo().find({
+        where: { leadId: userId },
+        order: { createdAt: "DESC" },
+    });
+    const leadEvents = await Promise.all(
+        leadProposals.map(p => enrichProposal(p).then(e => ({ ...e, userRole: "lead" })))
+    );
+
+    // Events from clubs where user is a member (approved/live events only)
+    const memberRows = await clubMemberRepo().find({ where: { userId } });
+    const memberClubIds = memberRows.map(r => r.clubId);
+
+    let memberEvents = [];
+    if (memberClubIds.length) {
+        const events = await eventRepo().find({
+            where: { clubId: In(memberClubIds) },
+            order: { eventDate: "DESC" },
+        });
+        const clubIds = [...new Set(events.map(e => e.clubId))];
+        const clubs = clubIds.length ? await clubRepo().findBy({ id: In(clubIds) }) : [];
+        const clubMap = Object.fromEntries(clubs.map(c => [c.id, c]));
+
+        memberEvents = events.map(e => ({
+            id: String(e.id),
+            name: e.name,
+            clubName: clubMap[e.clubId]?.name ?? "Unknown Club",
+            clubType: clubMap[e.clubId]?.type ?? "club",
+            eventDate: e.eventDate ?? null,
+            attendees: 0,
+            status: e.status,
+            userRole: "member",
+        }));
+    }
+
+    return [...leadEvents, ...memberEvents];
 };

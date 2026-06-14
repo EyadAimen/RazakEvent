@@ -15,6 +15,13 @@ export const getLeadEventsHandler = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+export const getMyClubEventsHandler = async (req, res, next) => {
+  try {
+    const events = await eventsService.getMyClubEvents(req.user.userId);
+    res.status(200).json({ events });
+  } catch (err) { next(err); }
+};
+
 export const createEventHandler = async (req, res, next) => {
   try {
     const event = await eventsService.createEvent(req.user.userId, req.body);

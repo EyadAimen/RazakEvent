@@ -19,6 +19,7 @@ router.patch("/:eventId/decision", authenticate, requireRole("admin"), eventsCon
 // ── Lead — fixed-path routes (must come BEFORE /:eventId wildcard) ────────────
 router.get("/lead/dashboard", authenticate, requireRole("lead"), eventsController.getDashboardHandler);
 router.get("/lead",           authenticate, requireRole("lead"), eventsController.getLeadEventsHandler);
+router.get("/my-clubs",       authenticate, requireRole("lead", "member"), eventsController.getMyClubEventsHandler);
 router.post("/",              authenticate, requireRole("lead"), eventsController.createEventHandler);
 
 // ── Student — fixed-path routes (must come BEFORE /:eventId wildcard) ─────────
