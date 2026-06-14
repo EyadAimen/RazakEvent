@@ -114,6 +114,9 @@ export default function BecomeMemberPage() {
   const rejectedLeadRequest = leadRequest?.status === "rejected" ? leadRequest : null;
   const hasAnyRequest = pendingMemberRequests.length > 0 || rejectedMemberRequests.length > 0 || !!pendingLeadRequest || !!rejectedLeadRequest;
 
+  const approvedMemberClubIds = new Set(memberRequests.filter(r => r.status === "approved").map(r => r.clubId));
+  const leadTabClubs = clubs.filter(c => approvedMemberClubIds.has(c.id));
+
   return (
     <>
       <div className={styles.page}>
@@ -275,7 +278,7 @@ export default function BecomeMemberPage() {
               </div>
             ) : !isRequestsTab ? (
               <div className={styles.grid}>
-                {clubs.map((club) => {
+                {(isJoinTab ? clubs : leadTabClubs).map((club) => {
                   const reqStatus = isJoinTab ? membershipStatusForClub(club.id) : null;
                   const hasActiveLeadReq = !isJoinTab && leadRequest && leadRequest.clubId === club.id;
 
@@ -321,7 +324,6 @@ export default function BecomeMemberPage() {
                         onClick={() => setConfirmClub(club)}
                         disabled={
                           (isJoinTab && !!reqStatus) ||
-                          (!isJoinTab && !isMember) ||
                           (!isJoinTab && !!hasActiveLeadReq)
                         }
                       >
@@ -333,6 +335,12 @@ export default function BecomeMemberPage() {
                     </div>
                   );
                 })}
+
+                {!isJoinTab && isMember && leadTabClubs.length === 0 && (
+                  <p className={styles.infoBanner} style={{ gridColumn: "1 / -1" }}>
+                    You are not an approved member of any club yet. Join a club first, then apply to become its lead.
+                  </p>
+                )}
 
                 {!isJoinTab && (
                   <div className={styles.createCard} onClick={() => setShowCreateModal(true)}>
