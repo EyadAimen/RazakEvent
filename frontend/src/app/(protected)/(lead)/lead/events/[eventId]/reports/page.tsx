@@ -220,35 +220,12 @@ export default function PostEventReportsPage() {
     );
   }
 
-  // ── Success state ─────────────────────────────────────────────────────────
-
-  if (success) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.body}>
-          <div className={styles.inner}>
-            <div className={styles.successCard}>
-              <CheckCircle2 size={48} className={styles.successIcon} />
-              <h2 className={styles.successTitle}>Reports Submitted!</h2>
-              <p className={styles.successSub}>
-                Both reports for <strong>{info?.eventName ?? "this event"}</strong> have been submitted
-                successfully and are pending admin review.
-              </p>
-              <Link href={`/lead/events/${eventId}`} className={styles.successBtn}>
-                Back to Event
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // ── Main form ─────────────────────────────────────────────────────────────
 
   const alreadySubmitted = info?.eventReport != null && info?.moneyReport != null;
 
   return (
+  <>
     <div className={styles.page}>
       <div className={styles.body}>
         <Triangle style={{ left: "0px",   top: "60px",     transform: "rotate(-20deg)", borderBottomColor: "var(--color-primary-500)"   }} />
@@ -304,7 +281,7 @@ export default function PostEventReportsPage() {
                 <p className={styles.cardSub}>Summary of the event outcome and attendance.</p>
               </div>
               <a
-                href="/templates/event-report-template.pdf"
+                href="/templates/program-report-template.pdf"
                 download="Event Report Template.pdf"
                 className={styles.templateBtn}
                 onClick={e => e.stopPropagation()}
@@ -337,7 +314,7 @@ export default function PostEventReportsPage() {
                 <p className={styles.cardSub}>Financial breakdown and receipts.</p>
               </div>
               <a
-                href="/templates/money-report-template.pdf"
+                href="/templates/financial-report-template.pdf"
                 download="Money Report Template.pdf"
                 className={styles.templateBtn}
                 onClick={e => e.stopPropagation()}
@@ -386,15 +363,27 @@ export default function PostEventReportsPage() {
               onClick={handleSubmit}
               disabled={!canSubmit}
             >
-              {submitting
-                ? <><Loader2 size={15} className={styles.spinnerSm} /> Submitting…</>
-                : "Submit All Reports"
-              }
+              Submit All Reports
             </button>
           </div>
 
         </div>
       </div>
     </div>
+
+    <Alert
+      variant="loading"
+      isOpen={submitting}
+      message="Submitting reports…"
+      onClose={() => {}}
+    />
+
+    <Alert
+      variant="success"
+      isOpen={success}
+      message={`Reports for "${info?.eventName ?? "this event"}" submitted successfully and are pending admin review.`}
+      onClose={() => router.push(`/lead/events/${eventId}`)}
+    />
+  </>
   );
 }
