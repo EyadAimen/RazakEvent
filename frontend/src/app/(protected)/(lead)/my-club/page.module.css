@@ -812,3 +812,62 @@
   font-size: var(--text-small-size);
   line-height: 1.6;
 }
+
+/* ── Confirm modal content ───────────────────────────────────────────────── */
+.confirmTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+  text-align: center;
+}
+
+.confirmText {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  line-height: var(--text-body-height);
+  margin: 0;
+  text-align: center;
+}
+
+.confirmBtns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.btnCancel {
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.btnCancel:hover {
+  background: var(--color-neutral-200);
+}
+
+.btnDanger {
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-semantic-red);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-50);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.btnDanger:hover {
+  filter: brightness(0.9);
+}

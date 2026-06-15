@@ -80,6 +80,7 @@ export default function LeadEventDetailPage() {
   const [updatingRole, setUpdatingRole] = useState(false);
   const [roleError, setRoleError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [generalSuccess, setGeneralSuccess] = useState<string | null>(null);
 
   // Delete event state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -130,6 +131,7 @@ export default function LeadEventDetailPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       setEvent(prev => prev ? { ...prev, volunteeringStatus: newStatus } : prev);
+      setGeneralSuccess(`Volunteering is now ${newStatus === "open" ? "open" : "closed"}.`);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to update volunteering status");
     } finally {
@@ -150,6 +152,7 @@ export default function LeadEventDetailPage() {
       setEvent(prev => prev ? { ...prev, volunteerRoles: [...prev.volunteerRoles, created] } : prev);
       setNewRole({ roleName: "", description: "", slotsAvailable: 1 });
       setShowAddRole(false);
+      setGeneralSuccess("Role added successfully.");
     } catch (err: unknown) {
       setRoleError(err instanceof Error ? err.message : "Failed to create role.");
     } finally {
@@ -200,6 +203,7 @@ export default function LeadEventDetailPage() {
         };
       });
       setEditingRoleId(null);
+      setGeneralSuccess("Role updated successfully.");
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to update role.");
     } finally {
@@ -219,6 +223,7 @@ export default function LeadEventDetailPage() {
       if (decision === "rejected") setRejectingAppId(null);
       const refreshed = await apiFetchAuth<{ event: EventDetail }>(`/events/${eventId}`);
       setEvent(refreshed.event);
+      setGeneralSuccess(decision === "accepted" ? "Volunteer accepted successfully." : "Application rejected.");
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to update application");
     } finally {
@@ -874,6 +879,13 @@ export default function LeadEventDetailPage() {
         message={`"${deletedEventName}" has been permanently deleted.`}
         onClose={() => router.replace("/lead/events")}
       />
+
+      <Alert variant="loading" isOpen={togglingVol} message="Updating volunteering status…" onClose={() => {}} />
+      <Alert variant="loading" isOpen={addingRole} message="Adding role…" onClose={() => {}} />
+      <Alert variant="loading" isOpen={updatingRole} message="Updating role…" onClose={() => {}} />
+      <Alert variant="loading" isOpen={deletingRoleId !== null} message="Deleting role…" onClose={() => {}} />
+      <Alert variant="loading" isOpen={decidingApp !== null} message="Processing decision…" onClose={() => {}} />
+      <Alert variant="success" isOpen={generalSuccess !== null} message={generalSuccess ?? ""} onClose={() => setGeneralSuccess(null)} />
 
       {/* Action error alert */}
       <Alert

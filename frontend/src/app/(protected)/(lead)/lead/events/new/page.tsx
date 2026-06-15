@@ -483,6 +483,12 @@ export default function ProposeEventPage() {
     </div>
 
     <Alert
+      variant="loading"
+      isOpen={submitting}
+      message="Saving proposal…"
+      onClose={() => {}}
+    />
+    <Alert
       variant="error"
       isOpen={pdfError !== null}
       message={pdfError ?? ""}

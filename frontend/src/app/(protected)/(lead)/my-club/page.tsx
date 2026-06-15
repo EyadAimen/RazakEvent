@@ -35,6 +35,11 @@ export default function MyClubPage() {
   const [createSuccess, setCreateSuccess] = useState(false);
   const [rejectingAppId, setRejectingAppId] = useState<number | null>(null);
   const [expandedVolRows, setExpandedVolRows] = useState<Set<number>>(new Set());
+  const [confirmRemoveMemberId, setConfirmRemoveMemberId] = useState<string | null>(null);
+  const [confirmRemoveMemberName, setConfirmRemoveMemberName] = useState("");
+  const [confirmRejectRequestId, setConfirmRejectRequestId] = useState<number | null>(null);
+  const [confirmRejectRequestName, setConfirmRejectRequestName] = useState("");
+  const [memberSuccess, setMemberSuccess] = useState<string | null>(null);
 
   const VOL_BADGE: Record<ClubVolunteerApplication["status"], { variant: BadgeVariant; label: string }> = {
     pending: { variant: "pending", label: "Pending" },
@@ -145,6 +150,8 @@ export default function MyClubPage() {
 
   const handleDecideRequest = async (requestId: number, decision: "approved" | "rejected") => {
     if (!selectedClub || acting !== null) return;
+    const req = requests.find(r => r.id === requestId);
+    setConfirmRejectRequestId(null);
     setActing(requestId);
     try {
       await apiFetchAuth(`/clubs/mine/membership-requests/${requestId}/decision?clubId=${selectedClub.id}`, {
@@ -161,7 +168,12 @@ export default function MyClubPage() {
           }
           : c
       ));
-      if (decision === "approved") loadClubData(selectedClub).catch(() => { });
+      if (decision === "approved") {
+        loadClubData(selectedClub).catch(() => {});
+        setMemberSuccess(`${req?.studentName ?? "Member"} has been accepted into the club.`);
+      } else {
+        setMemberSuccess(`${req?.studentName ?? "Member"}'s membership request has been rejected.`);
+      }
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Action failed.");
     } finally {
@@ -171,6 +183,8 @@ export default function MyClubPage() {
 
   const handleRemoveMember = async (userId: string) => {
     if (!selectedClub || acting !== null) return;
+    const member = members.find(m => m.userId === userId);
+    setConfirmRemoveMemberId(null);
     setActing(userId);
     try {
       await apiFetchAuth(`/clubs/mine/members/${userId}?clubId=${selectedClub.id}`, { method: "DELETE" });
@@ -180,6 +194,7 @@ export default function MyClubPage() {
           ? { ...c, memberCount: c.memberCount - 1 }
           : c
       ));
+      setMemberSuccess(`${member?.fullName ?? "Member"} has been removed from the club.`);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to remove member.");
     } finally {
@@ -445,7 +460,7 @@ export default function MyClubPage() {
                                 {m.role !== "lead" && (
                                   <button
                                     className={styles.removeBtn}
-                                    onClick={() => handleRemoveMember(m.userId)}
+                                    onClick={() => { setConfirmRemoveMemberId(m.userId); setConfirmRemoveMemberName(m.fullName); }}
                                     disabled={acting === m.userId}
                                     title="Remove member"
                                   >
@@ -501,7 +516,7 @@ export default function MyClubPage() {
                                   </button>
                                   <button
                                     className={styles.rejectBtn}
-                                    onClick={() => handleDecideRequest(r.id, "rejected")}
+                                    onClick={() => { setConfirmRejectRequestId(r.id); setConfirmRejectRequestName(r.studentName); }}
                                     disabled={acting === r.id}
                                   >
                                     <X size={12} /> Reject
@@ -623,9 +638,32 @@ export default function MyClubPage() {
         </div>
       </div>
 
-      <Alert variant="loading" isOpen={acting !== null} onClose={() => { }} message="Processing…" />
+      <Alert variant="loading" isOpen={acting !== null} onClose={() => {}} message="Processing…" />
       <Alert variant="success" isOpen={volSuccess !== null} message={volSuccess ?? ""} onClose={() => setVolSuccess(null)} />
+      <Alert variant="success" isOpen={memberSuccess !== null} message={memberSuccess ?? ""} onClose={() => setMemberSuccess(null)} />
       <Alert variant="error" isOpen={actionError !== null} message={actionError ?? ""} onClose={() => setActionError(null)} />
+
+      <Alert isOpen={confirmRemoveMemberId !== null} onClose={() => setConfirmRemoveMemberId(null)}>
+        <h3 className={styles.confirmTitle}>Remove Member?</h3>
+        <p className={styles.confirmText}>
+          Are you sure you want to remove <strong>{confirmRemoveMemberName}</strong> from the club? They will lose access to club activities.
+        </p>
+        <div className={styles.confirmBtns}>
+          <button className={styles.btnCancel} onClick={() => setConfirmRemoveMemberId(null)}>Cancel</button>
+          <button className={styles.btnDanger} onClick={() => handleRemoveMember(confirmRemoveMemberId!)}>Remove</button>
+        </div>
+      </Alert>
+
+      <Alert isOpen={confirmRejectRequestId !== null} onClose={() => setConfirmRejectRequestId(null)}>
+        <h3 className={styles.confirmTitle}>Reject Request?</h3>
+        <p className={styles.confirmText}>
+          Are you sure you want to reject <strong>{confirmRejectRequestName}</strong>'s membership request?
+        </p>
+        <div className={styles.confirmBtns}>
+          <button className={styles.btnCancel} onClick={() => setConfirmRejectRequestId(null)}>Cancel</button>
+          <button className={styles.btnDanger} onClick={() => handleDecideRequest(confirmRejectRequestId!, "rejected")}>Reject</button>
+        </div>
+      </Alert>
 
       <CreateClubModal
         isOpen={showCreateModal}
