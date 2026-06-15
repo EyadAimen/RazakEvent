@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
+import Alert from "@/components/shared/alertComponent/alert";
 import { apiFetchAuth } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import styles from "./reports.module.css";
@@ -49,68 +50,81 @@ function UploadZone({
   file,
   onFile,
   onClear,
-  error,
 }: {
   id: string;
   file: File | null;
   onFile: (f: File) => void;
   onClear: () => void;
-  error?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
 
-  const validate = (f: File) => {
+  const validate = (f: File): string | null => {
     if (f.type !== "application/pdf") return "Only PDF files are accepted.";
-    if (f.size > MAX_MB * 1024 * 1024) return `Maximum file size is ${MAX_MB} MB.`;
+    if (f.size > MAX_MB * 1024 * 1024) return `File exceeds the ${MAX_MB} MB limit. Please compress or re-export your PDF.`;
     return null;
   };
 
   const handle = (f: File) => {
     const err = validate(f);
-    if (!err) onFile(f);
+    if (err) {
+      setFileError(err);
+      return;
+    }
+    setFileError(null);
+    onFile(f);
   };
 
   return (
-    <div
-      className={`${styles.dropZone} ${drag ? styles.dropZoneActive : ""} ${file ? styles.dropZoneFilled : ""} ${error ? styles.dropZoneError : ""}`}
-      onClick={() => inputRef.current?.click()}
-      onDragOver={e => { e.preventDefault(); setDrag(true); }}
-      onDragLeave={() => setDrag(false)}
-      onDrop={e => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f) handle(f); }}
-    >
-      <input
-        ref={inputRef}
-        id={id}
-        type="file"
-        accept="application/pdf"
-        className={styles.fileInput}
-        onChange={e => { const f = e.target.files?.[0]; if (f) handle(f); }}
-      />
+    <>
+      <div
+        className={`${styles.dropZone} ${drag ? styles.dropZoneActive : ""} ${file ? styles.dropZoneFilled : ""}`}
+        onClick={() => inputRef.current?.click()}
+        onDragOver={e => { e.preventDefault(); setDrag(true); }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={e => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f) handle(f); }}
+      >
+        <input
+          ref={inputRef}
+          id={id}
+          type="file"
+          accept="application/pdf"
+          className={styles.fileInput}
+          onChange={e => { const f = e.target.files?.[0]; if (f) handle(f); e.target.value = ""; }}
+        />
 
-      {file ? (
-        <div className={styles.filePreview}>
-          <FileCheck size={20} className={styles.fileIcon} />
-          <span className={styles.fileName}>{file.name}</span>
-          <span className={styles.fileSize}>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
-          <button
-            type="button"
-            className={styles.fileRemove}
-            onClick={e => { e.stopPropagation(); onClear(); }}
-          >
-            <X size={13} />
-          </button>
-        </div>
-      ) : (
-        <div className={styles.dropPrompt}>
-          <UploadCloud size={24} className={styles.uploadIcon} />
-          <p className={styles.dropText}>
-            Drag &amp; drop PDF or <span className={styles.browseLink}>browse</span>
-          </p>
-          <p className={styles.dropHint}>PDF only · Max {MAX_MB} MB</p>
-        </div>
-      )}
-    </div>
+        {file ? (
+          <div className={styles.filePreview}>
+            <FileCheck size={20} className={styles.fileIcon} />
+            <span className={styles.fileName}>{file.name}</span>
+            <span className={styles.fileSize}>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+            <button
+              type="button"
+              className={styles.fileRemove}
+              onClick={e => { e.stopPropagation(); onClear(); setFileError(null); }}
+            >
+              <X size={13} />
+            </button>
+          </div>
+        ) : (
+          <div className={styles.dropPrompt}>
+            <UploadCloud size={24} className={styles.uploadIcon} />
+            <p className={styles.dropText}>
+              Drag &amp; drop PDF or <span className={styles.browseLink}>browse</span>
+            </p>
+            <p className={styles.dropHint}>PDF only · Max {MAX_MB} MB</p>
+          </div>
+        )}
+      </div>
+
+      <Alert
+        variant="error"
+        isOpen={fileError !== null}
+        message={fileError ?? ""}
+        onClose={() => setFileError(null)}
+      />
+    </>
   );
 }
 

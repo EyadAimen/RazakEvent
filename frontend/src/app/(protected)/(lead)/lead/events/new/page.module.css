@@ -363,6 +363,10 @@
   border-color: var(--color-status-green);
   background: rgba(16, 185, 129, 0.04);
 }
+.dropZoneError {
+  border-color: var(--color-semantic-red);
+  background: var(--color-semantic-red-10);
+}
 
 .fileInput { display: none; }
 
