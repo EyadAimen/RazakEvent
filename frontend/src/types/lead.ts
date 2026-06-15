@@ -61,7 +61,9 @@ export interface EventDetail {
   clubType: string;
   eventDate: string | null;
   status: string;
+  venueId: number | null;
   venueName: string | null;
+  description: string | null;
   budget: number | null;
   proposalPdfUrl: string | null;
   adminComment: string | null;
