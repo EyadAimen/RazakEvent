@@ -16,6 +16,7 @@ import {
   UserPlus,
   ClipboardList,
   ShieldCheck,
+  FileCheck,
   ChevronLeft,
   ChevronRight,
   type LucideIcon,
@@ -65,8 +66,9 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { label: "Dashboard",    href: "/admin/dashboard",   icon: LayoutDashboard },
     { label: "Requests",     href: "/requests",          icon: ClipboardList   },
     { label: "Clubs",        href: "/clubs",             icon: Users           },
+    { label: "Post Events",  href: "/post-events",       icon: FileCheck       },
     { label: "Manage Roles", href: "/manage-roles",      icon: ShieldCheck     },
-    { label: "Calendar",      href: "/calendar",           icon: Calendar        },
+    { label: "Calendar",     href: "/calendar",          icon: Calendar        },
     { label: "Profile",      href: "/admin/profile",     icon: User            },
   ],
 };
