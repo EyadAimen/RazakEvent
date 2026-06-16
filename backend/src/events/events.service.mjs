@@ -3,27 +3,24 @@ import appDataSource from "../../config/dbConfig.mjs";
 import { EventEntity } from "./events.entity.mjs";
 import { EventProposalEntity } from "../proposals/proposals.entity.mjs";
 import { ClubEntity } from "../clubs/clubs.entity.mjs";
-import { ClubMemberEntity } from "../clubs/club_members.entity.mjs";
 import { UserEntity } from "../users/users.entity.mjs";
 import { VenueEntity } from "../venues/venues.entity.mjs";
 import { VolunteeringRoleEntity } from "../volunteering/volunteering_roles.entity.mjs";
 import { VolunteeringApplicationEntity } from "../volunteering/volunteering_applications.entity.mjs";
 import { CertificateEntity } from "../certificates/certificates.entity.mjs";
+import { NotFoundError, ForbiddenError, ValidationError } from "../shared/errors.mjs";
 import { EventReportEntity } from "../reports/event_reports.entity.mjs";
 import { MoneyReportEntity } from "../reports/money_reports.entity.mjs";
-import { NotFoundError, ForbiddenError, ValidationError } from "../shared/errors.mjs";
 
+const eventReportRepo = () => appDataSource.getRepository(EventReportEntity);
+const moneyReportRepo = () => appDataSource.getRepository(MoneyReportEntity);
 const eventRepo = () => appDataSource.getRepository(EventEntity);
 const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
 const clubRepo = () => appDataSource.getRepository(ClubEntity);
-const clubMemberRepo = () => appDataSource.getRepository(ClubMemberEntity);
 const userRepo = () => appDataSource.getRepository(UserEntity);
 const venueRepo = () => appDataSource.getRepository(VenueEntity);
 const roleRepo = () => appDataSource.getRepository(VolunteeringRoleEntity);
 const appRepo = () => appDataSource.getRepository(VolunteeringApplicationEntity);
-const certRepo = () => appDataSource.getRepository(CertificateEntity);
-const eventReportRepo = () => appDataSource.getRepository(EventReportEntity);
-const moneyReportRepo = () => appDataSource.getRepository(MoneyReportEntity);
 
 async function resolveStatus(proposal) {
     if (proposal.status === "approved") {
@@ -65,15 +62,9 @@ export const getLeadDashboard = async (leadId) => {
     const enriched = await Promise.all(proposals.map(enrichProposal));
 
     const reportDue = enriched.filter(e => e.status === "report_due");
-    let alert = null;
-    if (reportDue.length > 0) {
-        const first = reportDue[0];
-        const event = await eventRepo().findOne({ where: { proposalId: Number(first.id) } });
-        const overdue = event?.reportDueAt && new Date(event.reportDueAt) < new Date();
-        alert = overdue
-            ? `Action Required: Event Report for "${first.name}" is overdue!`
-            : `Reminder: Event Report for "${first.name}" is due soon.`;
-    }
+    const alert = reportDue.length > 0
+        ? `Action Required: Event Report for "${reportDue[0].name}" is overdue!`
+        : null;
 
     const lead = await userRepo().findOne({ where: { id: leadId } });
     const leadClub = await clubRepo().findOne({ where: { leadId } });
@@ -159,34 +150,18 @@ export const updateEvent = async (eventId, leadId, body) => {
     const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
     if (!proposal) throw new NotFoundError("Event not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+    if (["approved", "rejected"].includes(proposal.status)) {
+        throw new ForbiddenError("Cannot edit a locked proposal");
+    }
 
     const { name, eventDate, venueId, description, estimatedBudget } = body;
-    // Only reset status when editing a rejected proposal
-    const statusReset = proposal.status === "rejected"
-        ? { status: "pending", adminComment: null, reviewedAt: null }
-        : {};
-
     await proposalRepo().update(Number(eventId), {
         ...(name !== undefined && { eventName: name }),
         ...(eventDate !== undefined && { proposedDate: eventDate }),
         ...(venueId !== undefined && { venueId }),
         ...(description !== undefined && { description }),
         ...(estimatedBudget !== undefined && { estimatedBudget }),
-        ...statusReset,
     });
-
-    // Keep the live event record in sync when editing an approved proposal
-    if (proposal.status === "approved") {
-        const liveEvent = await eventRepo().findOne({ where: { proposalId: proposal.id } });
-        if (liveEvent) {
-            await eventRepo().update(liveEvent.id, {
-                ...(name !== undefined && { name }),
-                ...(eventDate !== undefined && { eventDate }),
-                ...(venueId !== undefined && { venueId }),
-                ...(description !== undefined && { description }),
-            });
-        }
-    }
 
     const updated = await proposalRepo().findOne({ where: { id: Number(eventId) } });
     return enrichProposal(updated);
@@ -215,22 +190,7 @@ export const deleteEvent = async (eventId, leadId) => {
     const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
     if (!proposal) throw new NotFoundError("Event not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
-
-    // For approved proposals, cascade-delete all related live event data first
-    if (proposal.status === "approved") {
-        const liveEvent = await eventRepo().findOne({ where: { proposalId: proposal.id } });
-        if (liveEvent) {
-            await certRepo().delete({ eventId: liveEvent.id });
-            const roles = await roleRepo().find({ where: { eventId: liveEvent.id } });
-            if (roles.length > 0) {
-                await appRepo().delete({ roleId: In(roles.map(r => r.id)) });
-            }
-            await roleRepo().delete({ eventId: liveEvent.id });
-            await eventReportRepo().delete({ eventId: liveEvent.id });
-            await moneyReportRepo().delete({ eventId: liveEvent.id });
-            await eventRepo().delete(liveEvent.id);
-        }
-    }
+    if (proposal.status !== "draft") throw new ForbiddenError("Only draft proposals can be deleted");
 
     await proposalRepo().delete(Number(eventId));
 };
@@ -369,9 +329,7 @@ export const getEventDetail = async (eventId, userId, userRole) => {
         clubType: club?.type ?? "club",
         eventDate: proposal.proposedDate ?? null,
         status,
-        venueId: proposal.venueId ?? null,
         venueName: venue?.name ?? null,
-        description: proposal.description ?? null,
         budget: proposal.estimatedBudget ? Number(proposal.estimatedBudget) : null,
         proposalPdfUrl: proposal.proposalPdfUrl ?? null,
         adminComment: proposal.adminComment ?? null,
@@ -537,10 +495,8 @@ export const markEventCompleted = async (eventId, leadId, applicationIds = []) =
         throw new ValidationError("Event cannot be marked as completed before its date has passed");
     }
 
-    // Completing an event opens the 14-day post-event reporting window.
-    // Status moves to "report_due"; submitReports flips it to "completed" once reports are in.
     const completedAt = new Date();
-    const reportDueAt = new Date(completedAt.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const reportDueAt = addDays(completedAt, 14);
 
     await eventRepo().update(event.id, {
         status: "completed",
@@ -602,218 +558,242 @@ export const getStudentEvents = async () => {
     return enriched;
 };
 
-// ── My clubs events (lead + member) ──────────────────────────────────────────
-
-export const getMyClubEvents = async (userId) => {
-    // Events from clubs the user leads (proposals, all statuses)
-    const leadProposals = await proposalRepo().find({
-        where: { leadId: userId },
-        order: { createdAt: "DESC" },
-    });
-    const leadEvents = await Promise.all(
-        leadProposals.map(p => enrichProposal(p).then(e => ({ ...e, userRole: "lead" })))
-    );
-
-    // Events from clubs where user is a member (approved/live events only)
-    const memberRows = await clubMemberRepo().find({ where: { userId } });
-    const memberClubIds = memberRows.map(r => r.clubId);
-
-    let memberEvents = [];
-    if (memberClubIds.length) {
-        const events = await eventRepo().find({
-            where: { clubId: In(memberClubIds) },
-            order: { eventDate: "DESC" },
-        });
-        const clubIds = [...new Set(events.map(e => e.clubId))];
-        const clubs = clubIds.length ? await clubRepo().findBy({ id: In(clubIds) }) : [];
-        const clubMap = Object.fromEntries(clubs.map(c => [c.id, c]));
-
-        memberEvents = events.map(e => ({
-            id: String(e.id),
-            name: e.name,
-            clubName: clubMap[e.clubId]?.name ?? "Unknown Club",
-            clubType: clubMap[e.clubId]?.type ?? "club",
-            eventDate: e.eventDate ?? null,
-            attendees: 0,
-            status: e.status,
-            userRole: "member",
-        }));
-    }
-
-    return [...leadEvents, ...memberEvents];
-};
 
 function addDays(date, days) {
-  const nextDate = new Date(date);
-  nextDate.setDate(nextDate.getDate() + days);
-  return nextDate;
+    const nextDate = new Date(date);
+    nextDate.setDate(nextDate.getDate() + days);
+    return nextDate;
 }
 
 function getCompletionDate(event) {
-  return event.completedAt || event.completed_at || event.eventDate || event.createdAt;
+    return event.completedAt;
 }
 
 function getReportPdf(event) {
-  return event.reportPdfUrl || event.completionReportPdfUrl || null;
+    return event.reportPdfUrl || event.completionReportPdfUrl || event.financialReportPdfUrl || null;
 }
 
 function getReportStatus(event) {
-  if (event.reportStatus) return String(event.reportStatus).toLowerCase();
-  if (event.reportAcceptedAt) return "accepted";
-  if (event.reportRejectedAt || event.reportAdminComment) return "rejected";
-  if (getReportPdf(event)) return "submitted";
-  return "not_submitted";
+    const status = event.reportStatus ? String(event.reportStatus).toLowerCase() : "";
+
+    if (status === "accepted") return "accepted";
+    if (status === "rejected") return "rejected";
+    if (status === "submitted") return "submitted";
+
+    if (event.reportAcceptedAt) return "accepted";
+    if (event.reportRejectedAt || event.reportAdminComment) return "rejected";
+
+    if (getReportPdf(event)) return "submitted";
+
+    return "not_submitted";
 }
 
 function getReportDueAt(event) {
-  if (event.reportDueAt || event.report_due_at) return event.reportDueAt || event.report_due_at;
-  const completedAt = getCompletionDate(event);
-  return completedAt ? addDays(completedAt, 14) : null;
+    return event.reportDueAt;
 }
 
 function getDaysLeft(event) {
-  const reportDueAt = getReportDueAt(event);
-  if (!reportDueAt) return null;
+    const reportDueAt = getReportDueAt(event);
+    if (!reportDueAt) return null;
 
-  const today = new Date();
-  const dueDate = new Date(reportDueAt);
-  today.setHours(0, 0, 0, 0);
-  dueDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    const dueDate = new Date(reportDueAt);
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
 
-  return Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 async function enrichPostEvent(event) {
-  const proposal = event.proposalId
-    ? await proposalRepo().findOne({ where: { id: event.proposalId } })
-    : null;
+    const proposal = event.proposalId
+        ? await proposalRepo().findOne({ where: { id: event.proposalId } })
+        : null;
 
-  const club = event.clubId
-    ? await clubRepo().findOne({ where: { id: event.clubId } })
-    : null;
+    const club = event.clubId
+        ? await clubRepo().findOne({ where: { id: event.clubId } })
+        : null;
 
-  const venue = event.venueId
-    ? await venueRepo().findOne({ where: { id: event.venueId } })
-    : null;
+    const venue = event.venueId
+        ? await venueRepo().findOne({ where: { id: event.venueId } })
+        : null;
 
-  const lead = proposal?.leadId
-    ? await userRepo().findOne({ where: { id: proposal.leadId } })
-    : null;
+    const lead = proposal?.leadId
+        ? await userRepo().findOne({ where: { id: proposal.leadId } })
+        : null;
 
-  const daysLeft = getDaysLeft(event);
-  const reportStatus = getReportStatus(event);
-  const isOverdue = reportStatus === "not_submitted" && typeof daysLeft === "number" && daysLeft < 0;
+    const eventReport = await eventReportRepo().findOne({
+        where: { eventId: event.id }
+    });
 
-  return {
-    id: event.id,
-    proposalId: event.proposalId,
-    clubId: event.clubId,
-    venueId: event.venueId,
-    name: event.name,
-    description: event.description,
-    eventDate: event.eventDate,
-    status: event.status,
-    completedAt: getCompletionDate(event),
-    reportDueAt: getReportDueAt(event),
-    reportSubmittedAt: event.reportSubmittedAt || event.report_submitted_at || null,
-    reportReviewedAt: event.reportReviewedAt || event.report_reviewed_at || null,
-    reportStatus,
-    reportPdfUrl: getReportPdf(event),
-    reportAdminComment: event.reportAdminComment || "",
-    clubName: club?.name ?? "Unknown Club",
-    clubType: club?.type ?? "club",
-    leadName: lead?.fullName ?? "Unknown Lead",
-    venueName: venue?.name ?? "No venue assigned",
-    daysLeft,
-    isOverdue,
-  };
+    const moneyReport = await moneyReportRepo().findOne({
+        where: { eventId: event.id }
+    });
+
+    const daysLeft = getDaysLeft(event);
+
+    const reportStatus =
+        eventReport && moneyReport
+            ? eventReport.status
+            : "not_submitted";
+
+    const isOverdue =
+        reportStatus === "not_submitted" &&
+        typeof daysLeft === "number" &&
+        daysLeft < 0;
+
+    return {
+        id: event.id,
+        proposalId: event.proposalId,
+        clubId: event.clubId,
+        venueId: event.venueId,
+        name: event.name,
+        description: event.description,
+        eventDate: event.eventDate,
+        status: event.status,
+        completedAt: getCompletionDate(event),
+        reportDueAt: getReportDueAt(event),
+        reportSubmittedAt: event.reportSubmittedAt || event.report_submitted_at || null,
+        reportReviewedAt: event.reportReviewedAt || event.report_reviewed_at || null,
+        reportStatus,
+
+        completionReportPdfUrl:
+            eventReport?.reportPdfUrl ?? null,
+
+        financialReportPdfUrl:
+            moneyReport?.reportPdfUrl ?? null,
+
+        amountSpent:
+            moneyReport?.amountSpent ?? null,
+
+        reportAdminComment:
+            eventReport?.adminComment ||
+            moneyReport?.adminComment ||
+            "",
+        clubName: club?.name ?? "Unknown Club",
+        clubType: club?.type ?? "club",
+        leadName: lead?.fullName ?? "Unknown Lead",
+        venueName: venue?.name ?? "No venue assigned",
+        daysLeft,
+        isOverdue,
+    };
 }
 
 export const getAdminPostEvents = async () => {
-  const completedEvents = await eventRepo().find({
-    where: { status: "completed" },
-    order: { eventDate: "DESC" },
-  });
+    const completedEvents = await eventRepo().find({
+        where: { status: "completed" },
+        order: { eventDate: "DESC" },
+    });
 
-  const enriched = await Promise.all(completedEvents.map(enrichPostEvent));
+    const enriched = await Promise.all(completedEvents.map(enrichPostEvent));
 
-  return enriched.map((event) => {
-    if (event.isOverdue) {
-      return {
-        ...event,
-        reportStatus: "rejected",
-        reportAdminComment:
-          event.reportAdminComment || "Failed to submit report within the maximum limit.",
-      };
-    }
+    return enriched.map((event) => {
+        if (event.isOverdue) {
+            return {
+                ...event,
+                reportStatus: "rejected",
+                reportAdminComment:
+                    event.reportAdminComment || "Failed to submit report within the maximum limit.",
+            };
+        }
 
-    return event;
-  });
+        return event;
+    });
 };
 
 export const uploadCompletionReportPdf = async (eventId, leadId, fileUrl) => {
-  const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
-  if (!event) throw new NotFoundError("Event not found");
+    const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
+    if (!event) throw new NotFoundError("Event not found");
 
-  const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
-  if (!proposal || proposal.leadId !== leadId) {
-    throw new ForbiddenError("You do not own this event");
-  }
+    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
+    if (!proposal || proposal.leadId !== leadId) {
+        throw new ForbiddenError("You do not own this event");
+    }
 
-  if (event.status !== "completed") {
-    throw new ValidationError("Completion report can only be submitted for completed events");
-  }
+    if (event.status !== "completed") {
+        throw new ValidationError("Completion report can only be submitted for completed events");
+    }
 
-  const daysLeft = getDaysLeft(event);
-  if (typeof daysLeft === "number" && daysLeft < 0) {
-    // This assumes reportStatus/reportAdminComment columns are added later.
+    const daysLeft = getDaysLeft(event);
+    if (typeof daysLeft === "number" && daysLeft < 0) {
+        // This assumes reportStatus/reportAdminComment columns are added later.
+        await eventRepo().update(event.id, {
+            reportStatus: "rejected",
+            reportAdminComment: "Failed to submit report within the maximum limit.",
+            reportReviewedAt: new Date(),
+        });
+
+        throw new ValidationError("Failed to submit report within the maximum limit");
+    }
+
     await eventRepo().update(event.id, {
-      reportStatus: "rejected",
-      reportAdminComment: "Failed to submit report within the maximum limit.",
-      reportReviewedAt: new Date(),
+        completionReportPdfUrl: fileUrl,
+        reportStatus: "submitted",
+        reportSubmittedAt: new Date(),
     });
 
-    throw new ValidationError("Failed to submit report within the maximum limit");
-  }
-
-  await eventRepo().update(event.id, {
-    reportPdfUrl: fileUrl,
-    completionReportPdfUrl: fileUrl,
-    reportStatus: "submitted",
-    reportSubmittedAt: new Date(),
-  });
-
-  const updated = await eventRepo().findOne({ where: { id: event.id } });
-  return enrichPostEvent(updated);
+    const updated = await eventRepo().findOne({ where: { id: event.id } });
+    return enrichPostEvent(updated);
 };
 
 export const decideCompletionReport = async (eventId, decision, adminComment) => {
-  if (!["accepted", "rejected"].includes(decision)) {
-    throw new ValidationError("Decision must be 'accepted' or 'rejected'");
-  }
+    if (!["accepted", "rejected"].includes(decision)) {
+        throw new ValidationError("Decision must be 'accepted' or 'rejected'");
+    }
 
-  if (decision === "rejected" && !adminComment) {
-    throw new ValidationError("Admin comment is required when rejecting a report");
-  }
+    if (decision === "rejected" && !adminComment) {
+        throw new ValidationError("Admin comment is required when rejecting a report");
+    }
 
-  const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
-  if (!event) throw new NotFoundError("Event not found");
+    const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
+    if (!event) throw new NotFoundError("Event not found");
 
-  if (event.status !== "completed") {
-    throw new ValidationError("Only completed events can have completion reports reviewed");
-  }
+    const eventReport = await eventReportRepo().findOne({
+        where: { eventId: event.id },
+    });
 
-  const reportStatus = getReportStatus(event);
-  if (reportStatus !== "submitted") {
-    throw new ValidationError("Only submitted reports can be reviewed");
-  }
+    const moneyReport = await moneyReportRepo().findOne({
+        where: { eventId: event.id },
+    });
 
-  await eventRepo().update(event.id, {
-    reportStatus: decision,
-    reportAdminComment: adminComment || null,
-    reportReviewedAt: new Date(),
-  });
+    if (!eventReport || !moneyReport) {
+        throw new ValidationError("Both event report and financial report must be submitted before review");
+    }
 
-  const updated = await eventRepo().findOne({ where: { id: event.id } });
-  return enrichPostEvent(updated);
+    if (eventReport.status !== "submitted" || moneyReport.status !== "submitted") {
+        throw new ValidationError("Only submitted reports can be reviewed");
+    }
+
+    await eventReportRepo().update(eventReport.id, {
+        status: decision,
+        adminComment: adminComment || null,
+        reviewedAt: new Date(),
+    });
+
+    await moneyReportRepo().update(moneyReport.id, {
+        status: decision,
+        adminComment: adminComment || null,
+        reviewedAt: new Date(),
+    });
+
+    const updated = await eventRepo().findOne({ where: { id: event.id } });
+    return enrichPostEvent(updated);
+};
+
+export const uploadFinancialReportPdf = async (eventId, leadId, fileUrl) => {
+    const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
+    if (!event) throw new NotFoundError("Event not found");
+
+    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
+    if (!proposal || proposal.leadId !== leadId) {
+        throw new ForbiddenError("You do not own this event");
+    }
+
+    await eventRepo().update(event.id, {
+        financialReportPdfUrl: fileUrl,
+        reportStatus: "submitted",
+        reportSubmittedAt: new Date(),
+    });
+
+    const updated = await eventRepo().findOne({ where: { id: event.id } });
+    return enrichPostEvent(updated);
 };

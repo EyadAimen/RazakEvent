@@ -26,6 +26,8 @@ export interface PostEvent {
   reportAdminComment: string;
   daysLeft?: number;
   isOverdue: boolean;
+  completionReportPdfUrl?: string;
+  financialReportPdfUrl?: string;
 }
 
 export type PostEventFilterKey =
