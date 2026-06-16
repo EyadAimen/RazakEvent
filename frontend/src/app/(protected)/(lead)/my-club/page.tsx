@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, UserPlus, Clock, Calendar, XCircle } from "lucide-react";
+import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, UserPlus, Clock, Calendar, XCircle, LogOut } from "lucide-react";
 import Link from "next/link";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
@@ -36,6 +36,7 @@ export default function MyClubPage() {
   const [createSuccess, setCreateSuccess] = useState(false);
   const [rejectingAppId, setRejectingAppId] = useState<string | null>(null);
   const [expandedVolRows, setExpandedVolRows] = useState<Set<string>>(new Set());
+  const [confirmResign, setConfirmResign] = useState(false);
   const [confirmRemoveMemberId, setConfirmRemoveMemberId] = useState<string | null>(null);
   const [confirmRemoveMemberName, setConfirmRemoveMemberName] = useState("");
   const [rejectingMemberRequestId, setRejectingMemberRequestId] = useState<string | null>(null);
@@ -232,6 +233,32 @@ export default function MyClubPage() {
     }
   };
 
+  const handleResign = async () => {
+    if (!selectedClub || acting !== null) return;
+    const clubName = selectedClub.name;
+    setConfirmResign(false);
+    setActing(selectedClub.id);
+    try {
+      await apiFetchAuth(`/clubs/mine/${selectedClub.id}/resign`, { method: "POST" });
+      // Role/membership changed server-side — refetch clubs and reselect the first one
+      const data = await fetchAllClubs();
+      const next = data.find(c => c.status === "approved") ?? data[0] ?? null;
+      if (next) {
+        const key = next.status === "approved" ? `club-${next.id}` : `pending-${(next as PendingClubItem).requestId}`;
+        setSelectedKey(key);
+        setTab("members");
+        if (next.status === "approved") await loadClubData(next as ApprovedClub);
+      } else {
+        setSelectedKey(null);
+      }
+      setMemberSuccess(`You have resigned as lead of ${clubName}. The club is now leaderless and any pending lead-role requests have been sent to the admin.`);
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to resign. Please try again.");
+    } finally {
+      setActing(null);
+    }
+  };
+
   const handleCreateSuccess = async () => {
     setShowCreateModal(false);
     setCreateSuccess(true);
@@ -386,6 +413,15 @@ export default function MyClubPage() {
                   </span>
                   <h1 className={styles.clubName}>{selectedClub.name}</h1>
                   <p className={styles.description}>{selectedClub.description}</p>
+                  {selectedClub.userRole === "lead" && (
+                    <button
+                      className={styles.resignBtn}
+                      onClick={() => setConfirmResign(true)}
+                      disabled={acting !== null}
+                    >
+                      <LogOut size={13} /> Resign as Lead
+                    </button>
+                  )}
                 </div>
                 <div className={styles.statsRow}>
                   <div className={styles.stat}>
@@ -736,6 +772,17 @@ export default function MyClubPage() {
       <Alert variant="success" isOpen={volSuccess !== null} message={volSuccess ?? ""} onClose={() => setVolSuccess(null)} />
       <Alert variant="success" isOpen={memberSuccess !== null} message={memberSuccess ?? ""} onClose={() => setMemberSuccess(null)} />
       <Alert variant="error" isOpen={actionError !== null} message={actionError ?? ""} onClose={() => setActionError(null)} />
+
+      <Alert isOpen={confirmResign} onClose={() => setConfirmResign(false)}>
+        <h3 className={styles.confirmTitle}>Resign as Lead?</h3>
+        <p className={styles.confirmText}>
+          Are you sure you want to resign as lead of <strong>{selectedClub?.name}</strong>? The club will become leaderless and you will remain a regular member. Any pending lead-role requests will be forwarded to the admin. This cannot be undone.
+        </p>
+        <div className={styles.confirmBtns}>
+          <button className={styles.btnCancel} onClick={() => setConfirmResign(false)}>Cancel</button>
+          <button className={styles.btnDanger} onClick={handleResign}>Resign</button>
+        </div>
+      </Alert>
 
       <Alert isOpen={confirmRemoveMemberId !== null} onClose={() => setConfirmRemoveMemberId(null)}>
         <h3 className={styles.confirmTitle}>Remove Member?</h3>
