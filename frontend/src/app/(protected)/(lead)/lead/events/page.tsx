@@ -89,9 +89,7 @@ export default function LeadEventsPage() {
   }
 
   const filtered = events.filter(e => {
-    const matchTab    = tab === "all"
-      ? (e.userRole === "lead" ? e.status !== "rejected" : true)
-      : e.status === tab;
+    const matchTab    = tab === "all" || e.status === tab;
     const matchSearch = !search || e.name.toLowerCase().includes(search.toLowerCase());
     return matchTab && matchSearch;
   });

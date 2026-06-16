@@ -82,7 +82,14 @@ export const getLeadDashboard = async (leadId) => {
     };
 };
 
-// ── Lead — Full event list 
+// ── Lead + Member — My Club Events ───────────────────────────────────────────
+
+export const getMyClubEvents = async (userId) => {
+    const events = await getLeadEvents(userId);
+    return events.map(e => ({ ...e, userRole: "lead" }));
+};
+
+// ── Lead — Full event list
 
 export const getLeadEvents = async (leadId, statusFilter) => {
     const proposals = await proposalRepo().find({
