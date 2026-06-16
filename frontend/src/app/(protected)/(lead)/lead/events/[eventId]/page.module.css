@@ -636,6 +636,326 @@
   cursor: not-allowed;
 }
 
+/* ── Extra card action buttons ───────────────────────────────────────────── */
+.actionEdit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-veryfast);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.actionEdit:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-800);
+}
+
+.actionDanger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-veryfast);
+  border: none;
+  background: var(--color-semantic-red-10);
+  color: var(--color-semantic-red);
+}
+
+.actionDanger:hover:not(:disabled) {
+  background: var(--color-semantic-red);
+  color: var(--color-neutral-50);
+}
+
+.actionDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Action error banner ─────────────────────────────────────────────────── */
+.actionErrorBanner {
+  background: var(--color-semantic-red-10);
+  border: 1px solid var(--color-semantic-red);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-semantic-red);
+}
+
+/* ── Modal overlay ───────────────────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: var(--popup-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: var(--space-md);
+}
+
+/* ── Delete confirm modal ────────────────────────────────────────────────── */
+.confirmModal {
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-xl);
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.confirmTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.confirmText {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-600);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+.confirmCancel {
+  padding: 9px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.confirmCancel:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+.confirmDelete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-semantic-red);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-50);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.confirmDelete:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.confirmCancel:disabled,
+.confirmDelete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Edit event modal ────────────────────────────────────────────────────── */
+.editModal {
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  max-width: 560px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.editModalTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.editModalClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.editModalClose:hover:not(:disabled) {
+  background: var(--color-neutral-150);
+  color: var(--color-neutral-800);
+}
+
+.editModalError {
+  margin: 0;
+  padding: var(--space-sm) var(--space-xl);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-semantic-red);
+  background: var(--color-semantic-red-10);
+  flex-shrink: 0;
+}
+
+.editModalBody {
+  padding: var(--space-lg) var(--space-xl);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  flex: 1;
+}
+
+.editField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.editLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-caption-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-700);
+}
+
+.editInput,
+.editSelect,
+.editTextarea {
+  width: 100%;
+  padding: 9px var(--space-md);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-800);
+  background: var(--color-neutral-50);
+  box-sizing: border-box;
+  transition: border-color var(--transition-veryfast);
+}
+
+.editInput:focus,
+.editSelect:focus,
+.editTextarea:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+}
+
+.editSelect {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237c7a7a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-md) center;
+  cursor: pointer;
+}
+
+.editTextarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.editModalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  border-top: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.editCancelBtn {
+  padding: 9px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.editCancelBtn:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+.editSubmitBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 24px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-primary-500);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-50);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.editSubmitBtn:hover:not(:disabled) {
+  background: var(--color-primary-800);
+}
+
+.editCancelBtn:disabled,
+.editSubmitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .body {

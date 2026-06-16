@@ -61,7 +61,9 @@ export interface EventDetail {
   clubType: string;
   eventDate: string | null;
   status: string;
+  venueId: number | null;
   venueName: string | null;
+  description: string | null;
   budget: number | null;
   proposalPdfUrl: string | null;
   adminComment: string | null;
@@ -157,7 +159,9 @@ export interface ClubVolunteerApplication {
   studentMatricId: string | null;
   eventId: string;
   eventName: string;
+  roleId: number;
   roleName: string;
+  slotsAvailable: number;
   status: "pending" | "accepted" | "rejected";
   appliedAt: string;
   reason: string | null;
