@@ -158,8 +158,6 @@ export default function BecomeMemberPage() {
               </button>
             </div>
 
-            
-
             {isRequestsTab && (
               <div className={styles.requestsList}>
                 {!hasAnyRequest ? (
@@ -338,7 +336,7 @@ export default function BecomeMemberPage() {
                   <div className={styles.createCard} onClick={() => setShowCreateModal(true)}>
                     <Plus size={28} className={styles.createIcon} />
                     <p className={styles.createTitle}>Create New Club</p>
-                    <p className={styles.createDesc}>Can't find yours? Submit a request to start a new one.</p>
+                    <p className={styles.createDesc}>Can&apos;t find yours? Submit a request to start a new one.</p>
                   </div>
                 )}
               </div>
