@@ -1,0 +1,187 @@
+/* ── Overlay ─────────────────────────────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--popup-background);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+}
+
+/* ── Modal shell ─────────────────────────────────────────────────────────── */
+.modal {
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.header {
+  background: var(--color-status-yellow);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--space-lg);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.headerSuccess {
+  background: var(--color-status-green);
+}
+
+.headerError {
+  background: var(--color-semantic-red);
+}
+
+.headerIcon {
+  color: var(--color-neutral-50);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.headerText {
+  flex: 1;
+}
+
+.headerLabel {
+  font-family: var(--font-body);
+  font-size: var(--text-caption-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-50);
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 4px;
+}
+
+.headerTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-50);
+  line-height: var(--text-h3-height);
+  margin: 0 0 2px;
+}
+
+.headerSubtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-50);
+  opacity: 0.85;
+  margin: 0;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-neutral-50);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity var(--transition-veryfast);
+}
+
+.closeBtn:hover {
+  opacity: 0.7;
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────── */
+.body {
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.confirmText {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-700);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.errorText {
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  color: var(--color-semantic-red);
+  background: var(--color-semantic-red-10);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  gap: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.cancelBtn,
+.confirmBtn {
+  flex: 1;
+  height: var(--button-height-md);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-veryfast);
+}
+
+.cancelBtn {
+  background: var(--color-neutral-50);
+  border: 1.5px solid var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+.cancelBtn:hover:not(:disabled) {
+  border-color: var(--color-neutral-500);
+  background: var(--color-neutral-100);
+}
+
+.confirmBtn {
+  background: var(--color-status-green);
+  color: var(--color-neutral-50);
+}
+
+.confirmBtn:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.cancelBtn:disabled,
+.confirmBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .modal {
+    max-height: 100dvh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    align-self: flex-end;
+  }
+
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+}
