@@ -287,7 +287,7 @@ export default function MyClubPage() {
             </div>
             {isUserLead && (
               <>
-                <Link href="/lead/join-clubs" className={styles.joinClubLink}>
+                <Link href="/become-member" className={styles.joinClubLink}>
                   <UserPlus size={14} />
                   Join a Club
                 </Link>
