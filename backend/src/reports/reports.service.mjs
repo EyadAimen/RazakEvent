@@ -14,17 +14,13 @@ async function resolveEvent(rawId, leadId) {
     const id = Number(rawId);
     if (isNaN(id)) throw new ValidationError("Invalid event ID");
 
-    let event = await eventRepo().findOne({ where: { id } });
-    if (!event) {
-        const proposal = await proposalRepo().findOne({ where: { id } });
-        if (proposal?.status === "approved") {
-            event = await eventRepo().findOne({ where: { proposalId: proposal.id } });
-        }
-    }
-    if (!event) throw new NotFoundError("Event not found");
+    // The frontend always routes by proposal ID (enrichProposal returns proposal.id)
+    const proposal = await proposalRepo().findOne({ where: { id } });
+    if (!proposal) throw new NotFoundError("Event not found");
+    if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
 
-    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
-    if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
+    const event = await eventRepo().findOne({ where: { proposalId: id } });
+    if (!event) throw new NotFoundError("Event not found");
 
     return { event, proposal };
 }
