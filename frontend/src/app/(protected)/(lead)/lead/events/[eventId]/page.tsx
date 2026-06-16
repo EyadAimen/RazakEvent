@@ -357,8 +357,10 @@ export default function LeadEventDetailPage() {
 
   const formattedDate = event.eventDate
     ? new Date(event.eventDate).toLocaleDateString("en-MY", {
-      year: "numeric", month: "long", day: "numeric",
-    })
+        year: "numeric", month: "long", day: "numeric",
+      }) + " " + new Date(event.eventDate).toLocaleTimeString("en-MY", {
+        hour: "2-digit", minute: "2-digit",
+      })
     : "TBD";
 
   const volOpen = event.volunteeringStatus === "open";
