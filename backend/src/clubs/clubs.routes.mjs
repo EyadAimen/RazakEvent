@@ -18,6 +18,7 @@ router.get("/mine/members", authenticate, requireRole("lead"), clubsController.g
 router.get("/mine/membership-requests", authenticate, requireRole("lead"), clubsController.getMembershipRequestsHandler);
 router.patch("/mine/membership-requests/:requestId/decision", authenticate, requireRole("lead"), clubsController.decideMembershipRequestHandler);
 router.delete("/mine/members/:userId", authenticate, requireRole("lead"), clubsController.removeMemberHandler);
+router.post("/mine/:clubId/resign", authenticate, requireRole("lead"), clubsController.resignAsLeadHandler);
 
 // Any authenticated user — submit a new club / community request
 router.post("/requests", authenticate, uploadClubLetter, clubsController.createClubRequestHandler);
