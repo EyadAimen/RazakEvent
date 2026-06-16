@@ -85,7 +85,8 @@ export default function SharedEventDetailPage() {
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>DATE</span>
                 <span className={styles.infoValue}>
-                  <Calendar size={14} /> {new Date(event.eventDate).toLocaleDateString()}
+                  <Calendar size={14} /> {new Date(event.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "long", year: "numeric" })}{" "}
+                  {new Date(event.eventDate).toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>
             )}

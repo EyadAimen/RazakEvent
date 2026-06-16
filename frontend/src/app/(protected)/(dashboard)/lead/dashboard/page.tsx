@@ -26,7 +26,7 @@ import styles from "./page.module.css";
 function toLeadEvent(e: ApiEvent): LeadEvent {
   const statusMap: Record<string, { variant: LeadEvent["status"]; label: string }> = {
     draft:       { variant: "draft",        label: "Draft" },
-    submitted:   { variant: "pending-admin", label: "Pending Admin" },
+    pending:     { variant: "pending-admin", label: "Pending Admin" },
     approved:    { variant: "approved",      label: "Approved" },
     rejected:    { variant: "rejected",      label: "Rejected" },
     completed:   { variant: "completed",     label: "Completed" },

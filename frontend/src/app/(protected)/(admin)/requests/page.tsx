@@ -237,7 +237,9 @@ export default function AdminRequestsPage() {
                 <div>
                   <h4 className={styles.metaLabelHeaderTitle}>PROPOSED DATE</h4>
                   <p className={styles.metaValueHighlightText}>
-                    {selectedProposal.proposedDate}
+                    {selectedProposal.proposedDate
+                      ? new Date(selectedProposal.proposedDate).toLocaleDateString("en-MY", { day: "numeric", month: "long", year: "numeric" }) + " " + new Date(selectedProposal.proposedDate).toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit" })
+                      : "TBD"}
                   </p>
                 </div>
 

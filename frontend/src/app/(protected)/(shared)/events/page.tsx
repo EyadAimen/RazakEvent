@@ -79,7 +79,8 @@ export default function SharedEventsPage() {
                     <span className={styles.club}>{event.clubName}</span>
                     <span className={styles.date}>
                       <Calendar size={14} />
-                      {new Date(event.eventDate).toLocaleDateString()}
+                      {new Date(event.eventDate).toLocaleDateString("en-MY", { day: "numeric", month: "long", year: "numeric" })}{" "}
+                      {new Date(event.eventDate).toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
                 </div>

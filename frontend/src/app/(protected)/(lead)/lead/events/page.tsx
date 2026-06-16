@@ -18,9 +18,8 @@ import styles from "./events.module.css";
 const TABS: { label: string; value: EventsTab }[] = [
   { label: "All",        value: "all"        },
   { label: "Draft",      value: "draft"      },
-  { label: "Submitted",  value: "submitted"  },
+  { label: "Pending Admin",  value: "pending"  },
   { label: "Approved",   value: "approved"   },
-  { label: "Ongoing",    value: "ongoing"    },
   { label: "Completed",  value: "completed"  },
   { label: "Report Due", value: "report_due" },
   { label: "Rejected",   value: "rejected"   },
@@ -28,7 +27,7 @@ const TABS: { label: string; value: EventsTab }[] = [
 
 const STATUS_MAP: Record<string, { variant: LeadEvent["status"]; label: string }> = {
   draft:      { variant: "draft",         label: "Draft"      },
-  submitted:  { variant: "pending-admin", label: "Submitted"  },
+  pending:    { variant: "pending-admin", label: "Pending Admin" },
   approved:   { variant: "approved",      label: "Approved"   },
   ongoing:    { variant: "approved",      label: "Ongoing"    },
   completed:  { variant: "completed",     label: "Completed"  },
