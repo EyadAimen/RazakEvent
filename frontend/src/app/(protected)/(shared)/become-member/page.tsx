@@ -60,7 +60,7 @@ export default function BecomeMemberPage() {
       apiFetchAuth<{ clubs: Club[] }>("/clubs").then((res) => setClubs(res.clubs ?? [])).catch(() => {}),
       fetchMyMembershipRequests().then(setMemberRequests).catch(() => {}),
     ];
-    if (isMember) tasks.push(fetchMyLeadRequest().then(setLeadRequest).catch(() => {}));
+    if (isMember && !isLead) tasks.push(fetchMyLeadRequest().then(setLeadRequest).catch(() => {}));
     Promise.all(tasks).finally(() => setLoading(false));
   }, [isMember]);
 
