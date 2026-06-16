@@ -1,10 +1,15 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, UserPlus, Clock, Calendar, XCircle } from "lucide-react";
+import { Search, Users, CalendarCheck, Loader2, Check, X, Trash2, Plus, UserPlus, Clock, Calendar, XCircle, LogOut } from "lucide-react";
 import Link from "next/link";
 import Triangle from "@/components/shared/triangle/triangle";
-import { apiFetchAuth } from "@/lib/api";
+import {
+  fetchMyClubs, fetchClubMembers, fetchPublicClubMembers, fetchMembershipRequests,
+  fetchClubVolApplications, fetchIncomingLeadRequests,
+  decideMembershipRequest, decideVolApplication, decideLeadRequest,
+  removeClubMember, resignAsLead,
+} from "./utils/services/my-club.service";
 import { getUser } from "@/lib/auth";
 import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubTab, ClubVolunteerApplication, LeadRoleIncomingRequest } from "@/types/lead";
 import Alert from "@/components/shared/alertComponent/alert";
@@ -36,6 +41,7 @@ export default function MyClubPage() {
   const [createSuccess, setCreateSuccess] = useState(false);
   const [rejectingAppId, setRejectingAppId] = useState<string | null>(null);
   const [expandedVolRows, setExpandedVolRows] = useState<Set<string>>(new Set());
+  const [confirmResign, setConfirmResign] = useState(false);
   const [confirmRemoveMemberId, setConfirmRemoveMemberId] = useState<string | null>(null);
   const [confirmRemoveMemberName, setConfirmRemoveMemberName] = useState("");
   const [rejectingMemberRequestId, setRejectingMemberRequestId] = useState<string | null>(null);
@@ -72,19 +78,18 @@ export default function MyClubPage() {
 
   const loadClubData = useCallback(async (club: ApprovedClub) => {
     if (club.userRole === "lead") {
-      const [membersData, requestsData, volData, leadReqData] = await Promise.all([
-        apiFetchAuth<{ members: ClubMember[] }>(`/clubs/mine/members?clubId=${club.id}`),
-        apiFetchAuth<{ requests: MembershipRequest[] }>(`/clubs/mine/membership-requests?clubId=${club.id}`),
-        apiFetchAuth<{ applications: ClubVolunteerApplication[] }>(`/volunteering/applications/club?clubId=${club.id}`),
-        apiFetchAuth<{ requests: LeadRoleIncomingRequest[] }>(`/requests/lead-role/incoming`),
+      const [membersList, requestsList, volList, leadReqList] = await Promise.all([
+        fetchClubMembers(club.id),
+        fetchMembershipRequests(club.id),
+        fetchClubVolApplications(club.id),
+        fetchIncomingLeadRequests(),
       ]);
-      setMembers(membersData.members);
-      setRequests(requestsData.requests);
-      setVolApps(volData.applications);
-      setLeadRequests(leadReqData.requests);
+      setMembers(membersList);
+      setRequests(requestsList);
+      setVolApps(volList);
+      setLeadRequests(leadReqList);
     } else {
-      const membersData = await apiFetchAuth<{ members: ClubMember[] }>(`/clubs/${club.id}/members`);
-      setMembers(membersData.members);
+      setMembers(await fetchPublicClubMembers(club.id));
       setRequests([]);
       setVolApps([]);
       setLeadRequests([]);
@@ -92,7 +97,7 @@ export default function MyClubPage() {
   }, []);
 
   const fetchAllClubs = useCallback(async () => {
-    const { clubs: data } = await apiFetchAuth<{ clubs: ClubItem[] }>("/clubs/mine/all");
+    const data = await fetchMyClubs();
     setClubs(data);
     return data;
   }, []);
@@ -136,10 +141,7 @@ export default function MyClubPage() {
     if (acting !== null) return;
     setActing(applicationId);
     try {
-      await apiFetchAuth(`/volunteering/applications/${applicationId}/decision`, {
-        method: "PATCH",
-        body: JSON.stringify({ decision, rejectionMessage }),
-      });
+      await decideVolApplication(applicationId, decision, rejectionMessage);
       setVolApps(prev => prev.map(a =>
         a.applicationId === applicationId
           ? { ...a, status: decision, rejectionMessage: rejectionMessage ?? null }
@@ -160,10 +162,7 @@ export default function MyClubPage() {
     const req = requests.find(r => r.id === requestId);
     setActing(requestId);
     try {
-      await apiFetchAuth(`/clubs/mine/membership-requests/${requestId}/decision?clubId=${selectedClub.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ decision, ...(leadComment ? { leadComment } : {}) }),
-      });
+      await decideMembershipRequest(requestId, selectedClub.id, decision, leadComment);
       setRequests(prev => prev.filter(r => r.id !== requestId));
       setClubs(prev => prev.map(c =>
         c.status === "approved" && c.id === selectedClub.id
@@ -192,10 +191,7 @@ export default function MyClubPage() {
     const req = leadRequests.find(r => r.id === requestId);
     setActing(requestId);
     try {
-      await apiFetchAuth(`/requests/lead-role/${requestId}/lead-decision`, {
-        method: "PATCH",
-        body: JSON.stringify({ action, ...(comment ? { comment } : {}) }),
-      });
+      await decideLeadRequest(requestId, action, comment);
       setLeadRequests(prev => prev.filter(r => r.id !== requestId));
       if (action === "rejected") setRejectingLeadRequestId(null);
       setMemberSuccess(
@@ -217,7 +213,7 @@ export default function MyClubPage() {
     setConfirmRemoveMemberId(null);
     setActing(userId);
     try {
-      await apiFetchAuth(`/clubs/mine/members/${userId}?clubId=${selectedClub.id}`, { method: "DELETE" });
+      await removeClubMember(selectedClub.id, userId);
       setMembers(prev => prev.filter(m => m.userId !== userId));
       setClubs(prev => prev.map(c =>
         c.status === "approved" && c.id === selectedClub.id
@@ -227,6 +223,32 @@ export default function MyClubPage() {
       setMemberSuccess(`${member?.fullName ?? "Member"} has been removed from the club.`);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to remove member.");
+    } finally {
+      setActing(null);
+    }
+  };
+
+  const handleResign = async () => {
+    if (!selectedClub || acting !== null) return;
+    const clubName = selectedClub.name;
+    setConfirmResign(false);
+    setActing(selectedClub.id);
+    try {
+      await resignAsLead(selectedClub.id);
+      // Role/membership changed server-side — refetch clubs and reselect the first one
+      const data = await fetchAllClubs();
+      const next = data.find(c => c.status === "approved") ?? data[0] ?? null;
+      if (next) {
+        const key = next.status === "approved" ? `club-${next.id}` : `pending-${(next as PendingClubItem).requestId}`;
+        setSelectedKey(key);
+        setTab("members");
+        if (next.status === "approved") await loadClubData(next as ApprovedClub);
+      } else {
+        setSelectedKey(null);
+      }
+      setMemberSuccess(`You have resigned as lead of ${clubName}. The club is now leaderless and any pending lead-role requests have been sent to the admin.`);
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to resign. Please try again.");
     } finally {
       setActing(null);
     }
@@ -386,6 +408,15 @@ export default function MyClubPage() {
                   </span>
                   <h1 className={styles.clubName}>{selectedClub.name}</h1>
                   <p className={styles.description}>{selectedClub.description}</p>
+                  {selectedClub.userRole === "lead" && (
+                    <button
+                      className={styles.resignBtn}
+                      onClick={() => setConfirmResign(true)}
+                      disabled={acting !== null}
+                    >
+                      <LogOut size={13} /> Resign as Lead
+                    </button>
+                  )}
                 </div>
                 <div className={styles.statsRow}>
                   <div className={styles.stat}>
@@ -736,6 +767,17 @@ export default function MyClubPage() {
       <Alert variant="success" isOpen={volSuccess !== null} message={volSuccess ?? ""} onClose={() => setVolSuccess(null)} />
       <Alert variant="success" isOpen={memberSuccess !== null} message={memberSuccess ?? ""} onClose={() => setMemberSuccess(null)} />
       <Alert variant="error" isOpen={actionError !== null} message={actionError ?? ""} onClose={() => setActionError(null)} />
+
+      <Alert isOpen={confirmResign} onClose={() => setConfirmResign(false)}>
+        <h3 className={styles.confirmTitle}>Resign as Lead?</h3>
+        <p className={styles.confirmText}>
+          Are you sure you want to resign as lead of <strong>{selectedClub?.name}</strong>? The club will become leaderless and you will remain a regular member. Any pending lead-role requests will be forwarded to the admin. This cannot be undone.
+        </p>
+        <div className={styles.confirmBtns}>
+          <button className={styles.btnCancel} onClick={() => setConfirmResign(false)}>Cancel</button>
+          <button className={styles.btnDanger} onClick={handleResign}>Resign</button>
+        </div>
+      </Alert>
 
       <Alert isOpen={confirmRemoveMemberId !== null} onClose={() => setConfirmRemoveMemberId(null)}>
         <h3 className={styles.confirmTitle}>Remove Member?</h3>

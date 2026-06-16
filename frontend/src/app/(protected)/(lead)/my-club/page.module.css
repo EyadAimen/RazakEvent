@@ -619,6 +619,31 @@
   cursor: not-allowed;
 }
 
+/* ── Resign as lead (header action) ─────────────────────────────────────── */
+.resignBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-md);
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-semantic-red);
+  background: transparent;
+  color: var(--color-semantic-red);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+.resignBtn:hover:not(:disabled) {
+  background: var(--color-semantic-red-10);
+}
+.resignBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Loading / error / empty states ─────────────────────────────────────── */
 .stateBox {
   display: flex;
