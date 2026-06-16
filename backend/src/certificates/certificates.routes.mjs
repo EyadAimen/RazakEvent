@@ -5,7 +5,7 @@ import { getVolunteersHandler, issueHandler, mineHandler, downloadHandler } from
 const router = Router();
 
 // Fixed paths before param paths
-router.get("/mine",                      authenticate, requireRole("student", "member"), mineHandler);
+router.get("/mine",                      authenticate, requireRole("student", "member", "lead"), mineHandler);
 router.get("/events/:eventId/volunteers", authenticate, requireRole("lead"),              getVolunteersHandler);
 router.post("/events/:eventId/issue",    authenticate, requireRole("lead"),              issueHandler);
 router.get("/:id/download",              authenticate,                                   downloadHandler);
