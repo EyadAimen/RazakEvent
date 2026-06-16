@@ -42,7 +42,7 @@ export const createClubRequestHandler = async (req, res, next) => {
 
 export const listClubsHandler = async (req, res, next) => {
     try {
-        const clubs = await listClubs();
+        const clubs = await listClubs(req.user?.userId ?? null);
         res.json({ clubs });
     } catch (err) {
         next(err);

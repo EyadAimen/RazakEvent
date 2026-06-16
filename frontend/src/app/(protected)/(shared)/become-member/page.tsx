@@ -8,6 +8,7 @@ import CreateClubModal from "@/components/student/CreateClubModal/CreateClubModa
 import { apiFetchAuth } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import {
+  fetchMyClubs,
   fetchMyMembershipRequests,
   fetchMyLeadRequest,
   submitMembershipRequest,
@@ -43,6 +44,7 @@ export default function BecomeMemberPage() {
 
   const [tab, setTab] = useState<Tab>("join");
   const [clubs, setClubs] = useState<Club[]>([]);
+  const [myClubs, setMyClubs] = useState<Club[]>([]);
   const [memberRequests, setMemberRequests] = useState<MembershipRequest[]>([]);
   const [leadRequest, setLeadRequest] = useState<LeadRoleRequest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +61,7 @@ export default function BecomeMemberPage() {
     const tasks: Promise<void>[] = [
       apiFetchAuth<{ clubs: Club[] }>("/clubs").then((res) => setClubs(res.clubs ?? [])).catch(() => {}),
       fetchMyMembershipRequests().then(setMemberRequests).catch(() => {}),
+      fetchMyClubs().then(setMyClubs).catch(() => {}),
     ];
     if (isMember && !isLead) tasks.push(fetchMyLeadRequest().then(setLeadRequest).catch(() => {}));
     Promise.all(tasks).finally(() => setLoading(false));
@@ -116,7 +119,6 @@ export default function BecomeMemberPage() {
   const hasAnyRequest = pendingMemberRequests.length > 0 || rejectedMemberRequests.length > 0 || !!pendingLeadRequest || !!rejectedLeadRequest;
 
   const approvedMemberClubIds = new Set(memberRequests.filter(r => r.status === "approved").map(r => r.clubId));
-  const leadTabClubs = clubs.filter(c => approvedMemberClubIds.has(c.id));
 
   return (
     <>
@@ -279,7 +281,7 @@ export default function BecomeMemberPage() {
               </div>
             ) : !isRequestsTab ? (
               <div className={styles.grid}>
-                {(isJoinTab ? clubs.filter(c => !approvedMemberClubIds.has(c.id)) : leadTabClubs).map((club) => {
+                {(isJoinTab ? clubs.filter(c => !approvedMemberClubIds.has(c.id)) : myClubs).map((club: Club) => {
                   const reqStatus = isJoinTab ? membershipStatusForClub(club.id) : null;
                   const hasActiveLeadReq = !isJoinTab && leadRequest && leadRequest.clubId === club.id;
 
@@ -337,7 +339,7 @@ export default function BecomeMemberPage() {
                   );
                 })}
 
-                {!isJoinTab && isMember && leadTabClubs.length === 0 && (
+                {!isJoinTab && isMember && myClubs.length === 0 && (
                   <p className={styles.infoBanner} style={{ gridColumn: "1 / -1" }}>
                     You are not an approved member of any club yet. Join a club first, then apply to become its lead.
                   </p>
