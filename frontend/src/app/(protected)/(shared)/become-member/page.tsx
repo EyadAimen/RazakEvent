@@ -85,7 +85,7 @@ export default function BecomeMemberPage() {
     setAlert({ type: "loading" });
     try {
       const msg = await submitLeadRoleRequest(club.id);
-      if (isMember) await fetchMyLeadRequest().then(setLeadRequest).catch(() => {});
+      if (isMember && !isLead) await fetchMyLeadRequest().then(setLeadRequest).catch(() => {});
       setAlert({ type: "success", message: msg });
     } catch (err) {
       setAlert({ type: "error", message: err instanceof Error ? err.message : "Failed to submit request." });

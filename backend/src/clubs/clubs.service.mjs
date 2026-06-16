@@ -423,7 +423,7 @@ export const getMembershipRequests = async (leadId, clubId) => {
 
 // ── Lead — Accept or reject a membership request ──────────────────────────────
 
-export const decideMembershipRequest = async (leadId, requestId, decision, clubId) => {
+export const decideMembershipRequest = async (leadId, requestId, decision, clubId, leadComment) => {
     const club = await resolveLeadClub(leadId, clubId);
 
     const req = await membershipReqRepo().findOne({ where: { id: Number(requestId) } });
@@ -432,21 +432,39 @@ export const decideMembershipRequest = async (leadId, requestId, decision, clubI
     if (req.status !== "pending") throw new ValidationError("Request has already been reviewed");
     if (!["approved", "rejected"].includes(decision)) throw new ValidationError("Decision must be 'approved' or 'rejected'");
 
-    await membershipReqRepo().update(Number(requestId), {
-        status: decision,
-        reviewedBy: leadId,
-        reviewedAt: new Date(),
-    });
-
     if (decision === "approved") {
-        const already = await clubMemberRepo().findOne({ where: { userId: req.studentId } });
-        if (!already) {
-            await clubMemberRepo().save(clubMemberRepo().create({ userId: req.studentId, clubId: club.id }));
-            const student = await userRepo().findOne({ where: { id: req.studentId } });
-            if (student?.role === "student") {
-                await userRepo().update(req.studentId, { role: "member" });
+        // Atomic: if the insert fails the request stays "pending"
+        const qr = appDataSource.createQueryRunner();
+        await qr.connect();
+        await qr.startTransaction();
+        try {
+            await qr.manager.update(MembershipRequestEntity, Number(requestId), {
+                status: "approved",
+                reviewedBy: leadId,
+                reviewedAt: new Date(),
+            });
+            const already = await qr.manager.findOne(ClubMemberEntity, { where: { userId: req.studentId, clubId: club.id } });
+            if (!already) {
+                await qr.manager.insert(ClubMemberEntity, { userId: req.studentId, clubId: club.id });
+                const student = await qr.manager.findOne(UserEntity, { where: { id: req.studentId } });
+                if (student?.role === "student") {
+                    await qr.manager.update(UserEntity, { id: req.studentId }, { role: "member" });
+                }
             }
+            await qr.commitTransaction();
+        } catch (err) {
+            await qr.rollbackTransaction();
+            throw err;
+        } finally {
+            await qr.release();
         }
+    } else {
+        await membershipReqRepo().update(Number(requestId), {
+            status: "rejected",
+            reviewedBy: leadId,
+            reviewedAt: new Date(),
+            ...(leadComment ? { leadComment: leadComment.trim() } : {}),
+        });
     }
 
     return { requestId: Number(requestId), decision };
@@ -462,6 +480,7 @@ export const removeMember = async (leadId, userId, clubId) => {
     if (!member) throw new NotFoundError("Member not found in your club");
 
     await clubMemberRepo().delete({ userId, clubId: club.id });
+    await membershipReqRepo().delete({ studentId: userId, clubId: club.id });
     await userRepo().update(userId, { role: "student" });
 
     return { message: "Member removed" };
