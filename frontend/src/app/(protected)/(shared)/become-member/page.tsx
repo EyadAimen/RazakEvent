@@ -60,7 +60,7 @@ export default function BecomeMemberPage() {
       apiFetchAuth<{ clubs: Club[] }>("/clubs").then((res) => setClubs(res.clubs ?? [])).catch(() => {}),
       fetchMyMembershipRequests().then(setMemberRequests).catch(() => {}),
     ];
-    if (isMember) tasks.push(fetchMyLeadRequest().then(setLeadRequest).catch(() => {}));
+    if (isMember && !isLead) tasks.push(fetchMyLeadRequest().then(setLeadRequest).catch(() => {}));
     Promise.all(tasks).finally(() => setLoading(false));
   }, [isMember]);
 
@@ -85,7 +85,7 @@ export default function BecomeMemberPage() {
     setAlert({ type: "loading" });
     try {
       const msg = await submitLeadRoleRequest(club.id);
-      if (isMember) await fetchMyLeadRequest().then(setLeadRequest).catch(() => {});
+      if (isMember && !isLead) await fetchMyLeadRequest().then(setLeadRequest).catch(() => {});
       setAlert({ type: "success", message: msg });
     } catch (err) {
       setAlert({ type: "error", message: err instanceof Error ? err.message : "Failed to submit request." });

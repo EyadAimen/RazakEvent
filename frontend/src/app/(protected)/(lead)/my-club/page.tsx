@@ -37,8 +37,8 @@ export default function MyClubPage() {
   const [expandedVolRows, setExpandedVolRows] = useState<Set<number>>(new Set());
   const [confirmRemoveMemberId, setConfirmRemoveMemberId] = useState<string | null>(null);
   const [confirmRemoveMemberName, setConfirmRemoveMemberName] = useState("");
-  const [confirmRejectRequestId, setConfirmRejectRequestId] = useState<number | null>(null);
-  const [confirmRejectRequestName, setConfirmRejectRequestName] = useState("");
+  const [rejectingMemberRequestId, setRejectingMemberRequestId] = useState<number | null>(null);
+  const [rejectingMemberRequestName, setRejectingMemberRequestName] = useState("");
   const [memberSuccess, setMemberSuccess] = useState<string | null>(null);
 
   const VOL_BADGE: Record<ClubVolunteerApplication["status"], { variant: BadgeVariant; label: string }> = {
@@ -148,15 +148,14 @@ export default function MyClubPage() {
     }
   };
 
-  const handleDecideRequest = async (requestId: number, decision: "approved" | "rejected") => {
+  const handleDecideRequest = async (requestId: number, decision: "approved" | "rejected", leadComment?: string) => {
     if (!selectedClub || acting !== null) return;
     const req = requests.find(r => r.id === requestId);
-    setConfirmRejectRequestId(null);
     setActing(requestId);
     try {
       await apiFetchAuth(`/clubs/mine/membership-requests/${requestId}/decision?clubId=${selectedClub.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ decision }),
+        body: JSON.stringify({ decision, ...(leadComment ? { leadComment } : {}) }),
       });
       setRequests(prev => prev.filter(r => r.id !== requestId));
       setClubs(prev => prev.map(c =>
@@ -169,7 +168,7 @@ export default function MyClubPage() {
           : c
       ));
       if (decision === "approved") {
-        loadClubData(selectedClub).catch(() => {});
+        await loadClubData(selectedClub);
         setMemberSuccess(`${req?.studentName ?? "Member"} has been accepted into the club.`);
       } else {
         setMemberSuccess(`${req?.studentName ?? "Member"}'s membership request has been rejected.`);
@@ -287,7 +286,7 @@ export default function MyClubPage() {
             </div>
             {isUserLead && (
               <>
-                <Link href="/lead/join-clubs" className={styles.joinClubLink}>
+                <Link href="/become-member" className={styles.joinClubLink}>
                   <UserPlus size={14} />
                   Join a Club
                 </Link>
@@ -516,7 +515,7 @@ export default function MyClubPage() {
                                   </button>
                                   <button
                                     className={styles.rejectBtn}
-                                    onClick={() => { setConfirmRejectRequestId(r.id); setConfirmRejectRequestName(r.studentName); }}
+                                    onClick={() => { setRejectingMemberRequestId(r.id); setRejectingMemberRequestName(r.studentName); }}
                                     disabled={acting === r.id}
                                   >
                                     <X size={12} /> Reject
@@ -654,16 +653,14 @@ export default function MyClubPage() {
         </div>
       </Alert>
 
-      <Alert isOpen={confirmRejectRequestId !== null} onClose={() => setConfirmRejectRequestId(null)}>
-        <h3 className={styles.confirmTitle}>Reject Request?</h3>
-        <p className={styles.confirmText}>
-          Are you sure you want to reject <strong>{confirmRejectRequestName}</strong>'s membership request?
-        </p>
-        <div className={styles.confirmBtns}>
-          <button className={styles.btnCancel} onClick={() => setConfirmRejectRequestId(null)}>Cancel</button>
-          <button className={styles.btnDanger} onClick={() => handleDecideRequest(confirmRejectRequestId!, "rejected")}>Reject</button>
-        </div>
-      </Alert>
+      {rejectingMemberRequestId !== null && (
+        <RejectApplicationModal
+          isOpen={true}
+          onClose={() => setRejectingMemberRequestId(null)}
+          studentName={rejectingMemberRequestName}
+          onSubmit={(message) => handleDecideRequest(rejectingMemberRequestId, "rejected", message)}
+        />
+      )}
 
       <CreateClubModal
         isOpen={showCreateModal}

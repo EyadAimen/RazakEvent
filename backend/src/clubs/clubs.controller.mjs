@@ -217,6 +217,7 @@ export const decideMembershipRequestHandler = async (req, res, next) => {
             req.params.requestId,
             req.body.decision,
             req.query.clubId,
+            req.body.leadComment,
         );
         res.json(result);
     } catch (err) { next(err); }
