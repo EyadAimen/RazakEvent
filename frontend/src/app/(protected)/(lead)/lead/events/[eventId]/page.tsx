@@ -39,7 +39,6 @@ const STATUS_MAP: Record<string, { variant: BadgeVariant; label: string }> = {
   rejected: { variant: "rejected", label: "Rejected" },
 };
 
-const LIVE_STATUSES = new Set(["approved", "ongoing", "completed", "report_due"]);
 
 const APP_BADGE: Record<VolunteerApplicant["status"], { variant: BadgeVariant; label: string }> = {
   pending: { variant: "pending", label: "Pending" },
@@ -349,12 +348,12 @@ export default function LeadEventDetailPage() {
   const { variant: statusVariant, label: statusLabel } =
     STATUS_MAP[event.status] ?? { variant: "draft" as BadgeVariant, label: event.status };
 
-  const isLive = LIVE_STATUSES.has(event.status);
+  const isLive = event.status === "approved";
   const showDeadline = event.status === "report_due";
   const showReportBtn = event.status === "report_due" || event.status === "completed";
   const canMarkCompleted = canMarkEventCompleted(event.status, event.eventDate);
-  const isEditable = true;
-  const isDeletable = true;
+  const isEditable = event.status !== "completed";
+  const isDeletable = event.status !== "completed";
 
   const formattedDate = event.eventDate
     ? new Date(event.eventDate).toLocaleDateString("en-MY", {
