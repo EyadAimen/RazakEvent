@@ -33,10 +33,12 @@ function formatDate(value?: string | null): string {
 }
 
 function getReportStatus(item: any): PostEventReportStatus {
+  if (item.eventReport && item.moneyReport) {
+    return String(item.eventReport.status || item.moneyReport.status || "submitted").toLowerCase() as PostEventReportStatus;
+  }
+
+  if (item.completionReportPdfUrl && item.financialReportPdfUrl) return "submitted";
   if (item.reportStatus) return String(item.reportStatus).toLowerCase() as PostEventReportStatus;
-  if (item.reportRejectedAt || item.reportAdminComment) return "rejected";
-  if (item.reportAcceptedAt) return "accepted";
-  if (item.reportPdfUrl || item.completionReportPdfUrl) return "submitted";
   return "not_submitted";
 }
 
@@ -76,6 +78,7 @@ export function getPdfUrl(url?: string): string {
 }
 
 function normalizePostEvent(item: any): PostEvent {
+
   const completedAtValue = item.completedAt || item.completed_at || null;
   const reportDueAtValue = item.reportDueAt || item.report_due_at || getDueDate(completedAtValue);
   const reportStatus = getReportStatus(item);
@@ -103,6 +106,8 @@ function normalizePostEvent(item: any): PostEvent {
     reportAdminComment: item.reportAdminComment || "",
     daysLeft,
     isOverdue: typeof item.isOverdue === "boolean" ? item.isOverdue : typeof daysLeft === "number" && daysLeft < 0,
+    completionReportPdfUrl: item.completionReportPdfUrl || item.eventReport?.url || "",
+    financialReportPdfUrl: item.financialReportPdfUrl || item.moneyReport?.url || "",
   };
 }
 

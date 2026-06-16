@@ -59,11 +59,47 @@ export const EventEntity = new EntitySchema({
             type: "timestamptz",
             nullable: true,
         },
+        reportPdfUrl: {
+            name: "report_pdf_url",
+            type: "varchar",
+            nullable: true,
+        },
+        reportStatus: {
+            name: "report_status",
+            type: "varchar",
+            default: "not_submitted",
+            nullable: false,
+        },
+        reportAdminComment: {
+            name: "report_admin_comment",
+            type: "text",
+            nullable: true,
+        },
+        reportSubmittedAt: {
+            name: "report_submitted_at",
+            type: "timestamptz",
+            nullable: true,
+        },
+        reportReviewedAt: {
+            name: "report_reviewed_at",
+            type: "timestamptz",
+            nullable: true,
+        },
         createdAt: {
             name: "created_at",
             type: "timestamptz",
             createDate: true,
             nullable: false,
+        },
+        completionReportPdfUrl: {
+            name: "completion_report_pdf_url",
+            type: "varchar",
+            nullable: true,
+        },
+        financialReportPdfUrl: {
+            name: "financial_report_pdf_url",
+            type: "varchar",
+            nullable: true,
         },
     },
 });

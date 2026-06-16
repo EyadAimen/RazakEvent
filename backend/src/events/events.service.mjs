@@ -9,7 +9,11 @@ import { VolunteeringRoleEntity } from "../volunteering/volunteering_roles.entit
 import { VolunteeringApplicationEntity } from "../volunteering/volunteering_applications.entity.mjs";
 import { CertificateEntity } from "../certificates/certificates.entity.mjs";
 import { NotFoundError, ForbiddenError, ValidationError } from "../shared/errors.mjs";
+import { EventReportEntity } from "../reports/event_reports.entity.mjs";
+import { MoneyReportEntity } from "../reports/money_reports.entity.mjs";
 
+const eventReportRepo = () => appDataSource.getRepository(EventReportEntity);
+const moneyReportRepo = () => appDataSource.getRepository(MoneyReportEntity);
 const eventRepo = () => appDataSource.getRepository(EventEntity);
 const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
 const clubRepo = () => appDataSource.getRepository(ClubEntity);
@@ -566,14 +570,21 @@ function getCompletionDate(event) {
 }
 
 function getReportPdf(event) {
-    return event.reportPdfUrl || event.completionReportPdfUrl || null;
+    return event.reportPdfUrl || event.completionReportPdfUrl || event.financialReportPdfUrl || null;
 }
 
 function getReportStatus(event) {
-    if (event.reportStatus) return String(event.reportStatus).toLowerCase();
+    const status = event.reportStatus ? String(event.reportStatus).toLowerCase() : "";
+
+    if (status === "accepted") return "accepted";
+    if (status === "rejected") return "rejected";
+    if (status === "submitted") return "submitted";
+
     if (event.reportAcceptedAt) return "accepted";
     if (event.reportRejectedAt || event.reportAdminComment) return "rejected";
+
     if (getReportPdf(event)) return "submitted";
+
     return "not_submitted";
 }
 
@@ -610,9 +621,25 @@ async function enrichPostEvent(event) {
         ? await userRepo().findOne({ where: { id: proposal.leadId } })
         : null;
 
+    const eventReport = await eventReportRepo().findOne({
+        where: { eventId: event.id }
+    });
+
+    const moneyReport = await moneyReportRepo().findOne({
+        where: { eventId: event.id }
+    });
+
     const daysLeft = getDaysLeft(event);
-    const reportStatus = getReportStatus(event);
-    const isOverdue = reportStatus === "not_submitted" && typeof daysLeft === "number" && daysLeft < 0;
+
+    const reportStatus =
+        eventReport && moneyReport
+            ? eventReport.status
+            : "not_submitted";
+
+    const isOverdue =
+        reportStatus === "not_submitted" &&
+        typeof daysLeft === "number" &&
+        daysLeft < 0;
 
     return {
         id: event.id,
@@ -628,8 +655,20 @@ async function enrichPostEvent(event) {
         reportSubmittedAt: event.reportSubmittedAt || event.report_submitted_at || null,
         reportReviewedAt: event.reportReviewedAt || event.report_reviewed_at || null,
         reportStatus,
-        reportPdfUrl: getReportPdf(event),
-        reportAdminComment: event.reportAdminComment || "",
+
+        completionReportPdfUrl:
+            eventReport?.reportPdfUrl ?? null,
+
+        financialReportPdfUrl:
+            moneyReport?.reportPdfUrl ?? null,
+
+        amountSpent:
+            moneyReport?.amountSpent ?? null,
+
+        reportAdminComment:
+            eventReport?.adminComment ||
+            moneyReport?.adminComment ||
+            "",
         clubName: club?.name ?? "Unknown Club",
         clubType: club?.type ?? "club",
         leadName: lead?.fullName ?? "Unknown Lead",
@@ -687,7 +726,6 @@ export const uploadCompletionReportPdf = async (eventId, leadId, fileUrl) => {
     }
 
     await eventRepo().update(event.id, {
-        reportPdfUrl: fileUrl,
         completionReportPdfUrl: fileUrl,
         reportStatus: "submitted",
         reportSubmittedAt: new Date(),
@@ -709,19 +747,51 @@ export const decideCompletionReport = async (eventId, decision, adminComment) =>
     const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
     if (!event) throw new NotFoundError("Event not found");
 
-    if (event.status !== "completed") {
-        throw new ValidationError("Only completed events can have completion reports reviewed");
+    const eventReport = await eventReportRepo().findOne({
+        where: { eventId: event.id },
+    });
+
+    const moneyReport = await moneyReportRepo().findOne({
+        where: { eventId: event.id },
+    });
+
+    if (!eventReport || !moneyReport) {
+        throw new ValidationError("Both event report and financial report must be submitted before review");
     }
 
-    const reportStatus = getReportStatus(event);
-    if (reportStatus !== "submitted") {
+    if (eventReport.status !== "submitted" || moneyReport.status !== "submitted") {
         throw new ValidationError("Only submitted reports can be reviewed");
     }
 
+    await eventReportRepo().update(eventReport.id, {
+        status: decision,
+        adminComment: adminComment || null,
+        reviewedAt: new Date(),
+    });
+
+    await moneyReportRepo().update(moneyReport.id, {
+        status: decision,
+        adminComment: adminComment || null,
+        reviewedAt: new Date(),
+    });
+
+    const updated = await eventRepo().findOne({ where: { id: event.id } });
+    return enrichPostEvent(updated);
+};
+
+export const uploadFinancialReportPdf = async (eventId, leadId, fileUrl) => {
+    const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
+    if (!event) throw new NotFoundError("Event not found");
+
+    const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
+    if (!proposal || proposal.leadId !== leadId) {
+        throw new ForbiddenError("You do not own this event");
+    }
+
     await eventRepo().update(event.id, {
-        reportStatus: decision,
-        reportAdminComment: adminComment || null,
-        reportReviewedAt: new Date(),
+        financialReportPdfUrl: fileUrl,
+        reportStatus: "submitted",
+        reportSubmittedAt: new Date(),
     });
 
     const updated = await eventRepo().findOne({ where: { id: event.id } });

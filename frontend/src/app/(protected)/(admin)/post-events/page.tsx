@@ -208,13 +208,26 @@ export default function AdminPostEventsPage() {
 
                 <div>
                   <h4 className={styles.metaLabelHeaderTitle}>REPORT PDF</h4>
-                  {selectedEvent.reportPdfUrl ? (
-                    <a href={getPdfUrl(selectedEvent.reportPdfUrl)} target="_blank" rel="noopener noreferrer" className={styles.attachmentLinkText}>
-                      Open completion report PDF
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <a
+                      href={getPdfUrl(selectedEvent.completionReportPdfUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.attachmentLinkText}
+                    >
+                      Open Completion Report PDF
                     </a>
-                  ) : (
-                    <p className={styles.metaValueHighlightText}>No report submitted</p>
-                  )}
+
+                    <a
+                      href={getPdfUrl(selectedEvent.financialReportPdfUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.attachmentLinkText}
+                    >
+                      Open Financial Report PDF
+                    </a>
+                  </div>
                 </div>
               </div>
 
