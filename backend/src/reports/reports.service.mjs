@@ -58,7 +58,7 @@ export const submitReports = async (rawEventId, leadId, { eventReportUrl, moneyR
 
     const existing = await eventReportRepo().findOne({ where: { eventId: event.id } });
     if (existing) {
-        await eventReportRepo().update(existing.id, { reportPdfUrl: eventReportUrl });
+        await eventReportRepo().update(existing.id, { reportPdfUrl: eventReportUrl, status: "submitted", submittedAt: new Date(), adminComment: null, reviewedAt: null });
     } else {
         await eventReportRepo().save(
             eventReportRepo().create({ eventId: event.id, leadId, clubId: proposal.clubId, reportPdfUrl: eventReportUrl })
@@ -67,7 +67,7 @@ export const submitReports = async (rawEventId, leadId, { eventReportUrl, moneyR
 
     const existingMoney = await moneyReportRepo().findOne({ where: { eventId: event.id } });
     if (existingMoney) {
-        await moneyReportRepo().update(existingMoney.id, { reportPdfUrl: moneyReportUrl, amountSpent: amount });
+        await moneyReportRepo().update(existingMoney.id, { reportPdfUrl: moneyReportUrl, amountSpent: amount, status: "submitted", submittedAt: new Date(), adminComment: null, reviewedAt: null });
     } else {
         await moneyReportRepo().save(
             moneyReportRepo().create({ eventId: event.id, leadId, clubId: proposal.clubId, reportPdfUrl: moneyReportUrl, amountSpent: amount })

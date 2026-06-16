@@ -38,6 +38,21 @@ async function enrichProposal(proposal) {
         ? await clubRepo().findOne({ where: { id: proposal.clubId } })
         : null;
 
+    let reportStatus = null;
+    if (status === "completed") {
+        const liveEvent = await eventRepo().findOne({ where: { proposalId: proposal.id } });
+        if (liveEvent) {
+            const [eventReport, moneyReport] = await Promise.all([
+                eventReportRepo().findOne({ where: { eventId: liveEvent.id } }),
+                moneyReportRepo().findOne({ where: { eventId: liveEvent.id } }),
+            ]);
+            if (eventReport && moneyReport) {
+                if (eventReport.status === "rejected" || moneyReport.status === "rejected") reportStatus = "rejected";
+                else if (eventReport.status === "accepted" && moneyReport.status === "accepted") reportStatus = "accepted";
+            }
+        }
+    }
+
     // Always use proposal.id — event.id lives in a separate table and can collide numerically
     return {
         id: proposal.id,
@@ -47,6 +62,7 @@ async function enrichProposal(proposal) {
         eventDate: proposal.proposedDate ?? null,
         attendees: 0,
         status,
+        reportStatus,
     };
 }
 
@@ -323,6 +339,32 @@ export const getEventDetail = async (eventId, userId, userRole) => {
         }
     }
 
+    let completionReportPdfUrl = null;
+    let financialReportPdfUrl = null;
+    let reportAdminComment = null;
+    let reportStatus = null;
+
+    if (liveEvent) {
+        const eventReport = await eventReportRepo().findOne({ where: { eventId: liveEvent.id } });
+        const moneyReport = await moneyReportRepo().findOne({ where: { eventId: liveEvent.id } });
+
+        completionReportPdfUrl = eventReport?.reportPdfUrl ?? null;
+        financialReportPdfUrl = moneyReport?.reportPdfUrl ?? null;
+        reportAdminComment = eventReport?.adminComment || moneyReport?.adminComment || null;
+
+        if (eventReport && moneyReport) {
+            if (eventReport.status === "rejected" || moneyReport.status === "rejected") {
+                reportStatus = "rejected";
+            } else if (eventReport.status === "accepted" && moneyReport.status === "accepted") {
+                reportStatus = "accepted";
+            } else {
+                reportStatus = "submitted";
+            }
+        } else if (eventReport || moneyReport) {
+            reportStatus = "submitted";
+        }
+    }
+
     return {
         id: proposal.id,
         name: proposal.eventName,
@@ -337,6 +379,10 @@ export const getEventDetail = async (eventId, userId, userRole) => {
         volunteeringStatus,
         volunteerRoles,
         volunteers,
+        completionReportPdfUrl,
+        financialReportPdfUrl,
+        reportAdminComment,
+        reportStatus,
     };
 };
 

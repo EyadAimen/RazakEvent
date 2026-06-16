@@ -20,6 +20,7 @@ export interface ApiEvent {
   eventDate: string | null;
   attendees: number;
   status: string;
+  reportStatus: string | null;
   userRole?: "lead" | "member";
 }
 
@@ -70,6 +71,10 @@ export interface EventDetail {
   volunteeringStatus: "open" | "closed" | "full" | null;
   volunteerRoles: VolunteerRole[];
   volunteers: VolunteerApplicant[];
+  completionReportPdfUrl: string | null;
+  financialReportPdfUrl: string | null;
+  reportAdminComment: string | null;
+  reportStatus: string | null;
 }
 
 // ── Propose event ─────────────────────────────────────────────────────────────
