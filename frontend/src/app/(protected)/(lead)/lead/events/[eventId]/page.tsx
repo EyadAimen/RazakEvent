@@ -21,7 +21,9 @@ import Alert from "@/components/shared/alertComponent/alert";
 import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
 import DeadlineAlert from "@/components/shared/DeadlineAlert/DeadlineAlert";
 import RejectApplicationModal from "@/components/lead/RejectApplicationModal/RejectApplicationModal";
+import CompleteEventModal from "@/components/lead/CompleteEventModal/CompleteEventModal";
 import { apiFetchAuth } from "@/lib/api";
+import { canMarkEventCompleted } from "@/lib/eventUtils";
 import type { EventDetail, Venue, VolunteerApplicant, VolunteerRole } from "@/types/lead";
 import styles from "./page.module.css";
 
@@ -80,6 +82,7 @@ export default function LeadEventDetailPage() {
   const [updatingRole, setUpdatingRole] = useState(false);
   const [roleError, setRoleError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [generalSuccess, setGeneralSuccess] = useState<string | null>(null);
 
   // Delete event state
@@ -211,6 +214,17 @@ export default function LeadEventDetailPage() {
     }
   };
 
+
+
+  const handleMarkCompleted = async () => {
+    await apiFetchAuth(`/events/${eventId}/complete`, {
+      method: "PATCH",
+      body: JSON.stringify({ applicationIds: [] }),
+    });
+    const refreshed = await apiFetchAuth<{ event: EventDetail }>(`/events/${eventId}`);
+    setEvent(refreshed.event);
+  };
+
   const handleDecideApplication = async (applicationId: number, decision: "accepted" | "rejected", rejectionMessage?: string) => {
     if (!event || decidingApp !== null) return;
     setDecidingApp(applicationId);
@@ -338,6 +352,7 @@ export default function LeadEventDetailPage() {
   const isLive = LIVE_STATUSES.has(event.status);
   const showDeadline = event.status === "report_due";
   const showReportBtn = event.status === "report_due" || event.status === "completed";
+  const canMarkCompleted = canMarkEventCompleted(event.status, event.eventDate);
   const isEditable = true;
   const isDeletable = true;
 
@@ -352,6 +367,7 @@ export default function LeadEventDetailPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
+    <Fragment>
     <div className={styles.page}>
       <div className={styles.body}>
         <div className={styles.inner}>
@@ -422,6 +438,15 @@ export default function LeadEventDetailPage() {
                   <FileText size={14} />
                   Submit Report
                 </Link>
+              )}
+              {canMarkCompleted && (
+                <button
+                  className={styles.actionComplete}
+                  onClick={() => setShowCompleteModal(true)}
+                >
+                  <Check size={14} />
+                  Mark as Completed
+                </button>
               )}
               {isEditable && (
                 <button className={styles.actionEdit} onClick={handleOpenEdit}>
@@ -731,6 +756,7 @@ export default function LeadEventDetailPage() {
 
         </div>
       </div>
+    </div>
 
       {/* ── Reject application modal ─────────────────────────────────────────── */}
       {rejectingAppId !== null && (
@@ -742,6 +768,12 @@ export default function LeadEventDetailPage() {
         />
       )}
 
+      <CompleteEventModal
+        isOpen={showCompleteModal}
+        eventName={event.name}
+        onClose={() => setShowCompleteModal(false)}
+        onConfirm={handleMarkCompleted}
+      />
       {/* ── Delete event confirmation modal ──────────────────────────────────── */}
       {showDeleteConfirm && (
         <div className={styles.modalOverlay} onClick={() => !deletingEvent && setShowDeleteConfirm(false)}>
@@ -894,6 +926,6 @@ export default function LeadEventDetailPage() {
         message={actionError ?? ""}
         onClose={() => setActionError(null)}
       />
-    </div>
+    </Fragment>
   );
 }

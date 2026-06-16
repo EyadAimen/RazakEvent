@@ -141,8 +141,30 @@
   color: var(--color-role-clublead-text);
 }
 
+.actionComplete {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition-fast);
+  background: transparent;
+  border: 1.5px solid var(--color-status-green);
+  color: var(--color-status-green);
+}
+
 .actionSecondary:hover {
   filter: brightness(0.95);
+}
+
+.actionComplete:hover {
+  background: var(--color-status-green);
+  color: var(--color-neutral-50);
 }
 
 .actionPrimary {

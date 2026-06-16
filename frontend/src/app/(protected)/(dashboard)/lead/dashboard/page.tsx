@@ -16,7 +16,9 @@ import DeadlineAlert from "@/components/shared/DeadlineAlert/DeadlineAlert";
 import LeadEventCard, {
   LeadEvent,
 } from "@/components/lead/LeadEventCard/LeadEventCard";
+import CompleteEventModal from "@/components/lead/CompleteEventModal/CompleteEventModal";
 import { apiFetchAuth } from "@/lib/api";
+import { canMarkEventCompleted } from "@/lib/eventUtils";
 import type { DashboardData, ApiEvent } from "@/types/lead";
 import styles from "./page.module.css";
 
@@ -82,6 +84,7 @@ export default function LeadDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [completingEvent, setCompletingEvent] = useState<ApiEvent | null>(null);
 
   useEffect(() => {
     apiFetchAuth<DashboardData>("/events/lead/dashboard")

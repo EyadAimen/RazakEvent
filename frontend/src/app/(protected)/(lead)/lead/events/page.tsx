@@ -6,13 +6,12 @@ import { Search, Plus, FilePlus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Triangle from "@/components/shared/triangle/triangle";
 import LeadEventCard, { LeadEvent } from "@/components/lead/LeadEventCard/LeadEventCard";
-import Alert from "@/components/shared/alertComponent/alert";
+import CompleteEventModal from "@/components/lead/CompleteEventModal/CompleteEventModal";
 import { apiFetchAuth } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import type { ApiEvent, EventsTab } from "@/types/lead";
+import { canMarkEventCompleted } from "@/lib/eventUtils";
 import styles from "./events.module.css";
-
-type AlertState = { type: "none" | "loading" | "success" | "error"; message?: string };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -67,7 +66,7 @@ export default function LeadEventsPage() {
   const [error, setError]     = useState<string | null>(null);
   const [tab, setTab]         = useState<EventsTab>("all");
   const [search, setSearch]   = useState("");
-  const [alert, setAlert]     = useState<AlertState>({ type: "none" });
+  const [completingEvent, setCompletingEvent] = useState<ApiEvent | null>(null);
 
   useEffect(() => {
     apiFetchAuth<{ events: ApiEvent[] }>("/events/my-clubs")
@@ -77,23 +76,16 @@ export default function LeadEventsPage() {
   }, []);
 
   function canComplete(e: ApiEvent): boolean {
-    return e.userRole === "lead" &&
-      (e.status === "approved" || e.status === "ongoing") &&
-      !!e.eventDate && new Date(e.eventDate) <= new Date();
+    return e.userRole === "lead" && canMarkEventCompleted(e.status, e.eventDate);
   }
 
-  async function handleComplete(eventId: string) {
-    setAlert({ type: "loading" });
-    try {
-      const res = await apiFetchAuth<{ message: string }>(`/events/${eventId}/complete`, {
-        method: "PATCH",
-        body: JSON.stringify({ applicationIds: [] }),
-      });
-      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, status: "completed" } : e));
-      setAlert({ type: "success", message: res.message });
-    } catch (err) {
-      setAlert({ type: "error", message: err instanceof Error ? err.message : "Failed to mark event as completed." });
-    }
+  async function handleComplete(): Promise<void> {
+    if (!completingEvent) return;
+    await apiFetchAuth<{ message: string }>(`/events/${completingEvent.id}/complete`, {
+      method: "PATCH",
+      body: JSON.stringify({ applicationIds: [] }),
+    });
+    setEvents(prev => prev.map(e => e.id === completingEvent.id ? { ...e, status: "completed" } : e));
   }
 
   const filtered = events.filter(e => {
@@ -194,7 +186,7 @@ export default function LeadEventsPage() {
                   key={e.id}
                   event={toLeadEvent(e)}
                   onManage={id => router.push(e.userRole === "lead" ? `/lead/events/${id}` : `/events/${id}`)}
-                  onComplete={canComplete(e) ? handleComplete : undefined}
+                  onComplete={canComplete(e) ? () => setCompletingEvent(e) : undefined}
                 />
               ))}
             </div>
@@ -204,9 +196,12 @@ export default function LeadEventsPage() {
       </div>
     </div>
 
-      <Alert variant="loading" isOpen={alert.type === "loading"} onClose={() => {}} />
-      <Alert variant="success" isOpen={alert.type === "success"} message={alert.message ?? ""} onClose={() => setAlert({ type: "none" })} />
-      <Alert variant="error"   isOpen={alert.type === "error"}   message={alert.message ?? ""} onClose={() => setAlert({ type: "none" })} />
+      <CompleteEventModal
+        isOpen={completingEvent !== null}
+        eventName={completingEvent?.name ?? ""}
+        onClose={() => setCompletingEvent(null)}
+        onConfirm={handleComplete}
+      />
     </>
   );
 }

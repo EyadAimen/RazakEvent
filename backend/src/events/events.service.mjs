@@ -543,18 +543,11 @@ export const markEventCompleted = async (eventId, leadId, applicationIds = []) =
     const reportDueAt = new Date(completedAt.getTime() + 14 * 24 * 60 * 60 * 1000);
 
     await eventRepo().update(event.id, {
-        status: "report_due",
+        status: "completed",
         volunteeringStatus: "closed",
         completedAt,
         reportDueAt,
     });
-
-await eventRepo().update(event.id, {
-    status: "completed",
-    volunteeringStatus: "closed",
-    completed_at: completedAt,
-    report_due_at: reportDueAt,
-});
 
     // Issue certificates for the provided accepted volunteer applications
     if (!Array.isArray(applicationIds) || applicationIds.length === 0) {
