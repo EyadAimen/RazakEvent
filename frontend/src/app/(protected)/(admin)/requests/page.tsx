@@ -275,15 +275,6 @@ export default function AdminRequestsPage() {
                 )}
               </div>
 
-              <div className={styles.fullDetailsButtonContainer}>
-                <button
-                  onClick={() => router.push(`/admin/events/${selectedProposal.id}`)}
-                  className={styles.fullDetailsButton}
-                >
-                  🖼️ View Full Details & Poster Page
-                </button>
-              </div>
-
               {selectedProposal.adminComment && (
                 <div className={styles.rejectionInfoBlock}>
                   <h4 className={styles.rejectionInfoTitle}>ADMIN MESSAGE</h4>
