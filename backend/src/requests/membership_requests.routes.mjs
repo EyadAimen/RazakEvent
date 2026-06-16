@@ -9,8 +9,8 @@ import {
 
 const router = Router();
 
-router.post("/",           authenticate, requireRole("student", "member"), submitMembershipRequestHandler);
-router.get("/mine",        authenticate, requireRole("student", "member"), getMyRequestsHandler);
+router.post("/",           authenticate, requireRole("student", "member", "lead"), submitMembershipRequestHandler);
+router.get("/mine",        authenticate, requireRole("student", "member", "lead"), getMyRequestsHandler);
 router.get("/incoming",    authenticate, requireRole("lead"),              getIncomingRequestsHandler);
 router.patch("/:id/decision", authenticate, requireRole("lead"),          decideMembershipHandler);
 

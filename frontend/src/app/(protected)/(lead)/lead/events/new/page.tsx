@@ -18,9 +18,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Triangle from "@/components/shared/triangle/triangle";
+import Alert from "@/components/shared/alertComponent/alert";
 import InputField from "@/components/shared/input-field/input-field";
 import Button from "@/components/shared/button/button";
 import { apiFetchAuth } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 import type { Venue, DashboardData, BookedDate } from "@/types/lead";
 import styles from "./page.module.css";
 
@@ -44,6 +46,11 @@ export default function ProposeEventPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    const user = getUser();
+    if (!user || user.role !== "lead") router.replace("/unauthorized");
+  }, [router]);
+
   // Club context
   const [clubType, setClubType] = useState<"club" | "community">("club");
 
@@ -59,6 +66,7 @@ export default function ProposeEventPage() {
   const [description,     setDescription]     = useState("");
   const [estimatedBudget, setEstimatedBudget] = useState("");
   const [pdfFile,         setPdfFile]         = useState<File | null>(null);
+  const [pdfError,        setPdfError]        = useState<string | null>(null);
   const [dragOver,        setDragOver]        = useState(false);
 
   // UI state
@@ -140,14 +148,14 @@ export default function ProposeEventPage() {
 
   const validateAndSetPdf = (file: File) => {
     if (file.type !== "application/pdf") {
-      setApiError("Only PDF files are accepted.");
+      setPdfError("Only PDF files are accepted.");
       return;
     }
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
-      setApiError(`File is too large. Maximum size is ${MAX_FILE_MB} MB.`);
+      setPdfError(`File exceeds the ${MAX_FILE_MB} MB limit. Please compress or re-export your PDF.`);
       return;
     }
-    setApiError(null);
+    setPdfError(null);
     setPdfFile(file);
   };
 
@@ -231,6 +239,7 @@ export default function ProposeEventPage() {
   }
 
   return (
+    <>
     <div className={styles.page}>
       <div className={styles.body}>
         <Triangle style={{ left: "0px",   top: "60px",     transform: "rotate(-20deg)", borderBottomColor: "var(--color-primary-500)"   }} />
@@ -410,7 +419,7 @@ export default function ProposeEventPage() {
                   type="file"
                   accept="application/pdf"
                   className={styles.fileInput}
-                  onChange={e => { const f = e.target.files?.[0]; if (f) validateAndSetPdf(f); }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) validateAndSetPdf(f); e.target.value = ""; }}
                 />
 
                 {pdfFile ? (
@@ -423,7 +432,7 @@ export default function ProposeEventPage() {
                     <button
                       className={styles.fileRemove}
                       type="button"
-                      onClick={e => { e.stopPropagation(); setPdfFile(null); }}
+                      onClick={e => { e.stopPropagation(); setPdfFile(null); setPdfError(null); }}
                     >
                       <X size={14} />
                     </button>
@@ -472,5 +481,19 @@ export default function ProposeEventPage() {
         </div>
       </div>
     </div>
+
+    <Alert
+      variant="loading"
+      isOpen={submitting}
+      message="Saving proposal…"
+      onClose={() => {}}
+    />
+    <Alert
+      variant="error"
+      isOpen={pdfError !== null}
+      message={pdfError ?? ""}
+      onClose={() => setPdfError(null)}
+    />
+    </>
   );
 }

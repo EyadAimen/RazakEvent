@@ -8,6 +8,7 @@ import Triangle from "@/components/shared/triangle/triangle";
 import LeadEventCard, { LeadEvent } from "@/components/lead/LeadEventCard/LeadEventCard";
 import CompleteEventModal from "@/components/lead/CompleteEventModal/CompleteEventModal";
 import { apiFetchAuth } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 import type { ApiEvent, EventsTab } from "@/types/lead";
 import { canMarkEventCompleted } from "@/lib/eventUtils";
 import styles from "./events.module.css";
@@ -57,6 +58,9 @@ function toLeadEvent(e: ApiEvent): LeadEvent {
 
 export default function LeadEventsPage() {
   const router = useRouter();
+  const currentUser = getUser();
+  const isLead = currentUser?.role === "lead";
+
   const [events, setEvents]   = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
@@ -65,7 +69,7 @@ export default function LeadEventsPage() {
   const [completingEvent, setCompletingEvent] = useState<ApiEvent | null>(null);
 
   useEffect(() => {
-    apiFetchAuth<{ events: ApiEvent[] }>("/events/lead")
+    apiFetchAuth<{ events: ApiEvent[] }>("/events/my-clubs")
       .then(d => setEvents(d.events))
       .catch(err => setError(err.message ?? "Failed to load events"))
       .finally(() => setLoading(false));
@@ -73,6 +77,9 @@ export default function LeadEventsPage() {
 
   function canComplete(e: ApiEvent): boolean {
     return canMarkEventCompleted(e.status, e.eventDate);
+    return e.userRole === "lead" &&
+      (e.status === "approved" || e.status === "ongoing") &&
+      !!e.eventDate && new Date(e.eventDate) <= new Date();
   }
 
   async function handleComplete(): Promise<void> {
@@ -85,7 +92,9 @@ export default function LeadEventsPage() {
   }
 
   const filtered = events.filter(e => {
-    const matchTab    = tab === "all" ? e.status !== "rejected" : e.status === tab;
+    const matchTab    = tab === "all"
+      ? (e.userRole === "lead" ? e.status !== "rejected" : true)
+      : e.status === tab;
     const matchSearch = !search || e.name.toLowerCase().includes(search.toLowerCase());
     return matchTab && matchSearch;
   });
@@ -107,12 +116,18 @@ export default function LeadEventsPage() {
           <div className={styles.pageHeader}>
             <div>
               <h1 className={styles.title}>My Events</h1>
-              <p className={styles.subtitle}>Manage your club&apos;s event proposals and activities</p>
+              <p className={styles.subtitle}>
+                {isLead
+                  ? "Manage your club's event proposals and activities"
+                  : "Events from clubs you are a member of"}
+              </p>
             </div>
-            <Link href="/lead/events/new" className={styles.proposeBtn}>
-              <Plus size={16} />
-              Propose New Event
-            </Link>
+            {isLead && (
+              <Link href="/lead/events/new" className={styles.proposeBtn}>
+                <Plus size={16} />
+                Propose New Event
+              </Link>
+            )}
           </div>
 
           {/* Controls: search + filter tabs */}
@@ -158,10 +173,10 @@ export default function LeadEventsPage() {
               </p>
               <p className={styles.emptyText}>
                 {tab === "all" && !search
-                  ? "You haven't proposed any events yet."
+                  ? isLead ? "You haven't proposed any events yet." : "No club events to display."
                   : "Try a different filter or search term."}
               </p>
-              {tab === "all" && !search && (
+              {isLead && tab === "all" && !search && (
                 <Link href="/lead/events/new" className={styles.emptyCta}>
                   + Propose your first event
                 </Link>
@@ -175,6 +190,8 @@ export default function LeadEventsPage() {
                   event={toLeadEvent(e)}
                   onManage={id => router.push(`/lead/events/${id}`)}
                   onComplete={canComplete(e) ? () => setCompletingEvent(e) : undefined}
+                  onManage={id => router.push(e.userRole === "lead" ? `/lead/events/${id}` : `/events/${id}`)}
+                  onComplete={canComplete(e) ? handleComplete : undefined}
                 />
               ))}
             </div>

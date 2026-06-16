@@ -120,7 +120,10 @@ export const decideMembership = async (requestId, leadId, action, leadComment) =
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-        await queryRunner.manager.update(UserEntity, { id: request.studentId }, { role: "member" });
+        const student = await queryRunner.manager.findOne(UserEntity, { where: { id: request.studentId } });
+        if (student?.role === "student") {
+            await queryRunner.manager.update(UserEntity, { id: request.studentId }, { role: "member" });
+        }
         await queryRunner.manager.insert(ClubMemberEntity, {
             userId: request.studentId,
             clubId: request.clubId,

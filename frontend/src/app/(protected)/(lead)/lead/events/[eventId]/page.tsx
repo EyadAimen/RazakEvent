@@ -11,12 +11,13 @@ import {
   FileText,
   Loader2,
   MapPin,
-  Plus,
   Pencil,
+  Plus,
   Trash2,
   Users,
   X
 } from "lucide-react";
+import Alert from "@/components/shared/alertComponent/alert";
 import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
 import DeadlineAlert from "@/components/shared/DeadlineAlert/DeadlineAlert";
 import RejectApplicationModal from "@/components/lead/RejectApplicationModal/RejectApplicationModal";
@@ -24,6 +25,7 @@ import CompleteEventModal from "@/components/lead/CompleteEventModal/CompleteEve
 import { apiFetchAuth } from "@/lib/api";
 import { canMarkEventCompleted } from "@/lib/eventUtils";
 import type { EventDetail, VolunteerApplicant, VolunteerRole } from "@/types/lead";
+import type { EventDetail, Venue, VolunteerApplicant, VolunteerRole } from "@/types/lead";
 import styles from "./page.module.css";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -74,6 +76,7 @@ export default function LeadEventDetailPage() {
   const [newRole, setNewRole] = useState({ roleName: "", description: "", slotsAvailable: 1 });
   const [addingRole, setAddingRole] = useState(false);
   const [deletingRoleId, setDeletingRoleId] = useState<number | null>(null);
+  const [confirmDeleteRoleId, setConfirmDeleteRoleId] = useState<number | null>(null);
   const [editingRoleId, setEditingRoleId] = useState<number | null>(null);
   const [editRoleSlots, setEditRoleSlots] = useState<number>(1);
   const [editRoleDesc, setEditRoleDesc] = useState<string>("");
@@ -81,6 +84,26 @@ export default function LeadEventDetailPage() {
   const [roleError, setRoleError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [generalSuccess, setGeneralSuccess] = useState<string | null>(null);
+
+  // Delete event state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingEvent, setDeletingEvent] = useState(false);
+  const [deletedEventName, setDeletedEventName] = useState("");
+
+  // Edit event state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    eventDate: "",
+    venueId: "",
+    description: "",
+    estimatedBudget: "",
+  });
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [venuesLoading, setVenuesLoading] = useState(false);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   const toggleRow = (applicationId: number) => {
     setExpandedRows(prev => {
@@ -112,13 +135,13 @@ export default function LeadEventDetailPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       setEvent(prev => prev ? { ...prev, volunteeringStatus: newStatus } : prev);
+      setGeneralSuccess(`Volunteering is now ${newStatus === "open" ? "open" : "closed"}.`);
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to update volunteering status");
     } finally {
       setTogglingVol(false);
     }
   };
-
 
   const handleAddRole = async () => {
     if (!newRole.roleName.trim()) { setRoleError("Role name is required."); return; }
@@ -133,6 +156,7 @@ export default function LeadEventDetailPage() {
       setEvent(prev => prev ? { ...prev, volunteerRoles: [...prev.volunteerRoles, created] } : prev);
       setNewRole({ roleName: "", description: "", slotsAvailable: 1 });
       setShowAddRole(false);
+      setGeneralSuccess("Role added successfully.");
     } catch (err: unknown) {
       setRoleError(err instanceof Error ? err.message : "Failed to create role.");
     } finally {
@@ -143,6 +167,7 @@ export default function LeadEventDetailPage() {
   const handleDeleteRole = async (roleId: number) => {
     if (deletingRoleId !== null) return;
     setDeletingRoleId(roleId);
+    setConfirmDeleteRoleId(null);
     setActionError(null);
     try {
       await apiFetchAuth(`/volunteering/roles/${roleId}`, { method: "DELETE" });
@@ -182,6 +207,7 @@ export default function LeadEventDetailPage() {
         };
       });
       setEditingRoleId(null);
+      setGeneralSuccess("Role updated successfully.");
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to update role.");
     } finally {
@@ -210,9 +236,9 @@ export default function LeadEventDetailPage() {
         body: JSON.stringify({ decision, rejectionMessage }),
       });
       if (decision === "rejected") setRejectingAppId(null);
-      // Re-fetch the full event so slotsFilled counts and volunteeringStatus are accurate
       const refreshed = await apiFetchAuth<{ event: EventDetail }>(`/events/${eventId}`);
       setEvent(refreshed.event);
+      setGeneralSuccess(decision === "accepted" ? "Volunteer accepted successfully." : "Application rejected.");
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Failed to update application");
     } finally {
@@ -220,6 +246,74 @@ export default function LeadEventDetailPage() {
     }
   };
 
+  const handleDeleteEvent = async () => {
+    const name = event?.name ?? "";
+    setDeletingEvent(true);
+    setActionError(null);
+    try {
+      await apiFetchAuth(`/events/${eventId}`, { method: "DELETE" });
+      setDeletedEventName(name);
+      setShowDeleteConfirm(false);
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to delete event.");
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeletingEvent(false);
+    }
+  };
+
+  const handleOpenEdit = async () => {
+    if (!event) return;
+    setEditForm({
+      name: event.name,
+      eventDate: event.eventDate
+        ? new Date(event.eventDate).toISOString().slice(0, 16)
+        : "",
+      venueId: event.venueId ? String(event.venueId) : "",
+      description: event.description ?? "",
+      estimatedBudget: event.budget !== null ? String(event.budget) : "",
+    });
+    setEditError(null);
+    setShowEditModal(true);
+    if (venues.length === 0) {
+      setVenuesLoading(true);
+      try {
+        const data = await apiFetchAuth<{ venues: Venue[] }>("/venues");
+        setVenues(data.venues);
+      } catch {
+        // venues fetch failed — select will be empty
+      } finally {
+        setVenuesLoading(false);
+      }
+    }
+  };
+
+  const handleEditSubmit = async () => {
+    if (!event || editSubmitting) return;
+    setEditSubmitting(true);
+    setEditError(null);
+    try {
+      const body: Record<string, unknown> = {};
+      if (editForm.name.trim()) body.name = editForm.name.trim();
+      if (editForm.eventDate) body.eventDate = editForm.eventDate;
+      if (editForm.venueId) body.venueId = Number(editForm.venueId);
+      if (editForm.description.trim()) body.description = editForm.description.trim();
+      if (editForm.estimatedBudget !== "") body.estimatedBudget = Number(editForm.estimatedBudget);
+
+      await apiFetchAuth(`/events/${eventId}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      });
+
+      const refreshed = await apiFetchAuth<{ event: EventDetail }>(`/events/${eventId}`);
+      setEvent(refreshed.event);
+      setShowEditModal(false);
+    } catch (err: unknown) {
+      setEditError(err instanceof Error ? err.message : "Failed to update event.");
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
 
   // ── Loading ──────────────────────────────────────────────────────────────
 
@@ -260,6 +354,8 @@ export default function LeadEventDetailPage() {
   const showDeadline = event.status === "report_due";
   const showReportBtn = event.status === "report_due" || event.status === "completed";
   const canMarkCompleted = canMarkEventCompleted(event.status, event.eventDate);
+  const isEditable = true;
+  const isDeletable = true;
 
   const formattedDate = event.eventDate
     ? new Date(event.eventDate).toLocaleDateString("en-MY", {
@@ -268,7 +364,6 @@ export default function LeadEventDetailPage() {
     : "TBD";
 
   const volOpen = event.volunteeringStatus === "open";
-
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -351,10 +446,29 @@ export default function LeadEventDetailPage() {
                 >
                   <Check size={14} />
                   Mark as Completed
+              {isEditable && (
+                <button className={styles.actionEdit} onClick={handleOpenEdit}>
+                  <Pencil size={14} />
+                  Edit Event
+                </button>
+              )}
+              {isDeletable && (
+                <button
+                  className={styles.actionDanger}
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={deletingEvent}
+                >
+                  <Trash2 size={14} />
+                  Delete Event
                 </button>
               )}
             </div>
           </div>
+
+          {/* Action error banner */}
+          {actionError && (
+            <div className={styles.actionErrorBanner}>{actionError}</div>
+          )}
 
           {isLive && (
             <div className={styles.section}>
@@ -502,7 +616,7 @@ export default function LeadEventDetailPage() {
                           </div>
 
                           {editingRoleId !== role.roleId && (
-                            <div style={{ display: 'flex', gap: '4px' }}>
+                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                               <button
                                 className={styles.editRoleBtn}
                                 title="Edit slots"
@@ -510,18 +624,41 @@ export default function LeadEventDetailPage() {
                                   setEditingRoleId(role.roleId);
                                   setEditRoleSlots(role.slotsAvailable);
                                   setEditRoleDesc(role.description || "");
+                                  setConfirmDeleteRoleId(null);
                                 }}
                               >
                                 <Pencil size={13} />
                               </button>
-                              <button
-                                className={styles.deleteRoleBtn}
-                                disabled={deletingRoleId === role.roleId || role.slotsFilled > 0}
-                                title={role.slotsFilled > 0 ? "Cannot delete a role with accepted volunteers" : "Delete role"}
-                                onClick={() => handleDeleteRole(role.roleId)}
-                              >
-                                {deletingRoleId === role.roleId ? <Loader2 size={13} className={styles.spinnerSm} /> : <Trash2 size={13} />}
-                              </button>
+
+                              {confirmDeleteRoleId === role.roleId ? (
+                                <>
+                                  <button
+                                    className={styles.deleteRoleBtn}
+                                    style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600 }}
+                                    onClick={() => handleDeleteRole(role.roleId)}
+                                    disabled={deletingRoleId === role.roleId}
+                                  >
+                                    {deletingRoleId === role.roleId
+                                      ? <Loader2 size={12} className={styles.spinnerSm} />
+                                      : "Confirm"}
+                                  </button>
+                                  <button
+                                    className={styles.editRoleBtn}
+                                    onClick={() => setConfirmDeleteRoleId(null)}
+                                  >
+                                    <X size={13} />
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  className={styles.deleteRoleBtn}
+                                  disabled={role.slotsFilled > 0}
+                                  title={role.slotsFilled > 0 ? "Cannot delete a role with accepted volunteers" : "Delete role"}
+                                  onClick={() => setConfirmDeleteRoleId(role.roleId)}
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -583,7 +720,6 @@ export default function LeadEventDetailPage() {
                                         </button>
                                       </div>
                                     )}
-
                                   </td>
                                 </tr>
                                 {isExpanded && (
@@ -619,6 +755,7 @@ export default function LeadEventDetailPage() {
         </div>
       </div>
 
+      {/* ── Reject application modal ─────────────────────────────────────────── */}
       {rejectingAppId !== null && (
         <RejectApplicationModal
           isOpen={true}
@@ -634,7 +771,158 @@ export default function LeadEventDetailPage() {
         onClose={() => setShowCompleteModal(false)}
         onConfirm={handleMarkCompleted}
       />
+      {/* ── Delete event confirmation modal ──────────────────────────────────── */}
+      {showDeleteConfirm && (
+        <div className={styles.modalOverlay} onClick={() => !deletingEvent && setShowDeleteConfirm(false)}>
+          <div className={styles.confirmModal} onClick={e => e.stopPropagation()}>
+            <h3 className={styles.confirmTitle}>Delete Event?</h3>
+            <p className={styles.confirmText}>
+              Are you sure you want to delete <strong>{event.name}</strong>? This action will make the event disappear permanently.
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                className={styles.confirmCancel}
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deletingEvent}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.confirmDelete}
+                onClick={handleDeleteEvent}
+                disabled={deletingEvent}
+              >
+                {deletingEvent
+                  ? <><Loader2 size={13} className={styles.spinnerSm} /> Deleting…</>
+                  : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* ── Edit event modal ─────────────────────────────────────────────────── */}
+      {showEditModal && (
+        <div className={styles.modalOverlay} onClick={() => !editSubmitting && setShowEditModal(false)}>
+          <div className={styles.editModal} onClick={e => e.stopPropagation()}>
+            <div className={styles.editModalHeader}>
+              <h3 className={styles.editModalTitle}>Edit Event</h3>
+              <button
+                className={styles.editModalClose}
+                onClick={() => setShowEditModal(false)}
+                disabled={editSubmitting}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {editError && <p className={styles.editModalError}>{editError}</p>}
+
+            <div className={styles.editModalBody}>
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>Event Name</label>
+                <input
+                  className={styles.editInput}
+                  value={editForm.name}
+                  onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))}
+                  placeholder="Event name"
+                />
+              </div>
+
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>Event Date &amp; Time</label>
+                <input
+                  type="datetime-local"
+                  className={styles.editInput}
+                  value={editForm.eventDate}
+                  onChange={e => setEditForm(p => ({ ...p, eventDate: e.target.value }))}
+                />
+              </div>
+
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>Venue</label>
+                <select
+                  className={styles.editSelect}
+                  value={editForm.venueId}
+                  onChange={e => setEditForm(p => ({ ...p, venueId: e.target.value }))}
+                  disabled={venuesLoading}
+                >
+                  <option value="">{venuesLoading ? "Loading venues…" : "Select a venue…"}</option>
+                  {venues.map(v => (
+                    <option key={v.id} value={String(v.id)}>{v.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>Description</label>
+                <textarea
+                  className={styles.editTextarea}
+                  rows={3}
+                  value={editForm.description}
+                  onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))}
+                  placeholder="Event description…"
+                />
+              </div>
+
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>Estimated Budget (RM)</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  className={styles.editInput}
+                  value={editForm.estimatedBudget}
+                  onChange={e => setEditForm(p => ({ ...p, estimatedBudget: e.target.value }))}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div className={styles.editModalFooter}>
+              <button
+                className={styles.editCancelBtn}
+                onClick={() => setShowEditModal(false)}
+                disabled={editSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.editSubmitBtn}
+                onClick={handleEditSubmit}
+                disabled={editSubmitting}
+              >
+                {editSubmitting
+                  ? <><Loader2 size={13} className={styles.spinnerSm} /> Saving…</>
+                  : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete success alert — redirects when closed */}
+      <Alert
+        variant="success"
+        isOpen={deletedEventName !== ""}
+        message={`"${deletedEventName}" has been permanently deleted.`}
+        onClose={() => router.replace("/lead/events")}
+      />
+
+      <Alert variant="loading" isOpen={togglingVol} message="Updating volunteering status…" onClose={() => {}} />
+      <Alert variant="loading" isOpen={addingRole} message="Adding role…" onClose={() => {}} />
+      <Alert variant="loading" isOpen={updatingRole} message="Updating role…" onClose={() => {}} />
+      <Alert variant="loading" isOpen={deletingRoleId !== null} message="Deleting role…" onClose={() => {}} />
+      <Alert variant="loading" isOpen={decidingApp !== null} message="Processing decision…" onClose={() => {}} />
+      <Alert variant="success" isOpen={generalSuccess !== null} message={generalSuccess ?? ""} onClose={() => setGeneralSuccess(null)} />
+
+      {/* Action error alert */}
+      <Alert
+        variant="error"
+        isOpen={actionError !== null}
+        message={actionError ?? ""}
+        onClose={() => setActionError(null)}
+      />
     </div>
   );
 }
