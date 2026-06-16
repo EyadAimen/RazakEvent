@@ -169,7 +169,6 @@ export const applyToRole = async (studentId, body) => {
         where: { id: event.clubId }
     });
 
-    const club = await clubRepo().findOne({ where: { id: event.clubId } });
     if (!club) throw new NotFoundError("Club not found");
 
     // Leads organise the event — they may not apply as volunteers
