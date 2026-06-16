@@ -151,7 +151,15 @@ export interface MembershipRequest {
   status: "pending";
 }
 
-export type ClubTab = "members" | "requests" | "volunteers";
+export type ClubTab = "members" | "requests" | "volunteers" | "leadRequests";
+
+// Incoming member→lead role requests awaiting this lead's review (status pending_lead)
+export interface LeadRoleIncomingRequest {
+  id: string;
+  status: "pending_lead" | "pending_admin" | "approved" | "rejected";
+  submittedAt: string;
+  student: { id: string; fullName: string; staffOrMatricId: string | null } | null;
+}
 
 export interface ClubVolunteerApplication {
   applicationId: string;
