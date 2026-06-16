@@ -38,6 +38,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function BecomeMemberPage() {
   const user = getUser();
+  const isLead = user?.role === "lead";
   const isMember = user?.role === "member" || user?.role === "lead";
 
   const [tab, setTab] = useState<Tab>("join");
@@ -140,13 +141,15 @@ export default function BecomeMemberPage() {
                 <Users size={15} />
                 Join a Club
               </button>
-              <button
-                className={`${styles.tab} ${tab === "lead" ? styles.tabActive : ""}`}
-                onClick={() => setTab("lead")}
-              >
-                <Star size={15} />
-                Become a Lead
-              </button>
+              {!isLead && (
+                <button
+                  className={`${styles.tab} ${tab === "lead" ? styles.tabActive : ""}`}
+                  onClick={() => setTab("lead")}
+                >
+                  <Star size={15} />
+                  Become a Lead
+                </button>
+              )}
               <button
                 className={`${styles.tab} ${tab === "requests" ? styles.tabActive : ""}`}
                 onClick={() => setTab("requests")}
