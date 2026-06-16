@@ -247,6 +247,29 @@
   background: var(--color-primary-800);
 }
 
+.joinClubLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: none;
+  color: var(--color-primary-500);
+  border: var(--border-thin) solid var(--color-primary-500);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background var(--transition-veryfast);
+}
+
+.joinClubLink:hover {
+  background: var(--color-primary-500-10);
+}
+
 /* ── Pending / Rejected club info card ───────────────────────────────────── */
 .pendingCard {
   background: var(--color-neutral-50);
@@ -788,4 +811,63 @@
   font-family: var(--font-body);
   font-size: var(--text-small-size);
   line-height: 1.6;
+}
+
+/* ── Confirm modal content ───────────────────────────────────────────────── */
+.confirmTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3-size);
+  font-weight: var(--weight-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+  text-align: center;
+}
+
+.confirmText {
+  font-size: var(--text-small-size);
+  color: var(--color-neutral-500);
+  line-height: var(--text-body-height);
+  margin: 0;
+  text-align: center;
+}
+
+.confirmBtns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.btnCancel {
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-100);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.btnCancel:hover {
+  background: var(--color-neutral-200);
+}
+
+.btnDanger {
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-semantic-red);
+  font-family: var(--font-body);
+  font-size: var(--text-small-size);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-50);
+  cursor: pointer;
+  transition: all var(--transition-veryfast);
+}
+
+.btnDanger:hover {
+  filter: brightness(0.9);
 }

@@ -29,6 +29,10 @@ ALTER TABLE club_requests
     ADD COLUMN IF NOT EXISTS category              VARCHAR(100),
     ADD COLUMN IF NOT EXISTS supporting_letter_path TEXT;
 
+ALTER TABLE events
+    ADD COLUMN IF NOT EXISTS completed_at  TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS report_due_at TIMESTAMPTZ;
+
 -- Fix event dates that are now in the past for approved/ongoing events
 UPDATE events SET event_date = '2026-08-15 09:00:00' WHERE name = 'Tech Symposium 2026'    AND status IN ('approved', 'ongoing');
 UPDATE events SET event_date = '2026-08-25 08:00:00' WHERE name = 'Sports Carnival 2026'   AND status IN ('approved', 'ongoing');

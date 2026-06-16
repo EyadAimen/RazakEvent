@@ -38,6 +38,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function BecomeMemberPage() {
   const user = getUser();
+  const isLead = user?.role === "lead";
   const isMember = user?.role === "member" || user?.role === "lead";
 
   const [tab, setTab] = useState<Tab>("join");
@@ -114,6 +115,9 @@ export default function BecomeMemberPage() {
   const rejectedLeadRequest = leadRequest?.status === "rejected" ? leadRequest : null;
   const hasAnyRequest = pendingMemberRequests.length > 0 || rejectedMemberRequests.length > 0 || !!pendingLeadRequest || !!rejectedLeadRequest;
 
+  const approvedMemberClubIds = new Set(memberRequests.filter(r => r.status === "approved").map(r => r.clubId));
+  const leadTabClubs = clubs.filter(c => approvedMemberClubIds.has(c.id));
+
   return (
     <>
       <div className={styles.page}>
@@ -137,13 +141,15 @@ export default function BecomeMemberPage() {
                 <Users size={15} />
                 Join a Club
               </button>
-              <button
-                className={`${styles.tab} ${tab === "lead" ? styles.tabActive : ""}`}
-                onClick={() => setTab("lead")}
-              >
-                <Star size={15} />
-                Become a Lead
-              </button>
+              {!isLead && (
+                <button
+                  className={`${styles.tab} ${tab === "lead" ? styles.tabActive : ""}`}
+                  onClick={() => setTab("lead")}
+                >
+                  <Star size={15} />
+                  Become a Lead
+                </button>
+              )}
               <button
                 className={`${styles.tab} ${tab === "requests" ? styles.tabActive : ""}`}
                 onClick={() => setTab("requests")}
@@ -157,8 +163,6 @@ export default function BecomeMemberPage() {
                 )}
               </button>
             </div>
-
-            
 
             {isRequestsTab && (
               <div className={styles.requestsList}>
@@ -275,7 +279,7 @@ export default function BecomeMemberPage() {
               </div>
             ) : !isRequestsTab ? (
               <div className={styles.grid}>
-                {clubs.map((club) => {
+                {(isJoinTab ? clubs : leadTabClubs).map((club) => {
                   const reqStatus = isJoinTab ? membershipStatusForClub(club.id) : null;
                   const hasActiveLeadReq = !isJoinTab && leadRequest && leadRequest.clubId === club.id;
 
@@ -321,7 +325,6 @@ export default function BecomeMemberPage() {
                         onClick={() => setConfirmClub(club)}
                         disabled={
                           (isJoinTab && !!reqStatus) ||
-                          (!isJoinTab && !isMember) ||
                           (!isJoinTab && !!hasActiveLeadReq)
                         }
                       >
@@ -334,11 +337,17 @@ export default function BecomeMemberPage() {
                   );
                 })}
 
+                {!isJoinTab && isMember && leadTabClubs.length === 0 && (
+                  <p className={styles.infoBanner} style={{ gridColumn: "1 / -1" }}>
+                    You are not an approved member of any club yet. Join a club first, then apply to become its lead.
+                  </p>
+                )}
+
                 {!isJoinTab && (
                   <div className={styles.createCard} onClick={() => setShowCreateModal(true)}>
                     <Plus size={28} className={styles.createIcon} />
                     <p className={styles.createTitle}>Create New Club</p>
-                    <p className={styles.createDesc}>Can't find yours? Submit a request to start a new one.</p>
+                    <p className={styles.createDesc}>Can&apos;t find yours? Submit a request to start a new one.</p>
                   </div>
                 )}
               </div>

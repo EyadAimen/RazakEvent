@@ -294,18 +294,49 @@ const buildClubStats = async (club) => {
         name: club.name,
         type: club.type,
         description: club.description,
+        leadId: club.leadId,
         memberCount: memberCount + 1,
         eventStats: stats,
         pendingRequests,
     };
 };
 
-export const getMyClubs = async (leadId) => {
-    const clubs = await clubRepo().find({ where: { leadId } });
-    const approvedClubs = await Promise.all(clubs.map(buildClubStats));
+export const getMyClubs = async (userId) => {
+    // Clubs where the user is the lead
+    const leadClubs = await clubRepo().find({ where: { leadId: userId } });
+    const approvedLeadClubs = await Promise.all(
+        leadClubs.map(c => buildClubStats(c).then(s => ({ ...s, userRole: "lead" })))
+    );
 
+    // Clubs where the user is a member (not a lead)
+    const memberRows = await clubMemberRepo().find({ where: { userId } });
+    const memberClubIds = memberRows.map(r => r.clubId).filter(id =>
+        !leadClubs.some(lc => lc.id === id)
+    );
+    const memberClubEntities = memberClubIds.length
+        ? await clubRepo().findBy({ id: In(memberClubIds) })
+        : [];
+    const approvedMemberClubs = await Promise.all(
+        memberClubEntities.map(async c => {
+            const memberCount = await clubMemberRepo().count({ where: { clubId: c.id } });
+            return {
+                status: "approved",
+                id: c.id,
+                name: c.name,
+                type: c.type,
+                description: c.description,
+                leadId: c.leadId,
+                memberCount: memberCount + (c.leadId ? 1 : 0),
+                eventStats: { total: 0, approved: 0, rejected: 0 },
+                pendingRequests: 0,
+                userRole: "member",
+            };
+        })
+    );
+
+    // Pending/rejected club creation requests by this user
     const pendingReqs = await clubRequestRepo().find({
-        where: { studentId: leadId, status: In(["pending", "rejected"]) },
+        where: { studentId: userId, status: In(["pending", "rejected"]) },
         order: { submittedAt: "DESC" },
     });
     const pendingClubs = pendingReqs.map(r => ({
@@ -319,7 +350,7 @@ export const getMyClubs = async (leadId) => {
         adminComment: r.adminComment ?? null,
     }));
 
-    return [...approvedClubs, ...pendingClubs];
+    return [...approvedLeadClubs, ...approvedMemberClubs, ...pendingClubs];
 };
 
 // ── Shared helper — resolve lead's club by optional clubId ────────────────────

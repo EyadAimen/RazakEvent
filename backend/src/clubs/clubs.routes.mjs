@@ -13,7 +13,7 @@ router.get("/mine", authenticate, requireRole("lead"), clubsController.getMyClub
 router.get("/mine/members", authenticate, requireRole("lead"), clubsController.getMyClubMembersHandler);
 router.get("/mine/membership-requests", authenticate, requireRole("lead"), clubsController.getMembershipRequestsHandler);
 router.get("/mine", authenticate, requireRole("lead"), clubsController.getMyClubHandler);
-router.get("/mine/all", authenticate, requireRole("lead"), clubsController.getMyClubsHandler);
+router.get("/mine/all", authenticate, requireRole("lead", "member"), clubsController.getMyClubsHandler);
 router.get("/mine/members", authenticate, requireRole("lead"), clubsController.getMyClubMembersHandler);
 router.get("/mine/membership-requests", authenticate, requireRole("lead"), clubsController.getMembershipRequestsHandler);
 router.patch("/mine/membership-requests/:requestId/decision", authenticate, requireRole("lead"), clubsController.decideMembershipRequestHandler);
