@@ -24,7 +24,6 @@ import RejectApplicationModal from "@/components/lead/RejectApplicationModal/Rej
 import CompleteEventModal from "@/components/lead/CompleteEventModal/CompleteEventModal";
 import { apiFetchAuth } from "@/lib/api";
 import { canMarkEventCompleted } from "@/lib/eventUtils";
-import type { EventDetail, VolunteerApplicant, VolunteerRole } from "@/types/lead";
 import type { EventDetail, Venue, VolunteerApplicant, VolunteerRole } from "@/types/lead";
 import styles from "./page.module.css";
 
@@ -368,6 +367,7 @@ export default function LeadEventDetailPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
+    <Fragment>
     <div className={styles.page}>
       <div className={styles.body}>
         <div className={styles.inner}>
@@ -446,6 +446,8 @@ export default function LeadEventDetailPage() {
                 >
                   <Check size={14} />
                   Mark as Completed
+                </button>
+              )}
               {isEditable && (
                 <button className={styles.actionEdit} onClick={handleOpenEdit}>
                   <Pencil size={14} />
@@ -754,6 +756,7 @@ export default function LeadEventDetailPage() {
 
         </div>
       </div>
+    </div>
 
       {/* ── Reject application modal ─────────────────────────────────────────── */}
       {rejectingAppId !== null && (
@@ -923,6 +926,6 @@ export default function LeadEventDetailPage() {
         message={actionError ?? ""}
         onClose={() => setActionError(null)}
       />
-    </div>
+    </Fragment>
   );
 }

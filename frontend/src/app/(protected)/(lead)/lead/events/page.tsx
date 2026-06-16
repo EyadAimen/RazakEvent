@@ -76,10 +76,7 @@ export default function LeadEventsPage() {
   }, []);
 
   function canComplete(e: ApiEvent): boolean {
-    return canMarkEventCompleted(e.status, e.eventDate);
-    return e.userRole === "lead" &&
-      (e.status === "approved" || e.status === "ongoing") &&
-      !!e.eventDate && new Date(e.eventDate) <= new Date();
+    return e.userRole === "lead" && canMarkEventCompleted(e.status, e.eventDate);
   }
 
   async function handleComplete(): Promise<void> {
@@ -188,10 +185,8 @@ export default function LeadEventsPage() {
                 <LeadEventCard
                   key={e.id}
                   event={toLeadEvent(e)}
-                  onManage={id => router.push(`/lead/events/${id}`)}
-                  onComplete={canComplete(e) ? () => setCompletingEvent(e) : undefined}
                   onManage={id => router.push(e.userRole === "lead" ? `/lead/events/${id}` : `/events/${id}`)}
-                  onComplete={canComplete(e) ? handleComplete : undefined}
+                  onComplete={canComplete(e) ? () => setCompletingEvent(e) : undefined}
                 />
               ))}
             </div>
