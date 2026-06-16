@@ -482,7 +482,11 @@ export const removeMember = async (leadId, userId, clubId) => {
 
     await clubMemberRepo().delete({ userId, clubId: club.id });
     await membershipReqRepo().delete({ studentId: userId, clubId: club.id });
-    await userRepo().update(userId, { role: "student" });
+
+    const remainingMemberships = await clubMemberRepo().count({ where: { userId } });
+    if (remainingMemberships === 0) {
+        await userRepo().update(userId, { role: "student" });
+    }
 
     return { message: "Member removed" };
 };
