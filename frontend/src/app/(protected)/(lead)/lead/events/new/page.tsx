@@ -166,6 +166,12 @@ export default function ProposeEventPage() {
 
     const errs = validate(submitStatus === "submitted");
     setErrors(errs);
+
+    if (submitStatus === "submitted" && !pdfFile) {
+      setPdfError("A proposal PDF is required before submitting.");
+      return;
+    }
+
     if (Object.keys(errs).length > 0) return;
 
     setSubmitting(true);
@@ -408,7 +414,7 @@ export default function ProposeEventPage() {
               </a>
 
               <div
-                className={`${styles.dropZone} ${dragOver ? styles.dropZoneActive : ""} ${pdfFile ? styles.dropZoneFilled : ""}`}
+                className={`${styles.dropZone} ${dragOver ? styles.dropZoneActive : ""} ${pdfFile ? styles.dropZoneFilled : ""} ${pdfError && !pdfFile ? styles.dropZoneError : ""}`}
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
@@ -447,6 +453,11 @@ export default function ProposeEventPage() {
                   </div>
                 )}
               </div>
+              {pdfError && !pdfFile && (
+                <p className={styles.fieldError}>
+                  <AlertCircle size={12} /> {pdfError}
+                </p>
+              )}
             </div>
 
             {/* ── Section 3: Budget note ──────────────────────────── */}
