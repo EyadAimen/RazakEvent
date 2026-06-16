@@ -279,7 +279,7 @@ export default function BecomeMemberPage() {
               </div>
             ) : !isRequestsTab ? (
               <div className={styles.grid}>
-                {(isJoinTab ? clubs : leadTabClubs).map((club) => {
+                {(isJoinTab ? clubs.filter(c => !approvedMemberClubIds.has(c.id)) : leadTabClubs).map((club) => {
                   const reqStatus = isJoinTab ? membershipStatusForClub(club.id) : null;
                   const hasActiveLeadReq = !isJoinTab && leadRequest && leadRequest.clubId === club.id;
 
