@@ -415,7 +415,7 @@ export default function LeadEventDetailPage() {
               )}
             </div>
 
-            {event.adminComment && (
+            {event.adminComment && event.status === "rejected" && (
               <div className={styles.adminComment}>
                 <strong>Admin note:</strong> {event.adminComment}
               </div>
