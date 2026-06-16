@@ -1,5 +1,5 @@
 export type Role = {
-  roleId: number;
+  roleId: string;
   roleName: string;
   description: string | null;
   slotsAvailable: number;
@@ -7,7 +7,7 @@ export type Role = {
 };
 
 export type EventData = {
-  eventId: number;
+  eventId: string;
   eventName: string;
   eventDate: string;
   clubName: string;

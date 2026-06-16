@@ -56,7 +56,7 @@ export const getAllProposals = async (req, res) => {
     const rawProposals = await query.getRawMany();
 
     const proposals = rawProposals.map((item) => ({
-      id: Number(item.id),
+      id: item.id,
       leadId: item.lead_id,
       clubId: item.club_id,
       adminId: item.admin_id,
@@ -104,7 +104,7 @@ export const reviewProposal = async (req, res) => {
       });
     }
 
-    const proposal = await getRepo().findOneBy({ id: Number(id) });
+    const proposal = await getRepo().findOneBy({ id });
 
     if (!proposal) {
       return res.status(404).json({
@@ -119,7 +119,7 @@ export const reviewProposal = async (req, res) => {
     proposal.reviewedAt = new Date();
 
     if (venueId) {
-      proposal.venueId = Number(venueId);
+      proposal.venueId = venueId;
     }
 
     const updatedProposal = await getRepo().save(proposal);

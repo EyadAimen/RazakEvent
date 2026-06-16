@@ -16,7 +16,7 @@ export async function fetchMyLeadRequest(): Promise<LeadRoleRequest | null> {
   return res.request ?? null;
 }
 
-export async function submitMembershipRequest(clubId: number): Promise<string> {
+export async function submitMembershipRequest(clubId: string): Promise<string> {
   const res = await apiFetchAuth<{ message: string }>("/requests/membership", {
     method: "POST",
     body: JSON.stringify({ clubId }),
@@ -24,7 +24,7 @@ export async function submitMembershipRequest(clubId: number): Promise<string> {
   return res.message;
 }
 
-export async function submitLeadRoleRequest(clubId: number): Promise<string> {
+export async function submitLeadRoleRequest(clubId: string): Promise<string> {
   const res = await apiFetchAuth<{ message: string }>("/requests/lead-role", {
     method: "POST",
     body: JSON.stringify({ clubId }),

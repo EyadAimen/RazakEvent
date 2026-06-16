@@ -11,7 +11,7 @@ export const getAllVenues = async () => {
 
 export const getVenueBookedDates = async (venueId) => {
     const events = await appDataSource.getRepository(EventEntity).find({
-        where: { venueId: Number(venueId) },
+        where: { venueId },
         order: { eventDate: "ASC" },
     });
     return events
@@ -35,22 +35,22 @@ export const createVenue = async ({ name, location }) => {
 
 export const updateVenue = async (id, { name, location }) => {
     const repo = venueRepo();
-    const venue = await repo.findOne({ where: { id: Number(id) } });
+    const venue = await repo.findOne({ where: { id } });
     if (!venue) throw new NotFoundError("Venue not found");
     if (name !== undefined && name.trim() !== venue.name) {
         const dup = await repo.findOne({ where: { name: name.trim() } });
         if (dup) throw new ValidationError("A venue with this name already exists");
     }
-    await repo.update(Number(id), {
+    await repo.update(id, {
         ...(name !== undefined     && { name: name.trim() }),
         ...(location !== undefined && { location: location?.trim() ?? null }),
     });
-    return repo.findOne({ where: { id: Number(id) } });
+    return repo.findOne({ where: { id } });
 };
 
 export const deleteVenue = async (id) => {
     const repo = venueRepo();
-    const venue = await repo.findOne({ where: { id: Number(id) } });
+    const venue = await repo.findOne({ where: { id } });
     if (!venue) throw new NotFoundError("Venue not found");
-    await repo.delete(Number(id));
+    await repo.delete(id);
 };

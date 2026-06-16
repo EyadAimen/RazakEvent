@@ -7,7 +7,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
 export const fetchMyCertificates = (): Promise<MyCertificatesResponse> =>
   apiFetchAuth<MyCertificatesResponse>("/certificates/mine");
 
-export const downloadCertificate = async (certId: number, eventName: string): Promise<void> => {
+export const downloadCertificate = async (certId: string, eventName: string): Promise<void> => {
   const token = getAccessToken();
   const res = await fetch(`${API_BASE}/certificates/${certId}/download`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},

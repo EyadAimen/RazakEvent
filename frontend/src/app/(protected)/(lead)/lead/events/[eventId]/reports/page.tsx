@@ -22,7 +22,7 @@ import styles from "./reports.module.css";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ReportStatus {
-  eventId:   number;
+  eventId:   string;
   eventName: string;
   eventDate: string | null;
   status:    string;

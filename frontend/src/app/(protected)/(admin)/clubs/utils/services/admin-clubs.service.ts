@@ -17,7 +17,7 @@ export async function fetchAdminPendingRequests(): Promise<AdminClubRequest[]> {
 }
 
 export async function decideClubRequest(
-  requestId: number,
+  requestId: string,
   action: "approved" | "rejected",
   adminComment?: string,
 ): Promise<void> {
@@ -27,8 +27,8 @@ export async function decideClubRequest(
   });
 }
 
-export async function createOfficialClub(payload: CreateOfficialClubPayload): Promise<{ clubId: number }> {
-  return apiFetchAuth<{ clubId: number }>("/clubs/admin", {
+export async function createOfficialClub(payload: CreateOfficialClubPayload): Promise<{ clubId: string }> {
+  return apiFetchAuth<{ clubId: string }>("/clubs/admin", {
     method: "POST",
     body: JSON.stringify(payload),
   });

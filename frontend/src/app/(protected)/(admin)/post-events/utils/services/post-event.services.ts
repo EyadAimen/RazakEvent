@@ -85,10 +85,10 @@ function normalizePostEvent(item: any): PostEvent {
   const daysLeft = typeof item.daysLeft === "number" ? item.daysLeft : getDaysLeft(completedAtValue);
 
   return {
-    id: Number(item.id),
-    proposalId: item.proposalId ? Number(item.proposalId) : undefined,
-    clubId: item.clubId ? Number(item.clubId) : undefined,
-    venueId: item.venueId ? Number(item.venueId) : undefined,
+    id: item.id,
+    proposalId: item.proposalId ?? undefined,
+    clubId: item.clubId ?? undefined,
+    venueId: item.venueId ?? undefined,
     name: item.name || item.eventName || "Untitled Event",
     description: item.description || "No description provided.",
     clubName: item.clubName || "Unknown Club",
@@ -122,7 +122,7 @@ async function fetchPostEvents(): Promise<PostEvent[]> {
 }
 
 async function patchReportDecision(
-  id: number,
+  id: string,
   decision: "accepted" | "rejected",
   adminComment?: string
 ): Promise<void> {
@@ -164,7 +164,7 @@ export function usePostEvents() {
   }, []);
 
   const handleReportDecision = async (
-    id: number,
+    id: string,
     decision: "accepted" | "rejected",
     adminComment?: string
   ) => {

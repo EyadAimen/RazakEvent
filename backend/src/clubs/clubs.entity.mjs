@@ -5,9 +5,9 @@ export const ClubEntity = new EntitySchema({
     tableName: "clubs",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         name: {
             type: "varchar",

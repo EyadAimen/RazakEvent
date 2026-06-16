@@ -182,7 +182,7 @@ export default function ProposeEventPage() {
           name:            name.trim(),
           status:          "draft",
           ...(eventDate       && { eventDate }),
-          ...(venueId         && { venueId: Number(venueId) }),
+          ...(venueId         && { venueId }),
           ...(description     && { description }),
           ...(estimatedBudget && { estimatedBudget: Number(estimatedBudget) }),
         }),

@@ -41,7 +41,7 @@ async function enrichProposal(proposal) {
 
     // Always use proposal.id — event.id lives in a separate table and can collide numerically
     return {
-        id: String(proposal.id),
+        id: proposal.id,
         name: proposal.eventName,
         clubName: club?.name ?? "Unknown Club",
         clubType: club?.type ?? "club",
@@ -135,10 +135,8 @@ export const createEvent = async (leadId, body) => {
 // ── Get single event/proposal 
 
 export const getEventById = async (eventId, leadId) => {
-    const id = Number(eventId);
-
     // Try live event first (approved proposals have an event record)
-    const event = await eventRepo().findOne({ where: { id } });
+    const event = await eventRepo().findOne({ where: { id: eventId } });
     if (event) {
         const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
         if (!proposal || proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
@@ -146,7 +144,7 @@ export const getEventById = async (eventId, leadId) => {
     }
 
     // Fall back to proposal id (draft / pending / rejected)
-    const proposal = await proposalRepo().findOne({ where: { id } });
+    const proposal = await proposalRepo().findOne({ where: { id: eventId } });
     if (!proposal) throw new NotFoundError("Event not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
     return enrichProposal(proposal);
@@ -154,7 +152,7 @@ export const getEventById = async (eventId, leadId) => {
 
 // ── Update proposal 
 export const updateEvent = async (eventId, leadId, body) => {
-    const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    const proposal = await proposalRepo().findOne({ where: { id: eventId } });
     if (!proposal) throw new NotFoundError("Event not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
     if (["approved", "rejected"].includes(proposal.status)) {
@@ -162,7 +160,7 @@ export const updateEvent = async (eventId, leadId, body) => {
     }
 
     const { name, eventDate, venueId, description, estimatedBudget } = body;
-    await proposalRepo().update(Number(eventId), {
+    await proposalRepo().update(eventId, {
         ...(name !== undefined && { eventName: name }),
         ...(eventDate !== undefined && { proposedDate: eventDate }),
         ...(venueId !== undefined && { venueId }),
@@ -170,42 +168,42 @@ export const updateEvent = async (eventId, leadId, body) => {
         ...(estimatedBudget !== undefined && { estimatedBudget }),
     });
 
-    const updated = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    const updated = await proposalRepo().findOne({ where: { id: eventId } });
     return enrichProposal(updated);
 };
 
-// ── Submit proposal (draft → pending) 
+// ── Submit proposal (draft → pending)
 
 export const submitEventProposal = async (eventId, leadId) => {
-    const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    const proposal = await proposalRepo().findOne({ where: { id: eventId } });
     if (!proposal) throw new NotFoundError("Proposal not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this proposal");
     if (proposal.status !== "draft") throw new ValidationError("Only draft proposals can be submitted");
 
-    await proposalRepo().update(Number(eventId), {
+    await proposalRepo().update(eventId, {
         status: "pending",
         submittedAt: new Date(),
     });
 
-    const updated = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    const updated = await proposalRepo().findOne({ where: { id: eventId } });
     return enrichProposal(updated);
 };
 
 // ── Lead — Delete draft proposal ─────────────────────────────────────────────
 
 export const deleteEvent = async (eventId, leadId) => {
-    const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    const proposal = await proposalRepo().findOne({ where: { id: eventId } });
     if (!proposal) throw new NotFoundError("Event not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
     if (proposal.status !== "draft") throw new ForbiddenError("Only draft proposals can be deleted");
 
-    await proposalRepo().delete(Number(eventId));
+    await proposalRepo().delete(eventId);
 };
 
 // ── Admin — Approve or reject a proposal ─────────────────────────────────────
 
 export const decideProposal = async (eventId, decision, adminComment) => {
-    const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    const proposal = await proposalRepo().findOne({ where: { id: eventId } });
     if (!proposal) throw new NotFoundError("Proposal not found");
     if (proposal.status !== "pending") throw new ValidationError("Only pending proposals can be reviewed");
     if (!["approved", "rejected"].includes(decision)) throw new ValidationError("Decision must be 'approved' or 'rejected'");
@@ -218,7 +216,7 @@ export const decideProposal = async (eventId, decision, adminComment) => {
         if (!proposal.description) throw new ValidationError("Proposal must have a description before it can be approved");
     }
 
-    await proposalRepo().update(Number(eventId), {
+    await proposalRepo().update(eventId, {
         status: decision,
         adminComment: adminComment ?? null,
         reviewedAt: new Date(),
@@ -239,22 +237,22 @@ export const decideProposal = async (eventId, decision, adminComment) => {
         }
     }
 
-    const updated = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    const updated = await proposalRepo().findOne({ where: { id: eventId } });
     return enrichProposal(updated);
 };
 
 // ── Lead — Upload proposal PDF ────────────────────────────────────────────────
 
 export const uploadProposalPdf = async (eventId, leadId, fileUrl) => {
-    const proposal = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    const proposal = await proposalRepo().findOne({ where: { id: eventId } });
     if (!proposal) throw new NotFoundError("Proposal not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this proposal");
     if (["approved", "rejected"].includes(proposal.status)) {
         throw new ForbiddenError("Cannot modify a locked proposal");
     }
 
-    await proposalRepo().update(Number(eventId), { proposalPdfUrl: fileUrl });
-    const updated = await proposalRepo().findOne({ where: { id: Number(eventId) } });
+    await proposalRepo().update(eventId, { proposalPdfUrl: fileUrl });
+    const updated = await proposalRepo().findOne({ where: { id: eventId } });
     return enrichProposal(updated);
 };
 
@@ -263,13 +261,10 @@ export const uploadProposalPdf = async (eventId, leadId, fileUrl) => {
 // ... (all your imports and other functions remain exactly as they were, except the two below)
 
 export const getEventDetail = async (eventId, userId, userRole) => {
-    const id = Number(eventId);
-    if (isNaN(id)) throw new NotFoundError("Event not found");
-
     // Try proposal table first; if not found, fall back via EventEntity (approved events)
-    let proposal = await proposalRepo().findOne({ where: { id } });
+    let proposal = await proposalRepo().findOne({ where: { id: eventId } });
     if (!proposal) {
-        const liveEventById = await eventRepo().findOne({ where: { id } });
+        const liveEventById = await eventRepo().findOne({ where: { id: eventId } });
         if (liveEventById) {
             proposal = await proposalRepo().findOne({ where: { id: liveEventById.proposalId } });
         }
@@ -330,7 +325,7 @@ export const getEventDetail = async (eventId, userId, userRole) => {
     }
 
     return {
-        id: String(proposal.id),
+        id: proposal.id,
         name: proposal.eventName,
         clubName: club?.name ?? "Unknown Club",
         clubType: club?.type ?? "club",
@@ -349,7 +344,7 @@ export const getEventDetail = async (eventId, userId, userRole) => {
 // Add this new function for student detail (no ownership check)
 export const getStudentEventDetail = async (eventId, userId) => {
     const liveEvent = await eventRepo().findOne({
-        where: { id: Number(eventId) },
+        where: { id: eventId },
     });
 
     if (!liveEvent) {
@@ -421,7 +416,7 @@ export const getStudentEventDetail = async (eventId, userId) => {
 // ── Lead — Toggle volunteering open / closed ─────────────────────────────────
 
 export const toggleVolunteering = async (eventId, leadId, newStatus) => {
-    const proposalId = Number(eventId);
+    const proposalId = eventId;
 
     const proposal = await proposalRepo().findOne({ where: { id: proposalId } });
     if (!proposal) throw new NotFoundError("Event not found");
@@ -442,7 +437,7 @@ export const decideVolunteerApplication = async (eventId, applicationId, leadId,
     if (!["accepted", "rejected"].includes(decision))
         throw new ValidationError("Decision must be 'accepted' or 'rejected'");
 
-    const proposalId = Number(eventId);
+    const proposalId = eventId;
     const proposal = await proposalRepo().findOne({ where: { id: proposalId } });
     if (!proposal) throw new NotFoundError("Event not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
@@ -451,7 +446,7 @@ export const decideVolunteerApplication = async (eventId, applicationId, leadId,
     if (!event) throw new NotFoundError("Approved event record not found");
 
     const application = await appRepo().findOne({
-        where: { id: Number(applicationId), eventId: event.id },
+        where: { id: applicationId, eventId: event.id },
     });
     if (!application) throw new NotFoundError("Volunteer application not found");
     if (application.status !== "pending")
@@ -486,9 +481,8 @@ export const getAllEvents = async (statusFilter) => {
 // ── Lead — Mark event as completed ───────────────────────────────────────────
 
 export const markEventCompleted = async (eventId, leadId, applicationIds = []) => {
-    const parsedId = parseInt(eventId);
-    const event = await eventRepo().findOne({ where: { id: parsedId } })
-        ?? await eventRepo().findOne({ where: { proposalId: parsedId } });
+    const event = await eventRepo().findOne({ where: { id: eventId } })
+        ?? await eventRepo().findOne({ where: { proposalId: eventId } });
     if (!event) throw new NotFoundError("Event not found");
 
     const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
@@ -517,7 +511,7 @@ export const markEventCompleted = async (eventId, leadId, applicationIds = []) =
         return { message: "Event marked as completed", certificates: { issued: [], skipped: [] } };
     }
 
-    const applications = await appRepo().findBy({ id: In(applicationIds.map(Number)) });
+    const applications = await appRepo().findBy({ id: In(applicationIds) });
     const validApps = applications.filter(a => a.eventId === event.id && a.status === "accepted");
 
     const certRepo = () => appDataSource.getRepository(CertificateEntity);
@@ -708,7 +702,7 @@ export const getAdminPostEvents = async () => {
 };
 
 export const uploadCompletionReportPdf = async (eventId, leadId, fileUrl) => {
-    const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
+    const event = await eventRepo().findOne({ where: { id: eventId } });
     if (!event) throw new NotFoundError("Event not found");
 
     const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
@@ -751,7 +745,7 @@ export const decideCompletionReport = async (eventId, decision, adminComment) =>
         throw new ValidationError("Admin comment is required when rejecting a report");
     }
 
-    const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
+    const event = await eventRepo().findOne({ where: { id: eventId } });
     if (!event) throw new NotFoundError("Event not found");
 
     const eventReport = await eventReportRepo().findOne({
@@ -787,7 +781,7 @@ export const decideCompletionReport = async (eventId, decision, adminComment) =>
 };
 
 export const uploadFinancialReportPdf = async (eventId, leadId, fileUrl) => {
-    const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
+    const event = await eventRepo().findOne({ where: { id: eventId } });
     if (!event) throw new NotFoundError("Event not found");
 
     const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });

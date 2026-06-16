@@ -24,7 +24,7 @@ async function fetchDatabaseProposals(): Promise<Proposal[]> {
       item.clubType === "community" ? "COMMUNITY" : "CLUB";
 
     return {
-      id: Number(item.id),
+      id: item.id,
       leadId: item.leadId,
       clubId: item.clubId,
       adminId: item.adminId,
@@ -49,7 +49,7 @@ async function fetchDatabaseProposals(): Promise<Proposal[]> {
 }
 
 async function patchProposalDecision(
-  id: number,
+  id: string,
   decisionStatus: "approved" | "rejected",
   comment?: string
 ): Promise<void> {
@@ -94,7 +94,7 @@ export function useProposals() {
   }, []);
 
   const handleDecisionUpdate = async (
-    id: number,
+    id: string,
     decisionStatus: "approved" | "rejected",
     comment?: string
   ) => {

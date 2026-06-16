@@ -2,11 +2,11 @@ export type ProposalCategory = "CLUB" | "COMMUNITY";
 export type ProposalStatus = "pending" | "approved" | "rejected" | "draft" | string;
 
 export interface Proposal {
-  id: number;
+  id: string;
   leadId?: string;
-  clubId?: number;
+  clubId?: string;
   adminId?: string;
-  venueId?: number;
+  venueId?: string;
   eventName: string;
   description: string;
   requesterName: string;

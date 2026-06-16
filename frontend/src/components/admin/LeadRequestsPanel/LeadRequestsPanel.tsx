@@ -32,9 +32,9 @@ export default function LeadRequestsPanel({ onRolesChanged }: Props) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  const [rejectingId, setRejectingId] = useState<number | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectComment, setRejectComment] = useState("");
-  const [actingId, setActingId] = useState<number | null>(null);
+  const [actingId, setActingId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -47,7 +47,7 @@ export default function LeadRequestsPanel({ onRolesChanged }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
-  async function handleApprove(id: number) {
+  async function handleApprove(id: string) {
     setActingId(id);
     setActionError(null);
     try {
@@ -62,7 +62,7 @@ export default function LeadRequestsPanel({ onRolesChanged }: Props) {
     }
   }
 
-  async function handleReject(id: number) {
+  async function handleReject(id: string) {
     if (!rejectComment.trim()) {
       setActionError("A comment is required to reject.");
       return;

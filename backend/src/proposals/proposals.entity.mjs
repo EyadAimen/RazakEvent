@@ -5,9 +5,9 @@ export const EventProposalEntity = new EntitySchema({
     tableName: "event_proposals",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         leadId: {
             name: "lead_id",
@@ -16,7 +16,7 @@ export const EventProposalEntity = new EntitySchema({
         },
         clubId: {
             name: "club_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         adminId: {
@@ -26,7 +26,7 @@ export const EventProposalEntity = new EntitySchema({
         },
         venueId: {
             name: "venue_id",
-            type: "int",
+            type: "uuid",
             nullable: true,
         },
         eventName: {

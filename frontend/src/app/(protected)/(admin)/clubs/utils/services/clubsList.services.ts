@@ -24,7 +24,7 @@ export async function fetchPendingClubRequests(): Promise<ClubRequestItem[]> {
 }
 
 export async function submitClubRequestDecision(
-  requestId: number,
+  requestId: string,
   action: "approved" | "rejected",
   adminComment?: string,
 ): Promise<ClubDecisionResponse> {
@@ -41,7 +41,7 @@ export async function submitClubRequestDecision(
 }
 
 export async function deleteClubById(
-  clubId: number,
+  clubId: string,
   deleteReason: string
 ): Promise<{ message: string }> {
   return await apiFetchAuth<{ message: string }>(`/clubs/${clubId}`, {

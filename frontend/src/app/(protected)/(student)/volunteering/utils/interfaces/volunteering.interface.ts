@@ -1,9 +1,9 @@
 export interface VolunteeringApplication {
-  applicationId: number;
-  eventId: number;
+  applicationId: string;
+  eventId: string;
   eventName: string;
   eventDate: string | null;
-  roleId: number;
+  roleId: string;
   roleName: string;
   status: "pending" | "accepted" | "rejected";
   appliedAt: string;

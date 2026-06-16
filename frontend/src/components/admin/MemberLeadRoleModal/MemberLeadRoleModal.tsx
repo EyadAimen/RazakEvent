@@ -33,8 +33,8 @@ export default function MemberLeadRoleModal({ user, onClose, onChanged, onAlert 
   const [loadingClubs, setLoadingClubs] = useState(true);
 
   const [overallRole, setOverallRole] = useState<OverallRole>(user.role as OverallRole);
-  const [selectedClubId, setSelectedClubId] = useState<number | "">("");
-  const [clubRoles, setClubRoles] = useState<Record<number, "lead" | "member">>({});
+  const [selectedClubId, setSelectedClubId] = useState<string | "">("");
+  const [clubRoles, setClubRoles] = useState<Record<string, "lead" | "member">>({});
 
   const needsClubPicker = overallRole === "member" || overallRole === "lead";
 
@@ -42,7 +42,7 @@ export default function MemberLeadRoleModal({ user, onClose, onChanged, onAlert 
     Promise.all([fetchUserMemberships(user.id), fetchAllClubs()])
       .then(([membershipData, clubData]) => {
         setMemberships(membershipData);
-        const init: Record<number, "lead" | "member"> = {};
+        const init: Record<string, "lead" | "member"> = {};
         membershipData.forEach((m) => { init[m.clubId] = m.role; });
         setClubRoles(init);
         setClubs(clubData);
@@ -64,9 +64,9 @@ export default function MemberLeadRoleModal({ user, onClose, onChanged, onAlert 
     try {
       let msg: string;
       if (overallRole === "member") {
-        msg = await addUserToClub(selectedClubId as number, user.id);
+        msg = await addUserToClub(selectedClubId as string, user.id);
       } else if (overallRole === "lead") {
-        msg = await changeClubMemberRole(selectedClubId as number, user.id, "lead");
+        msg = await changeClubMemberRole(selectedClubId as string, user.id, "lead");
       } else {
         msg = await updateUserRole(user.id, overallRole);
       }
@@ -77,7 +77,7 @@ export default function MemberLeadRoleModal({ user, onClose, onChanged, onAlert 
     }
   }
 
-  async function handleSaveClubRole(clubId: number) {
+  async function handleSaveClubRole(clubId: string) {
     onClose();
     onAlert({ type: "loading" });
     try {
@@ -142,7 +142,7 @@ export default function MemberLeadRoleModal({ user, onClose, onChanged, onAlert 
               <select
                 className={styles.select}
                 value={selectedClubId}
-                onChange={(e) => setSelectedClubId(Number(e.target.value) || "")}
+                onChange={(e) => setSelectedClubId(e.target.value || "")}
                 disabled={loadingClubs}
               >
                 <option value="">— Select a club —</option>

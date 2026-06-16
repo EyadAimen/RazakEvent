@@ -1,5 +1,5 @@
 export interface VolunteeringRecord {
-  id: number;
+  id: string;
   eventName: string;
   date: string;
   role: string;

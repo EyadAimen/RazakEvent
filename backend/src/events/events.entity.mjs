@@ -5,23 +5,23 @@ export const EventEntity = new EntitySchema({
     tableName: "events",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         proposalId: {
             name: "proposal_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         clubId: {
             name: "club_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         venueId: {
             name: "venue_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         name: {

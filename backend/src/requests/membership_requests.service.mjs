@@ -90,7 +90,7 @@ export const decideMembership = async (requestId, leadId, action, leadComment) =
         throw new ValidationError("action must be 'approved' or 'rejected'");
     }
 
-    const request = await requestRepo().findOne({ where: { id: parseInt(requestId) } });
+    const request = await requestRepo().findOne({ where: { id: requestId } });
     if (!request) throw new NotFoundError("Membership request not found");
 
     if (request.status !== "pending") {
@@ -106,7 +106,7 @@ export const decideMembership = async (requestId, leadId, action, leadComment) =
         if (!leadComment || !leadComment.trim()) {
             throw new ValidationError("leadComment is required when rejecting a request");
         }
-        await requestRepo().update(parseInt(requestId), {
+        await requestRepo().update(requestId, {
             status: "rejected",
             reviewedBy: leadId,
             leadComment: leadComment.trim(),
@@ -128,7 +128,7 @@ export const decideMembership = async (requestId, leadId, action, leadComment) =
             userId: request.studentId,
             clubId: request.clubId,
         });
-        await queryRunner.manager.update(MembershipRequestEntity, { id: parseInt(requestId) }, {
+        await queryRunner.manager.update(MembershipRequestEntity, { id: requestId }, {
             status: "approved",
             reviewedBy: leadId,
             reviewedAt: new Date(),

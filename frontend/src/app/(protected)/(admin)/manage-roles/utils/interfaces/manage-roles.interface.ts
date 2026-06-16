@@ -9,14 +9,14 @@ export interface UserRecord {
 }
 
 export interface ClubMembership {
-  clubId: number;
+  clubId: string;
   clubName: string;
   clubType: "club" | "community";
   role: "lead" | "member";
 }
 
 export interface ClubOption {
-  id: number;
+  id: string;
   name: string;
   type: "club" | "community";
 }
@@ -24,9 +24,9 @@ export interface ClubOption {
 export type LeadRequestStatus = "pending_lead" | "pending_admin" | "approved" | "rejected";
 
 export interface LeadRoleRequest {
-  id: number;
+  id: string;
   status: LeadRequestStatus;
   submittedAt: string;
-  club: { id: number; name: string } | null;
+  club: { id: string; name: string } | null;
   student: { id: string; fullName: string; staffOrMatricId: string } | null;
 }

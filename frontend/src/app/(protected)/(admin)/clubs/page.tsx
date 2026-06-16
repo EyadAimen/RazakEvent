@@ -217,10 +217,10 @@ export default function AdminClubsPage() {
   const [pending, setPending]           = useState<AdminClubRequest[]>([]);
   const [loading, setLoading]           = useState(true);
   const [search, setSearch]             = useState("");
-  const [deciding, setDeciding]         = useState<number | null>(null);
+  const [deciding, setDeciding]         = useState<string | null>(null);
   const [showCreate, setShowCreate]     = useState(false);
-  const [expanded, setExpanded]         = useState<Set<number>>(new Set());
-  const [rejectTarget, setRejectTarget] = useState<{ id: number; name: string } | null>(null);
+  const [expanded, setExpanded]         = useState<Set<string>>(new Set());
+  const [rejectTarget, setRejectTarget] = useState<{ id: string; name: string } | null>(null);
   const [actionError, setActionError]   = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
@@ -238,7 +238,7 @@ export default function AdminClubsPage() {
 
   useEffect(() => { reload(); }, [reload]);
 
-  const handleApprove = async (id: number) => {
+  const handleApprove = async (id: string) => {
     if (deciding !== null) return;
     setDeciding(id);
     try {
@@ -276,7 +276,7 @@ export default function AdminClubsPage() {
       (c.category ?? "").toLowerCase().includes(t);
   });
 
-  const toggleExpand = (id: number) =>
+  const toggleExpand = (id: string) =>
     setExpanded(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
 
   if (loading) return (

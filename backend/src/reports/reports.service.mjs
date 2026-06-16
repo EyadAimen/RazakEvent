@@ -11,15 +11,12 @@ const eventRepo       = () => appDataSource.getRepository(EventEntity);
 const proposalRepo    = () => appDataSource.getRepository(EventProposalEntity);
 
 async function resolveEvent(rawId, leadId) {
-    const id = Number(rawId);
-    if (isNaN(id)) throw new ValidationError("Invalid event ID");
-
     // The frontend always routes by proposal ID (enrichProposal returns proposal.id)
-    const proposal = await proposalRepo().findOne({ where: { id } });
+    const proposal = await proposalRepo().findOne({ where: { id: rawId } });
     if (!proposal) throw new NotFoundError("Event not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
 
-    const event = await eventRepo().findOne({ where: { proposalId: id } });
+    const event = await eventRepo().findOne({ where: { proposalId: rawId } });
     if (!event) throw new NotFoundError("Event not found");
 
     return { event, proposal };

@@ -5,9 +5,9 @@ export const VenueEntity = new EntitySchema({
     tableName: "venues",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         name: {
             type: "varchar",

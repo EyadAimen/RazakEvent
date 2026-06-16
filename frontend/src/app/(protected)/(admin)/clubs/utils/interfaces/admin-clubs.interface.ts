@@ -1,5 +1,5 @@
 export interface AdminClubSummary {
-  id: number;
+  id: string;
   name: string;
   type: "club" | "community";
   category: string | null;
@@ -10,7 +10,7 @@ export interface AdminClubSummary {
 }
 
 export interface AdminClubRequest {
-  id: number;
+  id: string;
   clubName: string;
   clubType: "club" | "community";
   description: string;
@@ -22,7 +22,7 @@ export interface AdminClubRequest {
 }
 
 export interface AdminClubDetail {
-  id: number;
+  id: string;
   name: string;
   type: "club" | "community";
   category: string | null;
@@ -46,7 +46,7 @@ export interface AdminClubMember {
 }
 
 export interface AdminClubEvent {
-  id: number;
+  id: string;
   name: string;
   eventDate: string;
   status: string;

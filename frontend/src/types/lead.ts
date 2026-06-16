@@ -36,7 +36,7 @@ export type EventsTab =
 // ── Event detail ──────────────────────────────────────────────────────────────
 
 export interface VolunteerApplicant {
-  applicationId: number;
+  applicationId: string;
   studentName: string;
   studentMatricId: string | null;
   appliedAt: string;
@@ -47,7 +47,7 @@ export interface VolunteerApplicant {
 }
 
 export interface VolunteerRole {
-  roleId: number;
+  roleId: string;
   roleName: string;
   description: string | null;
   slotsAvailable: number;
@@ -61,7 +61,7 @@ export interface EventDetail {
   clubType: string;
   eventDate: string | null;
   status: string;
-  venueId: number | null;
+  venueId: string | null;
   venueName: string | null;
   description: string | null;
   budget: number | null;
@@ -75,7 +75,7 @@ export interface EventDetail {
 // ── Propose event ─────────────────────────────────────────────────────────────
 
 export interface Venue {
-  id: number;
+  id: string;
   name: string;
   location: string | null;
 }
@@ -83,14 +83,14 @@ export interface Venue {
 export interface CreateEventPayload {
   name: string;
   eventDate?: string;
-  venueId?: number;
+  venueId?: string;
   description?: string;
   estimatedBudget?: number;
   status: "draft" | "submitted";
 }
 
 export interface BookedDate {
-  eventId: number;
+  eventId: string;
   name: string;
   eventDate: string;
   status: string;
@@ -99,7 +99,7 @@ export interface BookedDate {
 // ── My Club ───────────────────────────────────────────────────────────────────
 
 export interface ClubOverview {
-  id: number;
+  id: string;
   name: string;
   type: "club" | "community";
   description: string;
@@ -111,7 +111,7 @@ export interface ClubOverview {
 
 export interface ApprovedClub {
   status: "approved";
-  id: number;
+  id: string;
   name: string;
   type: "club" | "community";
   description: string;
@@ -124,7 +124,7 @@ export interface ApprovedClub {
 
 export interface PendingClubItem {
   status: "pending" | "rejected";
-  requestId: number;
+  requestId: string;
   name: string;
   type: "club" | "community";
   description: string;
@@ -144,7 +144,7 @@ export interface ClubMember {
 }
 
 export interface MembershipRequest {
-  id: number;
+  id: string;
   studentName: string;
   studentMatricId: string | null;
   submittedAt: string;
@@ -154,12 +154,12 @@ export interface MembershipRequest {
 export type ClubTab = "members" | "requests" | "volunteers";
 
 export interface ClubVolunteerApplication {
-  applicationId: number;
+  applicationId: string;
   studentName: string;
   studentMatricId: string | null;
   eventId: string;
   eventName: string;
-  roleId: number;
+  roleId: string;
   roleName: string;
   slotsAvailable: number;
   status: "pending" | "accepted" | "rejected";
