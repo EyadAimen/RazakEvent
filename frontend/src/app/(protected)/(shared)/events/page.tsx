@@ -8,19 +8,12 @@ import { SharedEvent } from "./utils/interface/events.interface";
 import Alert from "@/components/shared/alertComponent/alert";
 import styles from "./events.module.css";
 
-type Tab = "all" | "approved";
-
-const TABS: { label: string; value: Tab }[] = [
-  { label: "All", value: "all" },
-  { label: "Approved", value: "approved" },
-];
 
 export default function SharedEventsPage() {
   const router = useRouter();
   const [events, setEvents] = useState<SharedEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -38,12 +31,10 @@ export default function SharedEventsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = events.filter(event => {
-    const matchesTab = activeTab === "all" || event.status === activeTab;
-    const matchesSearch = event.name.toLowerCase().includes(search.toLowerCase()) ||
-                          event.clubName.toLowerCase().includes(search.toLowerCase());
-    return matchesTab && matchesSearch;
-  });
+  const filtered = events.filter(event =>
+    event.name.toLowerCase().includes(search.toLowerCase()) ||
+    event.clubName.toLowerCase().includes(search.toLowerCase())
+  );
 
   if (loading) {
     return <Alert isOpen={true} onClose={() => {}} variant="loading" message="Loading events..." />;
@@ -57,7 +48,7 @@ export default function SharedEventsPage() {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1>Events</h1>
+          <h2>Events</h2>
           <p>Discover upcoming and ongoing events</p>
         </div>
 
@@ -69,22 +60,10 @@ export default function SharedEventsPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <div className={styles.tabs}>
-            {TABS.map(tab => (
-              <button
-                key={tab.value}
-                className={`${styles.tab} ${activeTab === tab.value ? styles.active : ""}`}
-                onClick={() => setActiveTab(tab.value)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          
         </div>
 
-        {filtered.length === 0 ? (
-          <div className={styles.empty}>No events found.</div>
-        ) : (
+        
           <div className={styles.grid}>
             {filtered.map(event => (
                 <div
@@ -106,7 +85,7 @@ export default function SharedEventsPage() {
                 </div>
             ))}
           </div>
-        )}
+        
       </div>
     </div>
   );
