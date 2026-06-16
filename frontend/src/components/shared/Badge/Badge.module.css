@@ -64,3 +64,15 @@
   color: #b91c1c;
   border-color: rgba(185, 28, 28, 0.3);
 }
+
+.report-accepted {
+  background: var(--color-status-green-10);
+  color: var(--color-status-green-text);
+  border-color: var(--color-status-green-25);
+}
+
+.report-rejected {
+  background: var(--color-status-rejected-bg);
+  color: var(--color-status-rejected-text);
+  border-color: var(--color-status-rejected-bg);
+}

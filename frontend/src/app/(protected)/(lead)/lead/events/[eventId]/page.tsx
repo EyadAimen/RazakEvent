@@ -345,8 +345,13 @@ export default function LeadEventDetailPage() {
 
   // ── Derived display values ────────────────────────────────────────────────
 
-  const { variant: statusVariant, label: statusLabel } =
-    STATUS_MAP[event.status] ?? { variant: "draft" as BadgeVariant, label: event.status };
+  const { variant: statusVariant, label: statusLabel } = (() => {
+    if (event.status === "completed") {
+      if (event.reportStatus === "accepted") return { variant: "report-accepted" as BadgeVariant, label: "Post-Event Approved" };
+      if (event.reportStatus === "rejected") return { variant: "report-rejected" as BadgeVariant, label: "Post-Event Rejected" };
+    }
+    return STATUS_MAP[event.status] ?? { variant: "draft" as BadgeVariant, label: event.status };
+  })();
 
   const isLive = event.status === "approved";
   const showDeadline = event.status === "report_due";
@@ -422,6 +427,44 @@ export default function LeadEventDetailPage() {
               </div>
             )}
 
+            {/* ── Post-event documents ── */}
+            {(event.completionReportPdfUrl || event.financialReportPdfUrl || event.reportAdminComment) && (
+              <div className={styles.postEventSection}>
+                <h3 className={styles.postEventTitle}>Post-Event Documents</h3>
+
+                {event.reportAdminComment && (
+                  <div className={styles.reportAdminComment}>
+                    <strong>Admin feedback:</strong> {event.reportAdminComment}
+                  </div>
+                )}
+
+                <div className={styles.postEventDocs}>
+                  {event.completionReportPdfUrl && (
+                    <a
+                      href={`http://localhost:5000${event.completionReportPdfUrl}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.actionSecondary}
+                    >
+                      <Download size={14} />
+                      Completion Report
+                    </a>
+                  )}
+                  {event.financialReportPdfUrl && (
+                    <a
+                      href={`http://localhost:5000${event.financialReportPdfUrl}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.actionSecondary}
+                    >
+                      <Download size={14} />
+                      Financial Report
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className={styles.cardActions}>
               {event.proposalPdfUrl && (
                 <a
@@ -437,7 +480,7 @@ export default function LeadEventDetailPage() {
               {showReportBtn && (
                 <Link href={`/lead/events/${eventId}/reports`} className={styles.actionPrimary}>
                   <FileText size={14} />
-                  Submit Report
+                  {event.reportStatus === "submitted" ? "Resubmit Report" : "Submit Report"}
                 </Link>
               )}
               {canMarkCompleted && (

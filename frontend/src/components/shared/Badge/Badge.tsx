@@ -9,7 +9,9 @@ export type BadgeVariant =
   | "completed"
   | "report-due"
   | "overdue"
-  | "pending-admin";
+  | "pending-admin"
+  | "report-accepted"
+  | "report-rejected";
 
 type Props = {
   label: string;

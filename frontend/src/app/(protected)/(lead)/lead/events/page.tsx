@@ -36,7 +36,19 @@ const STATUS_MAP: Record<string, { variant: LeadEvent["status"]; label: string }
 };
 
 function toLeadEvent(e: ApiEvent): LeadEvent {
-  const { variant, label } = STATUS_MAP[e.status] ?? { variant: "draft", label: e.status };
+  let variant: LeadEvent["status"];
+  let label: string;
+
+  if (e.status === "completed" && e.reportStatus === "accepted") {
+    variant = "report-accepted";
+    label = "Post-Event Approved";
+  } else if (e.status === "completed" && e.reportStatus === "rejected") {
+    variant = "report-rejected";
+    label = "Post-Event Rejected";
+  } else {
+    ({ variant, label } = STATUS_MAP[e.status] ?? { variant: "draft", label: e.status });
+  }
+
   return {
     id:              e.id,
     name:            e.name,
