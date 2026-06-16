@@ -509,11 +509,18 @@ export const markEventCompleted = async (eventId, leadId, applicationIds = []) =
         reportDueAt,
     });
 
+await eventRepo().update(event.id, {
+    status: "completed",
+    volunteeringStatus: "closed",
+    completed_at: completedAt,
+    report_due_at: reportDueAt,
+});
+
+    // Issue certificates for the provided accepted volunteer applications
     if (!Array.isArray(applicationIds) || applicationIds.length === 0) {
         return { message: "Event marked as completed", certificates: { issued: [], skipped: [] } };
     }
 
-    // Issue certificates for the provided accepted volunteer applications
     const applications = await appRepo().findBy({ id: In(applicationIds.map(Number)) });
     const validApps = applications.filter(a => a.eventId === event.id && a.status === "accepted");
 
@@ -523,7 +530,7 @@ export const markEventCompleted = async (eventId, leadId, applicationIds = []) =
 
     for (const app of validApps) {
         try {
-            await (certRepo()).insert({ userId: app.studentId, eventId: event.id, type: "volunteer" });
+            await certRepo().insert({ userId: app.studentId, eventId: event.id, type: "volunteer" });
             issued.push(app.studentId);
         } catch (err) {
             if (err.code === "23505") skipped.push(app.studentId);
@@ -560,4 +567,180 @@ export const getStudentEvents = async () => {
         };
     }));
     return enriched;
+};
+
+
+function addDays(date, days) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + days);
+  return nextDate;
+}
+
+function getCompletionDate(event) {
+  return event.completedAt || event.completed_at || event.eventDate || event.createdAt;
+}
+
+function getReportPdf(event) {
+  return event.reportPdfUrl || event.completionReportPdfUrl || null;
+}
+
+function getReportStatus(event) {
+  if (event.reportStatus) return String(event.reportStatus).toLowerCase();
+  if (event.reportAcceptedAt) return "accepted";
+  if (event.reportRejectedAt || event.reportAdminComment) return "rejected";
+  if (getReportPdf(event)) return "submitted";
+  return "not_submitted";
+}
+
+function getReportDueAt(event) {
+  if (event.reportDueAt || event.report_due_at) return event.reportDueAt || event.report_due_at;
+  const completedAt = getCompletionDate(event);
+  return completedAt ? addDays(completedAt, 14) : null;
+}
+
+function getDaysLeft(event) {
+  const reportDueAt = getReportDueAt(event);
+  if (!reportDueAt) return null;
+
+  const today = new Date();
+  const dueDate = new Date(reportDueAt);
+  today.setHours(0, 0, 0, 0);
+  dueDate.setHours(0, 0, 0, 0);
+
+  return Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+async function enrichPostEvent(event) {
+  const proposal = event.proposalId
+    ? await proposalRepo().findOne({ where: { id: event.proposalId } })
+    : null;
+
+  const club = event.clubId
+    ? await clubRepo().findOne({ where: { id: event.clubId } })
+    : null;
+
+  const venue = event.venueId
+    ? await venueRepo().findOne({ where: { id: event.venueId } })
+    : null;
+
+  const lead = proposal?.leadId
+    ? await userRepo().findOne({ where: { id: proposal.leadId } })
+    : null;
+
+  const daysLeft = getDaysLeft(event);
+  const reportStatus = getReportStatus(event);
+  const isOverdue = reportStatus === "not_submitted" && typeof daysLeft === "number" && daysLeft < 0;
+
+  return {
+    id: event.id,
+    proposalId: event.proposalId,
+    clubId: event.clubId,
+    venueId: event.venueId,
+    name: event.name,
+    description: event.description,
+    eventDate: event.eventDate,
+    status: event.status,
+    completedAt: getCompletionDate(event),
+    reportDueAt: getReportDueAt(event),
+    reportSubmittedAt: event.reportSubmittedAt || event.report_submitted_at || null,
+    reportReviewedAt: event.reportReviewedAt || event.report_reviewed_at || null,
+    reportStatus,
+    reportPdfUrl: getReportPdf(event),
+    reportAdminComment: event.reportAdminComment || "",
+    clubName: club?.name ?? "Unknown Club",
+    clubType: club?.type ?? "club",
+    leadName: lead?.fullName ?? "Unknown Lead",
+    venueName: venue?.name ?? "No venue assigned",
+    daysLeft,
+    isOverdue,
+  };
+}
+
+export const getAdminPostEvents = async () => {
+  const completedEvents = await eventRepo().find({
+    where: { status: "completed" },
+    order: { eventDate: "DESC" },
+  });
+
+  const enriched = await Promise.all(completedEvents.map(enrichPostEvent));
+
+  return enriched.map((event) => {
+    if (event.isOverdue) {
+      return {
+        ...event,
+        reportStatus: "rejected",
+        reportAdminComment:
+          event.reportAdminComment || "Failed to submit report within the maximum limit.",
+      };
+    }
+
+    return event;
+  });
+};
+
+export const uploadCompletionReportPdf = async (eventId, leadId, fileUrl) => {
+  const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
+  if (!event) throw new NotFoundError("Event not found");
+
+  const proposal = await proposalRepo().findOne({ where: { id: event.proposalId } });
+  if (!proposal || proposal.leadId !== leadId) {
+    throw new ForbiddenError("You do not own this event");
+  }
+
+  if (event.status !== "completed") {
+    throw new ValidationError("Completion report can only be submitted for completed events");
+  }
+
+  const daysLeft = getDaysLeft(event);
+  if (typeof daysLeft === "number" && daysLeft < 0) {
+    // This assumes reportStatus/reportAdminComment columns are added later.
+    await eventRepo().update(event.id, {
+      reportStatus: "rejected",
+      reportAdminComment: "Failed to submit report within the maximum limit.",
+      reportReviewedAt: new Date(),
+    });
+
+    throw new ValidationError("Failed to submit report within the maximum limit");
+  }
+
+  await eventRepo().update(event.id, {
+    reportPdfUrl: fileUrl,
+    completionReportPdfUrl: fileUrl,
+    reportStatus: "submitted",
+    reportSubmittedAt: new Date(),
+  });
+
+  const updated = await eventRepo().findOne({ where: { id: event.id } });
+  return enrichPostEvent(updated);
+};
+
+export const decideCompletionReport = async (eventId, decision, adminComment) => {
+  if (!["accepted", "rejected"].includes(decision)) {
+    throw new ValidationError("Decision must be 'accepted' or 'rejected'");
+  }
+
+  if (decision === "rejected" && !adminComment) {
+    throw new ValidationError("Admin comment is required when rejecting a report");
+  }
+
+  const event = await eventRepo().findOne({ where: { id: Number(eventId) } });
+  if (!event) throw new NotFoundError("Event not found");
+
+  if (event.status !== "completed") {
+    throw new ValidationError("Only completed events can have completion reports reviewed");
+  }
+
+  const reportStatus = getReportStatus(event);
+  if (reportStatus !== "submitted") {
+    throw new ValidationError("Only submitted reports can be reviewed");
+  }
+
+  await eventRepo().update(event.id, {
+    reportStatus: decision,
+    reportAdminComment: adminComment || null,
+    reportReviewedAt: new Date(),
+  });
+
+  const updated = await eventRepo().findOne({ where: { id: event.id } });
+  return enrichPostEvent(updated);
 };
