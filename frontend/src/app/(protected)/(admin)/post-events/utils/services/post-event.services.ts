@@ -33,12 +33,12 @@ function formatDate(value?: string | null): string {
 }
 
 function getReportStatus(item: any): PostEventReportStatus {
-  if (item.eventReport && item.moneyReport) {
-    return String(item.eventReport.status || item.moneyReport.status || "submitted").toLowerCase() as PostEventReportStatus;
+  // Trust the backend's computed status first
+  if (item.reportStatus) {
+    return String(item.reportStatus).toLowerCase() as PostEventReportStatus;
   }
-
+  // Fallback for legacy/partial uploads
   if (item.completionReportPdfUrl && item.financialReportPdfUrl) return "submitted";
-  if (item.reportStatus) return String(item.reportStatus).toLowerCase() as PostEventReportStatus;
   return "not_submitted";
 }
 

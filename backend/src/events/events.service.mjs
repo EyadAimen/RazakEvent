@@ -631,10 +631,17 @@ async function enrichPostEvent(event) {
 
     const daysLeft = getDaysLeft(event);
 
-    const reportStatus =
-        eventReport && moneyReport
-            ? eventReport.status
-            : "not_submitted";
+    let reportStatus = "not_submitted";
+
+    if (eventReport && moneyReport) {
+        if (eventReport.status === "rejected" || moneyReport.status === "rejected") {
+            reportStatus = "rejected";
+        } else if (eventReport.status === "accepted" && moneyReport.status === "accepted") {
+            reportStatus = "accepted";
+        } else {
+            reportStatus = "submitted";
+        }
+    }
 
     const isOverdue =
         reportStatus === "not_submitted" &&
@@ -715,13 +722,11 @@ export const uploadCompletionReportPdf = async (eventId, leadId, fileUrl) => {
 
     const daysLeft = getDaysLeft(event);
     if (typeof daysLeft === "number" && daysLeft < 0) {
-        // This assumes reportStatus/reportAdminComment columns are added later.
         await eventRepo().update(event.id, {
             reportStatus: "rejected",
             reportAdminComment: "Failed to submit report within the maximum limit.",
             reportReviewedAt: new Date(),
         });
-
         throw new ValidationError("Failed to submit report within the maximum limit");
     }
 
@@ -730,6 +735,23 @@ export const uploadCompletionReportPdf = async (eventId, leadId, fileUrl) => {
         reportStatus: "submitted",
         reportSubmittedAt: new Date(),
     });
+
+    // Create/update EventReport
+    const existingEventReport = await eventReportRepo().findOne({ where: { eventId: event.id } });
+    if (existingEventReport) {
+        await eventReportRepo().update(existingEventReport.id, {
+            reportPdfUrl: fileUrl,
+            status: "submitted",
+            submittedAt: new Date(),
+        });
+    } else {
+        await eventReportRepo().save({
+            eventId: event.id,
+            reportPdfUrl: fileUrl,
+            status: "submitted",
+            submittedAt: new Date(),
+        });
+    }
 
     const updated = await eventRepo().findOne({ where: { id: event.id } });
     return enrichPostEvent(updated);
@@ -793,6 +815,23 @@ export const uploadFinancialReportPdf = async (eventId, leadId, fileUrl) => {
         reportStatus: "submitted",
         reportSubmittedAt: new Date(),
     });
+
+    // Create/update MoneyReport
+    const existingMoneyReport = await moneyReportRepo().findOne({ where: { eventId: event.id } });
+    if (existingMoneyReport) {
+        await moneyReportRepo().update(existingMoneyReport.id, {
+            reportPdfUrl: fileUrl,
+            status: "submitted",
+            submittedAt: new Date(),
+        });
+    } else {
+        await moneyReportRepo().save({
+            eventId: event.id,
+            reportPdfUrl: fileUrl,
+            status: "submitted",
+            submittedAt: new Date(),
+        });
+    }
 
     const updated = await eventRepo().findOne({ where: { id: event.id } });
     return enrichPostEvent(updated);
