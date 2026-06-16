@@ -58,9 +58,15 @@ export const getLeadDashboard = async (leadId) => {
     const enriched = await Promise.all(proposals.map(enrichProposal));
 
     const reportDue = enriched.filter(e => e.status === "report_due");
-    const alert = reportDue.length > 0
-        ? `Action Required: Event Report for "${reportDue[0].name}" is overdue!`
-        : null;
+    let alert = null;
+    if (reportDue.length > 0) {
+        const first = reportDue[0];
+        const event = await eventRepo().findOne({ where: { proposalId: Number(first.id) } });
+        const overdue = event?.reportDueAt && new Date(event.reportDueAt) < new Date();
+        alert = overdue
+            ? `Action Required: Event Report for "${first.name}" is overdue!`
+            : `Reminder: Event Report for "${first.name}" is due soon.`;
+    }
 
     const lead = await userRepo().findOne({ where: { id: leadId } });
     const leadClub = await clubRepo().findOne({ where: { leadId } });
@@ -491,8 +497,17 @@ export const markEventCompleted = async (eventId, leadId, applicationIds = []) =
         throw new ValidationError("Event cannot be marked as completed before its date has passed");
     }
 
+    // Completing an event opens the 14-day post-event reporting window.
+    // Status moves to "report_due"; submitReports flips it to "completed" once reports are in.
     const completedAt = new Date();
-const reportDueAt = addDays(completedAt, 14);
+    const reportDueAt = new Date(completedAt.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+    await eventRepo().update(event.id, {
+        status: "report_due",
+        volunteeringStatus: "closed",
+        completedAt,
+        reportDueAt,
+    });
 
 await eventRepo().update(event.id, {
     status: "completed",
