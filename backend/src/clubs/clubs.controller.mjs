@@ -13,6 +13,7 @@ import {
     getMembershipRequests,
     decideMembershipRequest,
     removeMember,
+    resignAsLead,
 
     getClubMembersByClubId,
     getClubEventsByClubId,
@@ -225,6 +226,11 @@ export const decideMembershipRequestHandler = async (req, res, next) => {
 
 export const removeMemberHandler = async (req, res, next) => {
     try { res.json(await removeMember(req.user.userId, req.params.userId, req.query.clubId)); }
+    catch (err) { next(err); }
+};
+
+export const resignAsLeadHandler = async (req, res, next) => {
+    try { res.json(await resignAsLead(req.user.userId, req.params.clubId)); }
     catch (err) { next(err); }
 };
 

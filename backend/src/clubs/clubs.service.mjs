@@ -7,6 +7,7 @@ import { EventProposalEntity } from "../proposals/proposals.entity.mjs";
 import { EventEntity } from "../events/events.entity.mjs";
 import { VenueEntity } from "../venues/venues.entity.mjs";
 import { MembershipRequestEntity } from "../requests/membership_requests.entity.mjs";
+import { LeadRoleRequestEntity } from "../requests/lead_role_requests.entity.mjs";
 import { In } from "typeorm";
 import { NotFoundError, ForbiddenError, ConflictError, ValidationError } from "../shared/errors.mjs";
 
@@ -733,6 +734,52 @@ export const demoteLeadToMember = async (clubId, userId) => {
     }
 
     return { message: "Lead demoted to member" };
+};
+
+// ── Lead — Resign as lead of own club (self-service) ─────────────────────────
+
+export const resignAsLead = async (leadId, clubId) => {
+    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    if (!club) throw new NotFoundError("Club not found");
+    if (club.leadId !== leadId) throw new ForbiddenError("You are not the lead of this club");
+
+    const queryRunner = appDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+        // 1. Club becomes leaderless
+        await queryRunner.manager.update("Club", { id: club.id }, { leadId: null });
+
+        // 2. Ex-lead stays in the club as a regular member (guard against composite-PK clash)
+        const existing = await queryRunner.manager.findOne("ClubMember", {
+            where: { userId: leadId, clubId: club.id },
+        });
+        if (!existing) {
+            await queryRunner.manager.insert("ClubMember", { userId: leadId, clubId: club.id });
+        }
+
+        // 3. Downgrade global role only if they no longer lead any other club
+        const stillLead = await queryRunner.manager.findOne("Club", { where: { leadId } });
+        if (!stillLead) {
+            await queryRunner.manager.update("User", { id: leadId }, { role: "member" });
+        }
+
+        // 4. Option A — stuck requests for THIS club skip the vacant lead, go to admin
+        await queryRunner.manager.update(
+            "LeadRoleRequest",
+            { currentLeadId: leadId, clubId: club.id, status: "pending_lead" },
+            { status: "pending_admin" },
+        );
+
+        await queryRunner.commitTransaction();
+    } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw err;
+    } finally {
+        await queryRunner.release();
+    }
+
+    return { message: "You have resigned as lead" };
 };
 
 // ── Admin — Change per-club role (lead ↔ member) ─────────────────────────────
