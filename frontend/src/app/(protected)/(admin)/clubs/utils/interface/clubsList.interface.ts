@@ -5,7 +5,7 @@ export interface ClubLeadInfo {
 }
 
 export interface ClubListItem {
-  id: number;
+  id: string;
   name: string;
   type: "club" | "community";
   description: string;
@@ -30,7 +30,7 @@ export interface ClubRequestStudent {
 }
 
 export interface ClubRequestItem {
-  id: number;
+  id: string;
   clubName: string;
   clubType: "club" | "community";
   description: string;

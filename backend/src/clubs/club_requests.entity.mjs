@@ -5,9 +5,9 @@ export const ClubRequestEntity = new EntitySchema({
     tableName: "club_requests",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         studentId: {
             name: "student_id",
@@ -21,7 +21,7 @@ export const ClubRequestEntity = new EntitySchema({
         },
         resultClubId: {
             name: "result_club_id",
-            type: "int",
+            type: "uuid",
             nullable: true,
         },
         clubName: {

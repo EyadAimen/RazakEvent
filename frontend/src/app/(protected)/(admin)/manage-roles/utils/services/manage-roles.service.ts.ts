@@ -31,7 +31,7 @@ export async function fetchUserMemberships(userId: string): Promise<ClubMembersh
   return res.data;
 }
 
-export async function changeClubMemberRole(clubId: number, userId: string, role: "lead" | "member"): Promise<string> {
+export async function changeClubMemberRole(clubId: string, userId: string, role: "lead" | "member"): Promise<string> {
   const res = await apiFetchAuth<{ message: string }>(`/clubs/admin/${clubId}/members/${userId}/role`, {
     method: "PATCH",
     body: JSON.stringify({ role }),
@@ -44,7 +44,7 @@ export async function fetchAllClubs(): Promise<ClubOption[]> {
   return Array.isArray(res) ? res : (res as any).clubs ?? [];
 }
 
-export async function addUserToClub(clubId: number, userId: string): Promise<string> {
+export async function addUserToClub(clubId: string, userId: string): Promise<string> {
   const res = await apiFetchAuth<{ message: string }>(`/clubs/${clubId}/members`, {
     method: "POST",
     body: JSON.stringify({ userId }),
@@ -57,7 +57,7 @@ export async function fetchLeadRoleRequests(): Promise<import("../interfaces/man
   return res.requests ?? [];
 }
 
-export async function decideLeadRoleRequest(id: number, action: "approved" | "rejected", adminComment?: string): Promise<string> {
+export async function decideLeadRoleRequest(id: string, action: "approved" | "rejected", adminComment?: string): Promise<string> {
   const res = await apiFetchAuth<{ message: string }>(`/requests/lead-role/${id}/admin-decision`, {
     method: "PATCH",
     body: JSON.stringify({ action, adminComment }),

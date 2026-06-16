@@ -1,6 +1,6 @@
 export interface Certificate {
-  certificateId: number;
-  eventId:       number;
+  certificateId: string;
+  eventId:       string;
   eventName:     string;
   eventDate:     string | null;
   type:          "organizer" | "volunteer";

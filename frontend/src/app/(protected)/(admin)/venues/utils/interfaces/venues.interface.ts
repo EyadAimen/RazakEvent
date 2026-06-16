@@ -1,11 +1,11 @@
 export interface AdminVenue {
-  id: number;
+  id: string;
   name: string;
   location: string | null;
 }
 
 export interface VenueBookedDate {
-  eventId: number;
+  eventId: string;
   name: string;
   eventDate: string;
   status: string;

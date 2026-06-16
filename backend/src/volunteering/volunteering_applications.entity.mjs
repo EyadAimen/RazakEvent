@@ -5,9 +5,9 @@ export const VolunteeringApplicationEntity = new EntitySchema({
     tableName: "volunteering_applications",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         studentId: {
             name: "student_id",
@@ -16,12 +16,12 @@ export const VolunteeringApplicationEntity = new EntitySchema({
         },
         roleId: {
             name: "role_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         eventId: {
             name: "event_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         status: {

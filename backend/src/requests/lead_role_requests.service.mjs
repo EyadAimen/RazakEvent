@@ -140,7 +140,7 @@ export const listLeadRoleRequests = async ({ status, search }) => {
 };
 
 export const getLeadRoleRequest = async (requestId) => {
-    const request = await requestRepo().findOne({ where: { id: parseInt(requestId) } });
+    const request = await requestRepo().findOne({ where: { id: requestId } });
     if (!request) throw new NotFoundError("Lead role request not found");
 
     const [student, club] = await Promise.all([
@@ -182,7 +182,7 @@ export const decideLeadDecision = async (requestId, leadId, action, comment) => 
         throw new ValidationError("action must be 'approved' or 'rejected'");
     }
 
-    const request = await requestRepo().findOne({ where: { id: parseInt(requestId) } });
+    const request = await requestRepo().findOne({ where: { id: requestId } });
     if (!request) throw new NotFoundError("Lead role request not found");
 
     if (request.status !== "pending_lead") {
@@ -203,7 +203,7 @@ export const decideLeadDecision = async (requestId, leadId, action, comment) => 
     };
     if (comment?.trim()) updateData.leadComment = comment.trim();
 
-    await requestRepo().update(parseInt(requestId), updateData);
+    await requestRepo().update(requestId, updateData);
 
     return { message: action === "approved" ? "Request approved" : "Request rejected" };
 };
@@ -213,7 +213,7 @@ export const decideAdminDecision = async (requestId, adminId, action, adminComme
         throw new ValidationError("action must be 'approved' or 'rejected'");
     }
 
-    const request = await requestRepo().findOne({ where: { id: parseInt(requestId) } });
+    const request = await requestRepo().findOne({ where: { id: requestId } });
     if (!request) throw new NotFoundError("Lead role request not found");
 
     if (request.status !== "pending_admin") {
@@ -224,7 +224,7 @@ export const decideAdminDecision = async (requestId, adminId, action, adminComme
         if (!adminComment || !adminComment.trim()) {
             throw new ValidationError("adminComment is required when rejecting a request");
         }
-        await requestRepo().update(parseInt(requestId), {
+        await requestRepo().update(requestId, {
             status: "rejected",
             adminId,
             adminComment: adminComment.trim(),
@@ -256,7 +256,7 @@ export const decideAdminDecision = async (requestId, adminId, action, adminComme
             reviewedAt: new Date(),
         };
         if (adminComment?.trim()) updateData.adminComment = adminComment.trim();
-        await queryRunner.manager.update("LeadRoleRequest", { id: parseInt(requestId) }, updateData);
+        await queryRunner.manager.update("LeadRoleRequest", { id: requestId }, updateData);
 
         await queryRunner.commitTransaction();
     } catch (err) {

@@ -1,5 +1,5 @@
 export interface Club {
-  id: number;
+  id: string;
   name: string;
   type: "club" | "community";
   description: string;
@@ -9,8 +9,8 @@ export interface Club {
 }
 
 export interface MembershipRequest {
-  id: number;
-  clubId: number;
+  id: string;
+  clubId: string;
   clubName: string | null;
   status: "pending" | "approved" | "rejected";
   leadComment: string | null;
@@ -18,8 +18,8 @@ export interface MembershipRequest {
 }
 
 export interface LeadRoleRequest {
-  id: number;
-  clubId: number;
+  id: string;
+  clubId: string;
   status: "pending_lead" | "pending_admin" | "approved" | "rejected";
   leadComment: string | null;
   adminComment: string | null;

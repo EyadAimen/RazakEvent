@@ -5,10 +5,10 @@ export type PostEventReportStatus =
   | "rejected";
 
 export interface PostEvent {
-  id: number;
-  proposalId?: number;
-  clubId?: number;
-  venueId?: number;
+  id: string;
+  proposalId?: string;
+  clubId?: string;
+  venueId?: string;
   name: string;
   description: string;
   clubName: string;

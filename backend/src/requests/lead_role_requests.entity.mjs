@@ -5,9 +5,9 @@ export const LeadRoleRequestEntity = new EntitySchema({
     tableName: "lead_role_requests",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         studentId: {
             name: "student_id",
@@ -16,7 +16,7 @@ export const LeadRoleRequestEntity = new EntitySchema({
         },
         clubId: {
             name: "club_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         currentLeadId: {

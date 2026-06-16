@@ -5,9 +5,9 @@ export const CertificateEntity = new EntitySchema({
     tableName: "certificates",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         userId: {
             name: "user_id",
@@ -16,7 +16,7 @@ export const CertificateEntity = new EntitySchema({
         },
         eventId: {
             name: "event_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         type: {

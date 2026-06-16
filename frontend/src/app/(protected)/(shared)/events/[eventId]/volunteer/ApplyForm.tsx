@@ -16,7 +16,7 @@ export default function ApplyForm({ eventData }: Props) {
   const router = useRouter();
   
   // States
-  const [selectedRoleId, setSelectedRoleId] = useState<number | "">(
+  const [selectedRoleId, setSelectedRoleId] = useState<string | "">(
     eventData.roles.length === 1 ? eventData.roles[0].roleId : ""
   );
   const [reason, setReason] = useState("");
@@ -25,7 +25,7 @@ export default function ApplyForm({ eventData }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   // Derived
-  const selectedRole = eventData.roles.find(r => r.roleId === selectedRoleId);
+  const selectedRole = selectedRoleId ? eventData.roles.find(r => r.roleId === selectedRoleId) : undefined;
   const isSubmitDisabled = !selectedRoleId || !reason.trim() || !acknowledged || loading;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,7 +36,7 @@ export default function ApplyForm({ eventData }: Props) {
     setError(null);
 
     try {
-      await applyForVolunteering(selectedRoleId as number, reason.trim());
+      await applyForVolunteering(selectedRoleId, reason.trim());
 
       // Redirect to applications page on success
       router.push("/volunteering");
@@ -70,7 +70,7 @@ export default function ApplyForm({ eventData }: Props) {
             <select
               className={styles.roleSelect}
               value={selectedRoleId}
-              onChange={(e) => setSelectedRoleId(Number(e.target.value))}
+              onChange={(e) => setSelectedRoleId(e.target.value)}
             >
               <option value="" disabled>Select a role...</option>
               {eventData.roles.map(role => (

@@ -11,7 +11,7 @@ import { EventData } from "./utils/interfaces/volunteer.interface";
 
 export default function VolunteerApplicationPage() {
   const params = useParams();
-  const eventId = Number(params.eventId);
+  const eventId = params.eventId as string;
   const router = useRouter();
 
   const [eventData, setEventData] = useState<EventData | null>(null);

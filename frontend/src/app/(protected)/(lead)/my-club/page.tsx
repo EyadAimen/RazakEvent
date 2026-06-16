@@ -28,16 +28,16 @@ export default function MyClubPage() {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<ClubTab>("members");
   const [search, setSearch] = useState("");
-  const [acting, setActing] = useState<string | number | null>(null);
+  const [acting, setActing] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [volSuccess, setVolSuccess] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createSuccess, setCreateSuccess] = useState(false);
-  const [rejectingAppId, setRejectingAppId] = useState<number | null>(null);
-  const [expandedVolRows, setExpandedVolRows] = useState<Set<number>>(new Set());
+  const [rejectingAppId, setRejectingAppId] = useState<string | null>(null);
+  const [expandedVolRows, setExpandedVolRows] = useState<Set<string>>(new Set());
   const [confirmRemoveMemberId, setConfirmRemoveMemberId] = useState<string | null>(null);
   const [confirmRemoveMemberName, setConfirmRemoveMemberName] = useState("");
-  const [rejectingMemberRequestId, setRejectingMemberRequestId] = useState<number | null>(null);
+  const [rejectingMemberRequestId, setRejectingMemberRequestId] = useState<string | null>(null);
   const [rejectingMemberRequestName, setRejectingMemberRequestName] = useState("");
   const [memberSuccess, setMemberSuccess] = useState<string | null>(null);
 
@@ -47,7 +47,7 @@ export default function MyClubPage() {
     rejected: { variant: "rejected", label: "Rejected" },
   };
 
-  const toggleVolRow = (id: number) => {
+  const toggleVolRow = (id: string) => {
     setExpandedVolRows(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -122,10 +122,10 @@ export default function MyClubPage() {
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
-  const isRoleFull = (roleId: number, slotsAvailable: number): boolean =>
+  const isRoleFull = (roleId: string, slotsAvailable: number): boolean =>
     volApps.filter(a => a.roleId === roleId && a.status === "accepted").length >= slotsAvailable;
 
-  const handleDecideVolApp = async (applicationId: number, decision: "accepted" | "rejected", rejectionMessage?: string) => {
+  const handleDecideVolApp = async (applicationId: string, decision: "accepted" | "rejected", rejectionMessage?: string) => {
     if (acting !== null) return;
     setActing(applicationId);
     try {
@@ -148,7 +148,7 @@ export default function MyClubPage() {
     }
   };
 
-  const handleDecideRequest = async (requestId: number, decision: "approved" | "rejected", leadComment?: string) => {
+  const handleDecideRequest = async (requestId: string, decision: "approved" | "rejected", leadComment?: string) => {
     if (!selectedClub || acting !== null) return;
     const req = requests.find(r => r.id === requestId);
     setActing(requestId);

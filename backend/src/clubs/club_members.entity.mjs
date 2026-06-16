@@ -12,7 +12,7 @@ export const ClubMemberEntity = new EntitySchema({
         },
         clubId: {
             name: "club_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
             primary: true,
         },

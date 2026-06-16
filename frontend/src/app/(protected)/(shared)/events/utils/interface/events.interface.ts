@@ -1,5 +1,5 @@
 export interface SharedEvent {
-  id: number;
+  id: string;
   name: string;
   description: string;
   eventDate: string;
@@ -14,7 +14,7 @@ export interface SharedEventDetail extends SharedEvent {
   hasApplied?: boolean;
   canVolunteer?: boolean;
   volunteerRoles: {
-    id: number;
+    id: string;
     name: string;
     slotsAvailable: number;
     slotsFilled: number;

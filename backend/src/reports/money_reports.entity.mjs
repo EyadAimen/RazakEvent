@@ -5,13 +5,13 @@ export const MoneyReportEntity = new EntitySchema({
     tableName: "money_reports",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         eventId: {
             name: "event_id",
-            type: "int",
+            type: "uuid",
             unique: true,
             nullable: false,
         },
@@ -22,7 +22,7 @@ export const MoneyReportEntity = new EntitySchema({
         },
         clubId: {
             name: "club_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         adminId: {

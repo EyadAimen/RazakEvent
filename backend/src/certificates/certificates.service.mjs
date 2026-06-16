@@ -29,7 +29,7 @@ async function assertLeadOwnsEvent(eventId, leadId) {
 // ── Lead — Get accepted volunteers with certificate status ────────────────────
 
 export const getEventVolunteers = async (eventId, leadId) => {
-    const event = await assertLeadOwnsEvent(Number(eventId), leadId);
+    const event = await assertLeadOwnsEvent(eventId, leadId);
 
     const applications = await appRepo().find({
         where: { eventId: event.id, status: "accepted" },
@@ -69,7 +69,7 @@ export const issueCertificates = async (eventId, leadId, applicationIds) => {
         throw new ValidationError("applicationIds must be a non-empty array");
     }
 
-    const event = await assertLeadOwnsEvent(Number(eventId), leadId);
+    const event = await assertLeadOwnsEvent(eventId, leadId);
     if (event.status !== "completed") throw new ConflictError("Event is not completed");
 
     const applications = await appRepo().findBy({ id: In(applicationIds) });
@@ -128,7 +128,7 @@ export const getMyCertificates = async (userId) => {
 // ── Any auth — Fetch cert data for PDF generation ─────────────────────────────
 
 export const getCertificateForDownload = async (certId, userId) => {
-    const cert = await certRepo().findOne({ where: { id: Number(certId) } });
+    const cert = await certRepo().findOne({ where: { id: certId } });
     if (!cert) throw new NotFoundError("Certificate not found");
     if (cert.userId !== userId) throw new ForbiddenError("This certificate does not belong to you");
 

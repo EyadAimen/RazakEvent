@@ -1,5 +1,5 @@
 export interface UpcomingEvent {
-  id: number;
+  id: string;
   name: string;
   eventDate: string;
   clubName: string;

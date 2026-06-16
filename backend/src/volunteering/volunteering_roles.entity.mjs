@@ -5,13 +5,13 @@ export const VolunteeringRoleEntity = new EntitySchema({
     tableName: "volunteering_roles",
     columns: {
         id: {
-            type: "int",
+            type: "uuid",
             primary: true,
-            generated: "increment",
+            generated: "uuid",
         },
         eventId: {
             name: "event_id",
-            type: "int",
+            type: "uuid",
             nullable: false,
         },
         roleName: {

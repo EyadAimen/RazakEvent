@@ -65,17 +65,17 @@ export default function LeadEventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [togglingVol, setTogglingVol] = useState(false);
-  const [decidingApp, setDecidingApp] = useState<number | null>(null);
-  const [rejectingAppId, setRejectingAppId] = useState<number | null>(null);
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [decidingApp, setDecidingApp] = useState<string | null>(null);
+  const [rejectingAppId, setRejectingAppId] = useState<string | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   // Role management state
   const [showAddRole, setShowAddRole] = useState(false);
   const [newRole, setNewRole] = useState({ roleName: "", description: "", slotsAvailable: 1 });
   const [addingRole, setAddingRole] = useState(false);
-  const [deletingRoleId, setDeletingRoleId] = useState<number | null>(null);
-  const [confirmDeleteRoleId, setConfirmDeleteRoleId] = useState<number | null>(null);
-  const [editingRoleId, setEditingRoleId] = useState<number | null>(null);
+  const [deletingRoleId, setDeletingRoleId] = useState<string | null>(null);
+  const [confirmDeleteRoleId, setConfirmDeleteRoleId] = useState<string | null>(null);
+  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [editRoleSlots, setEditRoleSlots] = useState<number>(1);
   const [editRoleDesc, setEditRoleDesc] = useState<string>("");
   const [updatingRole, setUpdatingRole] = useState(false);
@@ -103,7 +103,7 @@ export default function LeadEventDetailPage() {
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
-  const toggleRow = (applicationId: number) => {
+  const toggleRow = (applicationId: string) => {
     setExpandedRows(prev => {
       const next = new Set(prev);
       if (next.has(applicationId)) {
@@ -162,7 +162,7 @@ export default function LeadEventDetailPage() {
     }
   };
 
-  const handleDeleteRole = async (roleId: number) => {
+  const handleDeleteRole = async (roleId: string) => {
     if (deletingRoleId !== null) return;
     setDeletingRoleId(roleId);
     setConfirmDeleteRoleId(null);
@@ -177,7 +177,7 @@ export default function LeadEventDetailPage() {
     }
   };
 
-  const handleUpdateRole = async (roleId: number) => {
+  const handleUpdateRole = async (roleId: string) => {
     if (updatingRole) return;
     const role = event?.volunteerRoles.find(r => r.roleId === roleId);
     if (!role) return;
@@ -224,7 +224,7 @@ export default function LeadEventDetailPage() {
     setEvent(refreshed.event);
   };
 
-  const handleDecideApplication = async (applicationId: number, decision: "accepted" | "rejected", rejectionMessage?: string) => {
+  const handleDecideApplication = async (applicationId: string, decision: "accepted" | "rejected", rejectionMessage?: string) => {
     if (!event || decidingApp !== null) return;
     setDecidingApp(applicationId);
     setActionError(null);
@@ -294,7 +294,7 @@ export default function LeadEventDetailPage() {
       const body: Record<string, unknown> = {};
       if (editForm.name.trim()) body.name = editForm.name.trim();
       if (editForm.eventDate) body.eventDate = editForm.eventDate;
-      if (editForm.venueId) body.venueId = Number(editForm.venueId);
+      if (editForm.venueId) body.venueId = editForm.venueId;
       if (editForm.description.trim()) body.description = editForm.description.trim();
       if (editForm.estimatedBudget !== "") body.estimatedBudget = Number(editForm.estimatedBudget);
 

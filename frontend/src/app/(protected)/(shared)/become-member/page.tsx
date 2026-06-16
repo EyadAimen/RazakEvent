@@ -64,7 +64,7 @@ export default function BecomeMemberPage() {
     Promise.all(tasks).finally(() => setLoading(false));
   }, [isMember]);
 
-  function membershipStatusForClub(clubId: number) {
+  function membershipStatusForClub(clubId: string) {
     return memberRequests.find((r) => r.clubId === clubId) ?? null;
   }
 

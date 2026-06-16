@@ -12,7 +12,7 @@ import styles from "./certificates.module.css";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface CertVolunteer {
-  applicationId: number;
+  applicationId: string;
   userId: string;
   name: string;
   studentMatricId: string | null;
@@ -41,7 +41,7 @@ export default function LeadCertificatesPage() {
   const [volunteers,     setVolunteers]     = useState<CertVolunteer[]>([]);
   const [loadingVols,    setLoadingVols]    = useState(false);
 
-  const [selected,       setSelected]       = useState<Set<number>>(new Set());
+  const [selected,       setSelected]       = useState<Set<string>>(new Set());
   const [issuing,        setIssuing]        = useState(false);
   const [issueSuccess,   setIssueSuccess]   = useState<string | null>(null);
   const [issueError,     setIssueError]     = useState<string | null>(null);
@@ -97,7 +97,7 @@ export default function LeadCertificatesPage() {
     }
   };
 
-  const toggleOne = (id: number) => {
+  const toggleOne = (id: string) => {
     setSelected(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);

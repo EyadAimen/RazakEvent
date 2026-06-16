@@ -151,7 +151,7 @@ export const listClubRequests = async ({ status, search }) => {
 };
 
 export const getClubRequest = async (requestId) => {
-    const request = await clubRequestRepo().findOne({ where: { id: parseInt(requestId) } });
+    const request = await clubRequestRepo().findOne({ where: { id: requestId } });
     if (!request) throw new NotFoundError("Club request not found");
 
     const student = await userRepo().findOne({ where: { id: request.studentId } });
@@ -180,7 +180,7 @@ export const decideClubRequest = async (requestId, adminId, action, adminComment
         throw new ValidationError("action must be 'approved' or 'rejected'");
     }
 
-    const request = await clubRequestRepo().findOne({ where: { id: parseInt(requestId) } });
+    const request = await clubRequestRepo().findOne({ where: { id: requestId } });
     if (!request) throw new NotFoundError("Club request not found");
 
     if (request.status !== "pending") {
@@ -212,7 +212,7 @@ export const decideClubRequest = async (requestId, adminId, action, adminComment
             reviewedAt: new Date(),
         };
         if (adminComment?.trim()) updateData.adminComment = adminComment.trim();
-        await clubRequestRepo().update(parseInt(requestId), updateData);
+        await clubRequestRepo().update(requestId, updateData);
 
         return { message: "Club request approved" };
     }
@@ -222,7 +222,7 @@ export const decideClubRequest = async (requestId, adminId, action, adminComment
         throw new ValidationError("adminComment is required when rejecting a request");
     }
 
-    await clubRequestRepo().update(parseInt(requestId), {
+    await clubRequestRepo().update(requestId, {
         status: "rejected",
         adminId,
         adminComment: adminComment.trim(),
@@ -357,7 +357,7 @@ export const getMyClubs = async (userId) => {
 // ── Shared helper — resolve lead's club by optional clubId ────────────────────
 
 const resolveLeadClub = async (leadId, clubId) => {
-    const where = clubId ? { id: parseInt(clubId), leadId } : { leadId };
+    const where = clubId ? { id: clubId, leadId } : { leadId };
     const club = await clubRepo().findOne({ where });
     if (!club) throw new NotFoundError("Club not found or you are not its lead");
     return club;
@@ -427,7 +427,7 @@ export const getMembershipRequests = async (leadId, clubId) => {
 export const decideMembershipRequest = async (leadId, requestId, decision, clubId, leadComment) => {
     const club = await resolveLeadClub(leadId, clubId);
 
-    const req = await membershipReqRepo().findOne({ where: { id: Number(requestId) } });
+    const req = await membershipReqRepo().findOne({ where: { id: requestId } });
     if (!req) throw new NotFoundError("Membership request not found");
     if (req.clubId !== club.id) throw new ForbiddenError("Request does not belong to your club");
     if (req.status !== "pending") throw new ValidationError("Request has already been reviewed");
@@ -439,7 +439,7 @@ export const decideMembershipRequest = async (leadId, requestId, decision, clubI
         await qr.connect();
         await qr.startTransaction();
         try {
-            await qr.manager.update(MembershipRequestEntity, Number(requestId), {
+            await qr.manager.update(MembershipRequestEntity, requestId, {
                 status: "approved",
                 reviewedBy: leadId,
                 reviewedAt: new Date(),
@@ -460,7 +460,7 @@ export const decideMembershipRequest = async (leadId, requestId, decision, clubI
             await qr.release();
         }
     } else {
-        await membershipReqRepo().update(Number(requestId), {
+        await membershipReqRepo().update(requestId, {
             status: "rejected",
             reviewedBy: leadId,
             reviewedAt: new Date(),
@@ -468,7 +468,7 @@ export const decideMembershipRequest = async (leadId, requestId, decision, clubI
         });
     }
 
-    return { requestId: Number(requestId), decision };
+    return { requestId, decision };
 };
 
 // ── Lead — Remove a member from the club ─────────────────────────────────────
@@ -535,7 +535,7 @@ export const adminListClubs = async ({ search } = {}) => {
 // ── Admin — Get club detail ───────────────────────────────────────────────────
 
 export const adminGetClub = async (clubId) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
 
     const memberCount = await clubMemberRepo().count({ where: { clubId: club.id } });
@@ -562,7 +562,7 @@ export const adminGetClub = async (clubId) => {
 // ── Admin — Update club ───────────────────────────────────────────────────────
 
 export const adminUpdateClub = async (clubId, updates) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
 
     const allowed = ["name", "description", "category", "facultyAdvisor", "objectives", "leadId"];
@@ -573,19 +573,19 @@ export const adminUpdateClub = async (clubId, updates) => {
         if (existing) throw new ConflictError("A club with this name already exists");
     }
 
-    await clubRepo().update(parseInt(clubId), patch);
+    await clubRepo().update(clubId, patch);
     return { message: "Club updated" };
 };
 
 // ── Admin — Dissolve club ─────────────────────────────────────────────────────
 
 export const adminDissolveClub = async (clubId) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
 
     await clubMemberRepo().delete({ clubId: club.id });
     if (club.leadId) await userRepo().update(club.leadId, { role: "student" });
-    await clubRepo().delete(parseInt(clubId));
+    await clubRepo().delete(clubId);
 
     return { message: "Club dissolved" };
 };
@@ -593,7 +593,7 @@ export const adminDissolveClub = async (clubId) => {
 // ── Admin — Get club members ──────────────────────────────────────────────────
 
 export const adminGetClubMembers = async (clubId) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
 
     const records = await clubMemberRepo().find({ where: { clubId: club.id } });
@@ -627,7 +627,7 @@ export const adminGetClubMembers = async (clubId) => {
 // ── Admin — Change club lead ──────────────────────────────────────────────────
 
 export const changeClubLeadByAdmin = async (clubId, newLeadId) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
 
     const newLead = await userRepo().findOne({ where: { id: newLeadId } });
@@ -662,7 +662,7 @@ export const changeClubLeadByAdmin = async (clubId, newLeadId) => {
 // ── Admin — Add member to club ────────────────────────────────────────────────
 
 export const addClubMemberByAdmin = async (clubId, userId) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
 
     const user = await userRepo().findOne({ where: { id: userId } });
@@ -685,7 +685,7 @@ export const addClubMemberByAdmin = async (clubId, userId) => {
 // ── Admin — Remove club member ────────────────────────────────────────────────
 
 export const adminRemoveClubMember = async (clubId, userId) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
     if (userId === club.leadId) throw new ForbiddenError("Cannot remove the club lead");
 
@@ -720,7 +720,7 @@ export const getUserClubMemberships = async (userId) => {
 // ── Admin — Demote club lead to member ───────────────────────────────────────
 
 export const demoteLeadToMember = async (clubId, userId) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
     if (club.leadId !== userId) throw new ValidationError("User is not the lead of this club");
 
@@ -743,7 +743,7 @@ export const demoteLeadToMember = async (clubId, userId) => {
 // ── Lead — Resign as lead of own club (self-service) ─────────────────────────
 
 export const resignAsLead = async (leadId, clubId) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
     if (club.leadId !== leadId) throw new ForbiddenError("You are not the lead of this club");
 
@@ -797,7 +797,7 @@ export const changeClubMemberRole = async (clubId, userId, role) => {
 // ── Admin — Get club events ───────────────────────────────────────────────────
 
 export const adminGetClubEvents = async (clubId) => {
-    const club = await clubRepo().findOne({ where: { id: parseInt(clubId) } });
+    const club = await clubRepo().findOne({ where: { id: clubId } });
     if (!club) throw new NotFoundError("Club not found");
 
     const events = await eventRepo().find({ where: { clubId: club.id }, order: { eventDate: "ASC" } });
