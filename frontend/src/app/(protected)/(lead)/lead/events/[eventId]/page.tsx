@@ -31,7 +31,7 @@ import styles from "./page.module.css";
 
 const STATUS_MAP: Record<string, { variant: BadgeVariant; label: string }> = {
   draft: { variant: "draft", label: "Draft" },
-  submitted: { variant: "pending-admin", label: "Submitted" },
+  pending: { variant: "pending-admin", label: "Pending Admin" },
   approved: { variant: "approved", label: "Approved" },
   ongoing: { variant: "ongoing", label: "Ongoing" },
   completed: { variant: "completed", label: "Completed" },
@@ -353,7 +353,7 @@ export default function LeadEventDetailPage() {
   const showReportBtn = event.status === "report_due" || event.status === "completed";
   const canMarkCompleted = canMarkEventCompleted(event.status, event.eventDate);
   const isEditable = event.status !== "completed";
-  const isDeletable = event.status !== "completed";
+  const isDeletable = ["draft", "pending", "rejected"].includes(event.status);
 
   const formattedDate = event.eventDate
     ? new Date(event.eventDate).toLocaleDateString("en-MY", {

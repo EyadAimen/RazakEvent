@@ -27,8 +27,7 @@ async function resolveStatus(proposal) {
         const event = await eventRepo().findOne({ where: { proposalId: proposal.id } });
         if (event) return event.status;
     }
-    // "pending" in DB → "submitted" for the frontend status map
-    if (proposal.status === "pending") return "submitted";
+    if (proposal.status === "pending") return "pending";
     return proposal.status; // draft | rejected
 }
 
@@ -195,7 +194,7 @@ export const deleteEvent = async (eventId, leadId) => {
     const proposal = await proposalRepo().findOne({ where: { id: eventId } });
     if (!proposal) throw new NotFoundError("Event not found");
     if (proposal.leadId !== leadId) throw new ForbiddenError("You do not own this event");
-    if (proposal.status !== "draft") throw new ForbiddenError("Only draft proposals can be deleted");
+    if (!["draft", "pending", "rejected"].includes(proposal.status)) throw new ForbiddenError("Only draft, pending, or rejected proposals can be deleted");
 
     await proposalRepo().delete(eventId);
 };

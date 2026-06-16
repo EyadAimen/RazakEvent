@@ -26,7 +26,7 @@ export interface ApiEvent {
 export type EventsTab =
   | "all"
   | "draft"
-  | "submitted"
+  | "pending"
   | "approved"
   | "ongoing"
   | "completed"
