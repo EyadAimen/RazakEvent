@@ -6,7 +6,7 @@ import Link from "next/link";
 import Triangle from "@/components/shared/triangle/triangle";
 import { apiFetchAuth } from "@/lib/api";
 import { getUser } from "@/lib/auth";
-import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubTab, ClubVolunteerApplication } from "@/types/lead";
+import type { ApprovedClub, PendingClubItem, ClubItem, ClubMember, MembershipRequest, ClubTab, ClubVolunteerApplication, LeadRoleIncomingRequest } from "@/types/lead";
 import Alert from "@/components/shared/alertComponent/alert";
 import Badge, { BadgeVariant } from "@/components/shared/Badge/Badge";
 import CreateClubModal from "@/components/lead/CreateClubModal/CreateClubModal";
@@ -24,6 +24,7 @@ export default function MyClubPage() {
   const [members, setMembers] = useState<ClubMember[]>([]);
   const [requests, setRequests] = useState<MembershipRequest[]>([]);
   const [volApps, setVolApps] = useState<ClubVolunteerApplication[]>([]);
+  const [leadRequests, setLeadRequests] = useState<LeadRoleIncomingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<ClubTab>("members");
@@ -39,6 +40,8 @@ export default function MyClubPage() {
   const [confirmRemoveMemberName, setConfirmRemoveMemberName] = useState("");
   const [rejectingMemberRequestId, setRejectingMemberRequestId] = useState<string | null>(null);
   const [rejectingMemberRequestName, setRejectingMemberRequestName] = useState("");
+  const [rejectingLeadRequestId, setRejectingLeadRequestId] = useState<string | null>(null);
+  const [rejectingLeadRequestName, setRejectingLeadRequestName] = useState("");
   const [memberSuccess, setMemberSuccess] = useState<string | null>(null);
 
   const VOL_BADGE: Record<ClubVolunteerApplication["status"], { variant: BadgeVariant; label: string }> = {
@@ -69,19 +72,22 @@ export default function MyClubPage() {
 
   const loadClubData = useCallback(async (club: ApprovedClub) => {
     if (club.userRole === "lead") {
-      const [membersData, requestsData, volData] = await Promise.all([
+      const [membersData, requestsData, volData, leadReqData] = await Promise.all([
         apiFetchAuth<{ members: ClubMember[] }>(`/clubs/mine/members?clubId=${club.id}`),
         apiFetchAuth<{ requests: MembershipRequest[] }>(`/clubs/mine/membership-requests?clubId=${club.id}`),
         apiFetchAuth<{ applications: ClubVolunteerApplication[] }>(`/volunteering/applications/club?clubId=${club.id}`),
+        apiFetchAuth<{ requests: LeadRoleIncomingRequest[] }>(`/requests/lead-role/incoming`),
       ]);
       setMembers(membersData.members);
       setRequests(requestsData.requests);
       setVolApps(volData.applications);
+      setLeadRequests(leadReqData.requests);
     } else {
       const membersData = await apiFetchAuth<{ members: ClubMember[] }>(`/clubs/${club.id}/members`);
       setMembers(membersData.members);
       setRequests([]);
       setVolApps([]);
+      setLeadRequests([]);
     }
   }, []);
 
@@ -117,6 +123,7 @@ export default function MyClubPage() {
     } else {
       setMembers([]);
       setRequests([]);
+      setLeadRequests([]);
     }
   };
 
@@ -175,6 +182,30 @@ export default function MyClubPage() {
       }
     } catch (err: unknown) {
       setActionError(err instanceof Error ? err.message : "Action failed.");
+    } finally {
+      setActing(null);
+    }
+  };
+
+  const handleDecideLeadRequest = async (requestId: string, action: "approved" | "rejected", comment?: string) => {
+    if (acting !== null) return;
+    const req = leadRequests.find(r => r.id === requestId);
+    setActing(requestId);
+    try {
+      await apiFetchAuth(`/requests/lead-role/${requestId}/lead-decision`, {
+        method: "PATCH",
+        body: JSON.stringify({ action, ...(comment ? { comment } : {}) }),
+      });
+      setLeadRequests(prev => prev.filter(r => r.id !== requestId));
+      if (action === "rejected") setRejectingLeadRequestId(null);
+      setMemberSuccess(
+        action === "approved"
+          ? `${req?.student?.fullName ?? "Request"} approved and forwarded to the admin for final approval.`
+          : `${req?.student?.fullName ?? "Request"}'s lead role request has been rejected.`
+      );
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Action failed.");
+      throw err;
     } finally {
       setActing(null);
     }
@@ -413,6 +444,15 @@ export default function MyClubPage() {
                           <span className={styles.badge}>{volApps.filter(a => a.status === "pending").length}</span>
                         )}
                       </button>
+                      <button
+                        className={`${styles.tabBtn} ${tab === "leadRequests" ? styles.tabActive : ""}`}
+                        onClick={() => { setTab("leadRequests"); setSearch(""); }}
+                      >
+                        Lead Requests
+                        {leadRequests.length > 0 && (
+                          <span className={styles.badge}>{leadRequests.length}</span>
+                        )}
+                      </button>
                     </>
                   )}
                 </div>
@@ -516,6 +556,61 @@ export default function MyClubPage() {
                                   <button
                                     className={styles.rejectBtn}
                                     onClick={() => { setRejectingMemberRequestId(r.id); setRejectingMemberRequestName(r.studentName); }}
+                                    disabled={acting === r.id}
+                                  >
+                                    <X size={12} /> Reject
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Lead Requests tab */}
+              {tab === "leadRequests" && (
+                <div className={styles.tabPanel}>
+                  {leadRequests.length === 0 ? (
+                    <div className={styles.stateBox}>
+                      <p>No pending lead role requests.</p>
+                    </div>
+                  ) : (
+                    <div className={styles.tableWrap}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Student ID</th>
+                            <th>Date Applied</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {leadRequests.map(r => (
+                            <tr key={r.id}>
+                              <td>{r.student?.fullName ?? "—"}</td>
+                              <td>{r.student?.staffOrMatricId ?? "—"}</td>
+                              <td>
+                                {new Date(r.submittedAt).toLocaleDateString("en-MY", {
+                                  year: "numeric", month: "short", day: "numeric",
+                                })}
+                              </td>
+                              <td>
+                                <div className={styles.appActions}>
+                                  <button
+                                    className={styles.acceptBtn}
+                                    onClick={() => handleDecideLeadRequest(r.id, "approved")}
+                                    disabled={acting === r.id}
+                                  >
+                                    <Check size={12} /> Approve
+                                  </button>
+                                  <button
+                                    className={styles.rejectBtn}
+                                    onClick={() => { setRejectingLeadRequestId(r.id); setRejectingLeadRequestName(r.student?.fullName ?? "Student"); }}
                                     disabled={acting === r.id}
                                   >
                                     <X size={12} /> Reject
@@ -659,6 +754,16 @@ export default function MyClubPage() {
           onClose={() => setRejectingMemberRequestId(null)}
           studentName={rejectingMemberRequestName}
           onSubmit={(message) => handleDecideRequest(rejectingMemberRequestId, "rejected", message)}
+        />
+      )}
+
+      {rejectingLeadRequestId !== null && (
+        <RejectApplicationModal
+          isOpen={true}
+          onClose={() => setRejectingLeadRequestId(null)}
+          studentName={rejectingLeadRequestName}
+          requireMessage
+          onSubmit={(message) => handleDecideLeadRequest(rejectingLeadRequestId, "rejected", message)}
         />
       )}
 

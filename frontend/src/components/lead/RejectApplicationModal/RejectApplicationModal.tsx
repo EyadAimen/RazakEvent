@@ -9,9 +9,10 @@ interface Props {
   onClose: () => void;
   onSubmit: (message: string) => Promise<void>;
   studentName: string;
+  requireMessage?: boolean;
 }
 
-export default function RejectApplicationModal({ isOpen, onClose, onSubmit, studentName }: Props) {
+export default function RejectApplicationModal({ isOpen, onClose, onSubmit, studentName, requireMessage = false }: Props) {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -27,6 +28,10 @@ export default function RejectApplicationModal({ isOpen, onClose, onSubmit, stud
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError("");
+    if (requireMessage && !message.trim()) {
+      setApiError("A reason is required to reject this request.");
+      return;
+    }
     setSubmitting(true);
     try {
       await onSubmit(message);
@@ -62,7 +67,7 @@ export default function RejectApplicationModal({ isOpen, onClose, onSubmit, stud
           {/* Description */}
           <div className={styles.field}>
             <label className={styles.fieldLabel}>
-              REJECTION MESSAGE <span className={styles.optional}>(OPTIONAL)</span>
+              REJECTION MESSAGE <span className={styles.optional}>({requireMessage ? "REQUIRED" : "OPTIONAL"})</span>
             </label>
             <textarea
               className={styles.textarea}
