@@ -2,8 +2,13 @@ import { apiFetchAuth } from "@/lib/api";
 import type { Club, MembershipRequest, LeadRoleRequest } from "../interfaces/become-member.interface";
 
 export async function fetchClubs(): Promise<Club[]> {
-  const res = await apiFetchAuth<Club[]>("/clubs");
-  return Array.isArray(res) ? res : [];
+  const res = await apiFetchAuth<{ clubs: Club[] }>("/clubs");
+  return (res as any).clubs ?? [];
+}
+
+export async function fetchMyClubs(): Promise<Club[]> {
+  const res = await apiFetchAuth<{ clubs: any[] }>("/clubs/mine/all");
+  return (res.clubs ?? []).filter((c: any) => c.status === "approved");
 }
 
 export async function fetchMyMembershipRequests(): Promise<MembershipRequest[]> {

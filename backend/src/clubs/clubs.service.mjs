@@ -22,56 +22,49 @@ const membershipReqRepo  = () => appDataSource.getRepository(MembershipRequestEn
 
 const VALID_STATUSES = ["pending", "approved", "rejected"];
 
-export const listClubs = async () => {
+export const listClubs = async (userId = null) => {
     const clubs = await clubRepo().find({
-        where: {
-            deletedAt: null,
-        },
-        order: {
-            createdAt: "DESC",
-        },
+        where: { deletedAt: null },
+        order: { createdAt: "DESC" },
     });
 
     if (!clubs.length) return [];
 
-    const leadIds = clubs
-        .map((club) => club.leadId)
-        .filter(Boolean);
+    // Collect clubs the user already belongs to so they can be excluded
+    let excludedClubIds = new Set();
+    if (userId) {
+        const memberRows = await clubMemberRepo().find({ where: { userId } });
+        memberRows.forEach(r => excludedClubIds.add(r.clubId));
+        // Also exclude clubs where the user is the lead
+        clubs.forEach(c => { if (c.leadId === userId) excludedClubIds.add(c.id); });
+    }
 
-    const leads = leadIds.length
-        ? await userRepo().findBy({ id: In(leadIds) })
-        : [];
-
-    const leadMap = Object.fromEntries(
-        leads.map((lead) => [lead.id, lead])
-    );
+    const leadIds = clubs.map((club) => club.leadId).filter(Boolean);
+    const leads = leadIds.length ? await userRepo().findBy({ id: In(leadIds) }) : [];
+    const leadMap = Object.fromEntries(leads.map((lead) => [lead.id, lead]));
 
     const result = await Promise.all(
-        clubs.map(async (club) => {
-            const memberCount = await clubMemberRepo().count({
-                where: { clubId: club.id },
-            });
-
-            const lead = club.leadId ? leadMap[club.leadId] : null;
-
-            return {
-                id: club.id,
-                name: club.name,
-                type: club.type,
-                description: club.description,
-                leadId: club.leadId,
-                lead: lead
-                    ? {
+        clubs
+            .filter(club => !excludedClubIds.has(club.id))
+            .map(async (club) => {
+                const memberCount = await clubMemberRepo().count({ where: { clubId: club.id } });
+                const lead = club.leadId ? leadMap[club.leadId] : null;
+                return {
+                    id: club.id,
+                    name: club.name,
+                    type: club.type,
+                    description: club.description,
+                    leadId: club.leadId,
+                    lead: lead ? {
                         id: lead.id,
                         fullName: lead.fullName,
                         staffOrMatricId: lead.staffOrMatricId,
                         email: lead.email,
-                    }
-                    : null,
-                memberCount: memberCount + (lead ? 1 : 0),
-                createdAt: club.createdAt,
-            };
-        })
+                    } : null,
+                    memberCount: memberCount + (lead ? 1 : 0),
+                    createdAt: club.createdAt,
+                };
+            })
     );
 
     return result;
