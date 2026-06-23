@@ -25,7 +25,7 @@ const appDataSource = new DataSource({
     password: configVars.dbPassword,
     database: configVars.database,
 
-    // synchronize: true,
+    synchronize: process.env.TYPEORM_SYNC === 'true',
     entities: [
         UserEntity,
         ClubEntity,
