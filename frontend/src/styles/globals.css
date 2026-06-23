@@ -58,6 +58,10 @@ button, input, select, textarea {
   font-family: inherit;
 }
 
+label {
+  color: inherit !important;
+}
+
 a {
   color: inherit;
   text-decoration: none;
