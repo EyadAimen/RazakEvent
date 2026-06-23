@@ -1,0 +1,58 @@
+databases:
+  - name: razakevent-db
+    databaseName: razak_event
+    user: razak_user
+    plan: free
+
+services:
+  - type: web
+    name: razakevent-backend
+    plan: free
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: HOST
+        fromDatabase:
+          name: razakevent-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: razakevent-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: razakevent-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: razakevent-db
+          property: password
+      - key: DATABASE
+        fromDatabase:
+          name: razakevent-db
+          property: database
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        value: noreply@notifications.razakevents.tech
+      - key: FRONTEND_URL
+        sync: false
+      - key: NODE_VERSION
+        value: 20
+
+  - type: web
+    name: razakevent-frontend
+    plan: free
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NODE_VERSION
+        value: 20
