@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./verify-pending.module.css";
@@ -8,7 +8,7 @@ import { resendVerificationEmail, getRefreshToken } from "@/lib/auth";
 
 type ResendStatus = "idle" | "loading" | "sent" | "error";
 
-export default function VerifyPendingPage() {
+function VerifyPendingContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const emailFromParam = searchParams.get("email") ?? "";
@@ -76,5 +76,13 @@ export default function VerifyPendingPage() {
                 <Link href="/login" className={styles.link}>Back to Login →</Link>
             </div>
         </main>
+    );
+}
+
+export default function VerifyPendingPage() {
+    return (
+        <Suspense>
+            <VerifyPendingContent />
+        </Suspense>
     );
 }

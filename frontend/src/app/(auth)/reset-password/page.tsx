@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
@@ -10,7 +10,7 @@ import Alert from "@/components/shared/alertComponent/alert";
 import { apiFetch, ApiError } from "@/lib/api";
 import { clearSession } from "@/lib/auth";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -96,5 +96,13 @@ export default function ResetPasswordPage() {
       <Alert variant="loading" isOpen={loading} onClose={() => {}} message="Resetting your password…" />
       <Alert variant="error" isOpen={alertError !== null} message={alertError ?? ""} onClose={() => setAlertError(null)} />
     </main>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
