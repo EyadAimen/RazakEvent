@@ -1,13 +1,8 @@
 import express from "express"
 import cors from "cors"
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url"
 import envVars from "../config/envConfig.mjs"
 import { applyMiddleware } from "./shared/middlewares.mjs"
 import appDataSource from "../config/dbConfig.mjs"
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 import authRoutes from "./auth/auth.routes.mjs"
 import usersRoutes from "./users/users.routes.mjs"
 import clubsRoutes from "./clubs/clubs.routes.mjs"
@@ -30,21 +25,6 @@ applyMiddleware(app)
 
 // ── Serve uploaded files statically ──────────────────────────────────────────
 app.use("/uploads", express.static("uploads"));
-
-// ── TEMPORARY: one-time seed endpoint — remove after seeding ─────────────────
-app.get("/api/seed", async (req, res) => {
-    if (req.query.secret !== "razak-seed-2026") {
-        return res.status(403).json({ error: "Forbidden" })
-    }
-    try {
-        const sqlPath = path.join(__dirname, "../seed.sql")
-        const sql = fs.readFileSync(sqlPath, "utf8")
-        await appDataSource.query(sql)
-        res.json({ ok: true, message: "Database seeded successfully!" })
-    } catch (err) {
-        res.status(500).json({ error: err.message })
-    }
-})
 
 // ── Route registration ────────────────────────────────────────────────────────
 app.use("/api/auth",         authRoutes)
