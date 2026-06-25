@@ -5,7 +5,7 @@ import { VolunteeringApplicationEntity } from "./volunteering_applications.entit
 import { EventEntity } from "../events/events.entity.mjs";
 import { ClubEntity } from "../clubs/clubs.entity.mjs";
 import { EventProposalEntity } from "../proposals/proposals.entity.mjs";
-import { ClubMemberEntity } from "../clubs/club_members.entity.mjs";
+
 import { NotFoundError, ForbiddenError, ValidationError, ConflictError } from "../shared/errors.mjs";
 
 const roleRepo = () => appDataSource.getRepository(VolunteeringRoleEntity);
@@ -13,7 +13,7 @@ const appRepo = () => appDataSource.getRepository(VolunteeringApplicationEntity)
 const eventRepo = () => appDataSource.getRepository(EventEntity);
 const clubRepo = () => appDataSource.getRepository(ClubEntity);
 const proposalRepo = () => appDataSource.getRepository(EventProposalEntity);
-const clubMemberRepo = () => appDataSource.getRepository(ClubMemberEntity);
+
 
 async function assertLeadOwnsEvent(proposalId, leadId) {
     // The frontend uses proposal.id as the external event identifier
@@ -169,23 +169,15 @@ export const applyToRole = async (studentId, body) => {
     });
 
     if (!club) throw new NotFoundError("Club not found");
+    if (!event) throw new NotFoundError("Event not found");
 
     // Leads organise the event — they may not apply as volunteers
     const isLead = club.leadId === studentId;
-
-    const isCommittee = await clubMemberRepo().findOne({
-        where: {
-            clubId: event.clubId,
-            userId: studentId,
-        },
-    });
-
-    if (!isLead && !isCommittee) {
+    if (isLead) {
         throw new ForbiddenError(
-            "Only members of this club may volunteer for this event"
+            "Club leads may not volunteer for their own club's events"
         );
     }
-    if (!event) throw new NotFoundError("Event not found");
     if (event.volunteeringStatus !== "open") throw new ConflictError("Volunteering for this event is not open");
     if (role.slotsFilled >= role.slotsAvailable) throw new ConflictError("This role is full");
 
