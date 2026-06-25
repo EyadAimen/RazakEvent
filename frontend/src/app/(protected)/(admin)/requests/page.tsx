@@ -264,7 +264,7 @@ export default function AdminRequestsPage() {
                     href={
                       selectedProposal.proposalPdfUrl.startsWith("http")
                         ? selectedProposal.proposalPdfUrl
-                        : `http://localhost:5000${selectedProposal.proposalPdfUrl}`
+                        : `${(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api").replace(/\/api$/, "")}${selectedProposal.proposalPdfUrl}`
                     }
                     target="_blank"
                     rel="noopener noreferrer"

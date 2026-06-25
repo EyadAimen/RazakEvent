@@ -75,8 +75,10 @@ export default function ProposeEventPage() {
   const [errors,      setErrors]      = useState<FormErrors>({});
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Minimum datetime: now (for date input)
-  const minDatetime = new Date(Date.now() + 60_000).toISOString().slice(0, 16);
+  // Minimum datetime: now in local time (datetime-local shows local time, not UTC)
+  const _minNow = new Date(Date.now() + 60_000);
+  const _pad = (n: number) => String(n).padStart(2, "0");
+  const minDatetime = `${_minNow.getFullYear()}-${_pad(_minNow.getMonth() + 1)}-${_pad(_minNow.getDate())}T${_pad(_minNow.getHours())}:${_pad(_minNow.getMinutes())}`;
 
   useEffect(() => {
     Promise.all([
@@ -181,7 +183,7 @@ export default function ProposeEventPage() {
         body: JSON.stringify({
           name:            name.trim(),
           status:          "draft",
-          ...(eventDate       && { eventDate }),
+          ...(eventDate       && { eventDate: new Date(eventDate).toISOString() }),
           ...(venueId         && { venueId }),
           ...(description     && { description }),
           ...(estimatedBudget && { estimatedBudget: Number(estimatedBudget) }),

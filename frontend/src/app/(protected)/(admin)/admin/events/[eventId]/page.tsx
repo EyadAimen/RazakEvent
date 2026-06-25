@@ -118,7 +118,7 @@ export default function AdminEventDetailPage() {
           {event.proposalPdfUrl && (
             <div className={styles.cardActions}>
               <a
-                href={`http://localhost:5000${event.proposalPdfUrl}`}
+                href={`${(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api").replace(/\/api$/, "")}${event.proposalPdfUrl}`}
                 target="_blank"
                 rel="noreferrer"
                 className={styles.actionSecondary}

@@ -441,7 +441,7 @@ export default function LeadEventDetailPage() {
                 <div className={styles.postEventDocs}>
                   {event.completionReportPdfUrl && (
                     <a
-                      href={`http://localhost:5000${event.completionReportPdfUrl}`}
+                      href={`${(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api").replace(/\/api$/, "")}${event.completionReportPdfUrl}`}
                       target="_blank"
                       rel="noreferrer"
                       className={styles.actionSecondary}
@@ -452,7 +452,7 @@ export default function LeadEventDetailPage() {
                   )}
                   {event.financialReportPdfUrl && (
                     <a
-                      href={`http://localhost:5000${event.financialReportPdfUrl}`}
+                      href={`${(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api").replace(/\/api$/, "")}${event.financialReportPdfUrl}`}
                       target="_blank"
                       rel="noreferrer"
                       className={styles.actionSecondary}
@@ -468,7 +468,7 @@ export default function LeadEventDetailPage() {
             <div className={styles.cardActions}>
               {event.proposalPdfUrl && (
                 <a
-                  href={`http://localhost:5000${event.proposalPdfUrl}`}
+                  href={`${(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api").replace(/\/api$/, "")}${event.proposalPdfUrl}`}
                   target="_blank"
                   rel="noreferrer"
                   className={styles.actionSecondary}

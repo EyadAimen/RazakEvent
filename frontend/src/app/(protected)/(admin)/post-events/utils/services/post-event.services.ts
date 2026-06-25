@@ -74,7 +74,9 @@ export function getReadableReportStatus(reportStatus: string): string {
 
 export function getPdfUrl(url?: string): string {
   if (!url) return "";
-  return url.startsWith("http") ? url : `http://localhost:5000${url}`;
+  if (url.startsWith("http")) return url;
+  const base = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api").replace(/\/api$/, "");
+  return `${base}${url}`;
 }
 
 function normalizePostEvent(item: any): PostEvent {
